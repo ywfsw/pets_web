@@ -1,97 +1,199 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-
-    <title>宠物管家</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  
+  <title>宠物管家</title>
 </head>
 <body>
 
-<div id="app" class="container">
+  <div id="app" class="container">
 
     <header>
-        <nav>
-            <ul><li><strong>🐾 宠物管家</strong></li></ul>
-            <ul><li><a href="#" @click.prevent="showPage('home')">首页</a></li></ul>
-        </nav>
+      <nav>
+        <ul><li><strong>🐾 宠物管家</strong></li></ul>
+        <ul><li><a href="#">首页</a></li></ul>
+      </nav>
     </header>
 
     <hr>
 
     <main>
-        <article>
-            <h2>{{ message }}</h2>
-            <p></p>
-
-            <button @click="callApi" :aria-busy="loading">
-                测试后端 Ping 接口
-            </button>
-
-            <div v-if="apiResponse">
-                <hr>
-                <pre><code>API 响应: {{ apiResponse }}</code></pre>
-            </div>
-
+      <article :aria-busy="loading.list">
+        <header>
+          <h3>我的宠物列表</h3>
+          </header>
+        
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">名字</th>
+              <th scope="col">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="pet in petList" :key="pet.id">
+              <td>{{ pet.id }}</td>
+              <td><strong>{{ pet.name }}</strong></td>
+              <td>
+                <button @click="showPetDetail(pet.id)">
+                  查看详情
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        
         </article>
+
+      <dialog :open="modal.show">
+        <article :aria-busy="loading.detail">
+          <header>
+            <a href="#" 
+               aria-label="Close" 
+               class="close"
+               @click.prevent="closeModal">
+            </a>
+            <strong>{{ modal.data ? modal.data.name : '加载中...' }}</strong>
+          </header>
+          
+          <div v-if="modal.data">
+            <ul>
+              <li><strong>物种:</strong> {{ modal.data.speciesLabel }}</li>
+              <li><strong>品种:</strong> {{ modal.data.breedLabel }}</li>
+            </ul>
+
+            <hr>
+            
+            <h4>近期体重</h4>
+            <ul v-if="modal.data.weightLogs && modal.data.weightLogs.length">
+              <li v-for="log in modal.data.weightLogs" :key="log.id">
+                {{ log.logDate }}: {{ log.weightKg }} kg
+              </li>
+            </ul>
+            <p v-else><i>暂无体重记录</i></p>
+
+            <h4>健康事件</h4>
+            <ul v-if="modal.data.healthEvents && modal.data.healthEvents.length">
+              <li v-for="event in modal.data.healthEvents" :key="event.id">
+                {{ event.eventDate }}: {{ event.notes || '执行了事件' }}
+                (下次: {{ event.nextDueDate || 'N/A' }})
+              </li>
+            </ul>
+            <p v-else><i>暂无健康事件</i></p>
+
+          </div>
+          
+          <footer>
+            <button @click="closeModal">关闭</button>
+          </footer>
+        </article>
+      </dialog>
+
     </main>
 
-    <footer>
-        <small>由 Spring Boot & Pico.css 强力驱动</small>
-    </footer>
+  </div> <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-</div> <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-<script>
-    const { createApp, ref } = Vue;
+  <script>
+    const { createApp, ref, onMounted } = Vue;
 
     createApp({
-        setup() {
-            // --- 变量 ---
-            const message = ref('Hello!');
-            const loading = ref(false);
-            const apiResponse = ref(null);
+      setup() {
+        // --- 你的后端 API 地址 ---
+        // ❗❗❗ 确保你已经在 Spring Boot 上设置了 @CrossOrigin("*") ❗❗❗
+        const API_BASE_URL = 'https://pets-why3.onrender.com';
 
-            // 你的 Render 后端 API 地址
-            // ❗❗❗ 确保你已经在 Spring Boot 上设置了 @CrossOrigin("*") ❗❗❗
-            const API_BASE_URL = 'https://pets-why3.onrender.com';
+        // --- 1. 响应式状态 (State) ---
+        
+        // 宠物列表
+        const petList = ref([]); 
+        const pagination = ref({ current: 1, size: 10, total: 0 });
+        
+        // 模态框 (Modal)
+        const modal = ref({
+          show: false,
+          data: null // 存储 /pets/detail/{id} 返回的数据
+        });
 
-            // --- 方法 ---
-            const callApi = () => {
-                loading.value = true;
-                apiResponse.value = null;
+        // 加载状态
+        const loading = ref({
+          list: false,
+          detail: false
+        });
 
-                axios.get(API_BASE_URL + '/ping')
-                    .then(response => {
-                        apiResponse.value = response.data;
-                    })
-                    .catch(error => {
-                        apiResponse.value = '请求失败: ' + error.message;
-                    })
-                    .finally(() => {
-                        loading.value = false;
-                    });
-            };
+        // --- 2. 方法 (Methods) ---
 
-            const showPage = (pageName) => {
-                console.log('切换到页面:', pageName);
-                // 这里以后可以写切换页面的逻辑
+        // (方法 A) 获取宠物列表
+        const fetchPetList = () => {
+          loading.value.list = true;
+          axios.get(`${API_BASE_URL}/pets/page`, {
+            params: {
+              pageNum: pagination.value.current,
+              pageSize: pagination.value.size
             }
+          })
+          .then(response => {
+            petList.value = response.data.records;
+            pagination.value.total = response.data.total;
+          })
+          .catch(error => {
+            console.error('获取宠物列表失败:', error);
+            alert('获取宠物列表失败');
+          })
+          .finally(() => {
+            loading.value.list = false;
+          });
+        };
 
-            // --- 返回 ---
-            return {
-                message,
-                loading,
-                apiResponse,
-                callApi,
-                showPage
-            };
-        }
+        // (方法 B) 获取宠物详情, 并打开模态框
+        const showPetDetail = (petId) => {
+          modal.value.show = true;    // 立即打开模态框
+          loading.value.detail = true; // 显示加载中
+          modal.value.data = null;     // 清空旧数据
+
+          axios.get(`${API_BASE_URL}/pets/detail/${petId}`)
+            .then(response => {
+              modal.value.data = response.data;
+            })
+            .catch(error => {
+              console.error('获取宠物详情失败:', error);
+              alert('获取宠物详情失败');
+              modal.value.show = false; // 加载失败, 关闭模态框
+            })
+            .finally(() => {
+              loading.value.detail = false;
+            });
+        };
+
+        // (方法 C) 关闭模态框
+        const closeModal = () => {
+          modal.value.show = false;
+        };
+
+        // --- 3. 生命周期 (Lifecycle) ---
+        
+        // 当页面 (Vue 实例) 加载完成后, 自动运行
+        onMounted(() => {
+          fetchPetList();
+        });
+
+        // --- 4. 返回 (Return) ---
+        // 必须返回, 这样 HTML 才能使用它们
+        return {
+          petList,
+          loading,
+          modal,
+          showPetDetail,
+          closeModal
+        };
+      }
     }).mount('#app'); // 挂载到 <div id="app">
-</script>
+  </script>
 
 </body>
 </html>
