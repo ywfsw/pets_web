@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+
+    <title>宠物管家</title>
+</head>
+<body>
+
+<div id="app" class="container">
+
+    <header>
+        <nav>
+            <ul><li><strong>🐾 宠物管家</strong></li></ul>
+            <ul><li><a href="#" @click.prevent="showPage('home')">首页</a></li></ul>
+        </nav>
+    </header>
+
+    <hr>
+
+    <main>
+        <article>
+            <h2>{{ message }}</h2>
+            <p>欢迎来到你的 Spring Boot + Vue + Pico.css 应用！</p>
+
+            <button @click="callApi" :aria-busy="loading">
+                测试后端 Ping 接口
+            </button>
+
+            <div v-if="apiResponse">
+                <hr>
+                <pre><code>API 响应: {{ apiResponse }}</code></pre>
+            </div>
+
+        </article>
+    </main>
+
+    <footer>
+        <small>由 Spring Boot & Pico.css 强力驱动</small>
+    </footer>
+
+</div> <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    const { createApp, ref } = Vue;
+
+    createApp({
+        setup() {
+            // --- 变量 ---
+            const message = ref('你好, 后端开发者!');
+            const loading = ref(false);
+            const apiResponse = ref(null);
+
+            // 你的 Render 后端 API 地址
+            // ❗❗❗ 确保你已经在 Spring Boot 上设置了 @CrossOrigin("*") ❗❗❗
+            const API_BASE_URL = 'https://pets-why3.onrender.com';
+
+            // --- 方法 ---
+            const callApi = () => {
+                loading.value = true;
+                apiResponse.value = null;
+
+                axios.get(API_BASE_URL + '/ping')
+                    .then(response => {
+                        apiResponse.value = response.data;
+                    })
+                    .catch(error => {
+                        apiResponse.value = '请求失败: ' + error.message;
+                    })
+                    .finally(() => {
+                        loading.value = false;
+                    });
+            };
+
+            const showPage = (pageName) => {
+                console.log('切换到页面:', pageName);
+                // 这里以后可以写切换页面的逻辑
+            }
+
+            // --- 返回 ---
+            return {
+                message,
+                loading,
+                apiResponse,
+                callApi,
+                showPage
+            };
+        }
+    }).mount('#app'); // 挂载到 <div id="app">
+</script>
+
+</body>
+</html>
