@@ -137,7 +137,6 @@
                         </tbody>
                     </table>
                 </article>
-
             </div> </main>
 
         <dialog :open="modals.detail.show" @click.self="closeAllModals">
@@ -341,6 +340,7 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
+    // 从 Vue 中解构出我们需要的功能
     const { createApp, ref, onMounted, computed, watch } = Vue;
 
     // --- 默认表单数据 ---
@@ -352,8 +352,15 @@
 
     createApp({
         setup() {
-            // --- API 地址 ---
+            // --- API 地址 (带本地切换开关) ---
+
+            // 1. 线上生产环境 API (Render)
             const API_BASE_URL = 'https://pets-why3.onrender.com';
+
+            // 2. 本地测试环境 API (❗ 调试时注释掉上面一行, 并放开下面一行)
+            // const API_BASE_URL = 'http://localhost:8080';
+
+            // --------------------------------------------------------
 
             // --- 1. 响应式状态 (State) ---
 
@@ -364,18 +371,16 @@
             const petList = ref([]);
             const pagination = ref({ current: 1, size: 10, total: 0 });
 
-            // 字典 (V5 不变)
             const dictionaries = ref({ species: [], breeds: [], healthEvents: [] });
 
-            // (重构) 字典管理页专用
-            const dictTypeList = ref([]); // (新增) 左栏列表
-            const selectedDictCode = ref(null); // (新增) 左栏选中的 code
-            const dictItemList = ref([]); // (新增) 右栏列表
+            const dictTypeList = ref([]);
+            const selectedDictCode = ref(null);
+            const dictItemList = ref([]);
 
             const loading = ref({
                 list: false, detail: false, upcoming: false, form: false,
-                dictTypes: false, // (新增)
-                dictItems: false  // (新增)
+                dictTypes: false,
+                dictItems: false
             });
 
             const modals = ref({
@@ -383,9 +388,9 @@
                 petForm: { show: false, isEdit: false, data: defaultPetForm() },
                 weightForm: { show: false, data: defaultWeightForm() },
                 healthEventForm: { show: false, data: defaultHealthForm() },
-                dictForm: { show: false, isEdit: false, data: defaultDictForm() }, // 编辑"字典项"
+                dictForm: { show: false, isEdit: false, data: defaultDictForm() },
                 auth: { show: false },
-                dictTypeForm: { show: false, isEdit: false, data: defaultDictTypeForm() } // (新增) 编辑"字典类型"
+                dictTypeForm: { show: false, isEdit: false, data: defaultDictTypeForm() }
             });
 
             // --- 2. 计算属性 (Computed) ---
@@ -412,7 +417,8 @@
             const login = () => {
                 auth.value.loading = true; auth.value.error = '';
                 setTimeout(() => {
-                    if (auth.value.password === '125456') { // ❗ 修正: 你的密码是 123456
+                    // (❗ 关键修复) 密码从 125456 改为 123456
+                    if (auth.value.password === '123456') {
                         auth.value.isAuthenticated = true; modals.value.auth.show = false; currentPage.value = 'dictionaries';
                     } else {
                         auth.value.error = '密码错误';
@@ -429,7 +435,7 @@
                 }
             };
 
-            // --- 数据获取 ---
+            // --- 数据获取 (❗ 完整恢复) ---
             const fetchPetList = () => {
                 loading.value.list = true;
                 axios.get(`${API_BASE_URL}/pets/page`, { params: { pageNum: pagination.value.current, pageSize: pagination.value.size } })
@@ -495,7 +501,7 @@
                 fetchDictItemList(type.dictCode);
             };
 
-            // --- 模态框控制 ---
+            // --- 模态框控制 (❗ 完整恢复) ---
             const closeAllModals = () => {
                 modals.value.detail.show = false;
                 modals.value.petForm.show = false;
@@ -546,7 +552,7 @@
                 modals.value.dictTypeForm.show = true;
             };
 
-            // --- 表单提交 (CRUD) ---
+            // --- 表单提交 (CRUD) (❗ 完整恢复) ---
             const handleSubmitPetForm = () => {
                 loading.value.form = true;
                 const { isEdit, data } = modals.value.petForm;
