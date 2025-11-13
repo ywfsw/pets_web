@@ -44,7 +44,7 @@
             <br>
             <article :aria-busy="loading.list">
                 <header>
-                    <h3>我的宠物</h3>
+                    <h3>宠物列表</h3>
                     <button @click="handleCreatePet">添加新宠物</button>
                 </header>
                 <table>
@@ -73,218 +73,59 @@
         </main>
 
         <main v-if="currentPage === 'dictionaries'">
-            <div class="grid">
-                <article :aria-busy="loading.dictTypes">
-                    <header>
-                        <strong>字典类型</strong>
-                        <button class="outline" @click="handleCreateDictType" style="padding: 0.25rem 0.5rem; margin-left: 1rem;">+</button>
-                    </header>
-                    <ul style="padding-left: 0; list-style: none;">
-                        <li v-for="type in dictTypeTree" :key="type.dictCode">
-                            <details :open="type.children.length > 0">
-                                <summary>
-                                    <a href="#"
-                                       :style="{ color: type.dictCode === selectedDictCode ? 'var(--pico-primary)' : 'inherit' }"
-                                       @click.prevent="selectDictType(type)">
-                                        {{ type.dictName }} (<code>{{ type.dictCode }}</code>)
-                                    </a>
-                                    <a href="#" @click.prevent="handleEditDictType(type)" style="margin-left: 0.5rem; color: var(--pico-secondary);">[E]</a>
-                                </summary>
-                                <ul style="padding-left: 1rem; margin-top: 0.5rem;">
-                                    <li v-for="child in type.children" :key="child.dictCode">
-                                        <a href="#"
-                                           :style="{ color: child.dictCode === selectedDictCode ? 'var(--pico-primary)' : 'inherit' }"
-                                           @click.prevent="selectDictType(child)">
-                                            {{ child.dictName }} (<code>{{ child.dictCode }}</code>)
-                                        </a>
-                                        <a href="#" @click.prevent="handleEditDictType(child)" style="margin-left: 0.5rem; color: var(--pico-secondary);">[E]</a>
-                                    </li>
-                                </ul>
-                            </details>
-                        </li>
-                    </ul>
-                </article>
-
-                <article :aria-busy="loading.dictItems">
-                    <header v-if="!selectedDictCode">
-                        <strong>字典项</strong><br>
-                        <small>请从左侧选择一个字典类型</small>
-                    </header>
-                    <header v-else>
-                        <strong>字典项 (<code>{{ selectedDictCode }}</code>)</strong>
-                        <button class="outline" @click="handleCreateDictItem" style="padding: 0.25rem 0.5rem; margin-left: 1rem;">+</button>
-                    </header>
-                    <table v-if="selectedDictCode">
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>标签 (Label)</th>
-                            <th>值 (Value)</th>
-                            <th>父ID</th>
-                            <th>操作</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="item in dictItemList" :key="item.id">
-                            <td>{{ item.id }}</td>
-                            <td><strong>{{ item.itemLabel }}</strong></td>
-                            <td><code>{{ item.itemValue }}</code></td>
-                            <td>{{ item.parentId || 'N/A' }}</td>
-                            <td>
-                                <button class="secondary" @click="handleEditDictItem(item)" style="padding: 0.25rem 0.5rem;">编辑</button>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </article>
-            </div> </main>
+            <article :aria-busy="loading.dictList">
+                <header>
+                    <h3>字典项管理</h3>
+                    <button @click="handleCreateDictItem">添加新字典项</button>
+                </header>
+                <table>
+                    <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">字典编码 (Code)</th>
+                        <th scope="col">标签 (Label)</th>
+                        <th scope="col">值 (Value)</th>
+                        <th scope="col">排序</th>
+                        <th scope="col">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in dictList" :key="item.id">
+                        <td>{{ item.id }}</td>
+                        <td><code>{{ item.dictCode }}</code></td>
+                        <td><strong>{{ item.itemLabel }}</strong></td>
+                        <td><code>{{ item.itemValue }}</code></td>
+                        <td>{{ item.sortOrder }}</td>
+                        <td>
+                            <div class="grid" style="--pico-grid-spacing: 0.5rem;">
+                                <button class="secondary" @click="handleEditDictItem(item)">编辑</button>
+                                <button class="outline secondary" @click="handleDeleteDictItem(item)">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </article>
+        </main>
 
         <dialog :open="modals.detail.show" @click.self="closeAllModals">
-            <article :aria-busy="loading.detail">
-                <header>
-                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
-                    <strong>{{ modals.detail.data ? modals.detail.data.name : '加载中...' }}</strong>
-                </header>
-                <div v-if="modals.detail.data">
-                    <ul>
-                        <li><strong>物种:</strong> {{ modals.detail.data.speciesLabel }}</li>
-                        <li><strong>品种:</strong> {{ modals.detail.data.breedLabel }}</li>
-                    </ul>
-                    <hr>
-                    <h4>近期体重</h4>
-                    <ul v-if="modals.detail.data.weightLogs && modals.detail.data.weightLogs.length">
-                        <li v-for="log in modals.detail.data.weightLogs" :key="log.id">
-                            {{ log.logDate }}: {{ log.weightKg }} kg
-                        </li>
-                    </ul>
-                    <p v-else><i>暂无体重记录</i></p>
-                    <hr>
-                    <h4>健康事件</h4>
-                    <ul v-if="modals.detail.data.healthEvents && modals.detail.data.healthEvents.length">
-                        <li v-for="event in modals.detail.data.healthEvents" :key="event.id">
-                            {{ event.eventDate }}: {{ event.notes || '执行了事件' }} (下次: {{ event.nextDueDate || 'N/A' }})
-                        </li>
-                    </ul>
-                    <p v-else><i>暂无健康事件</i></p>
-                </div>
-                <footer class="grid">
-                    <button class="outline" @click="handleShowWeightForm">添加体重</button>
-                    <button class="outline" @click="handleShowHealthEventForm">添加事件</button>
-                    <button class="secondary" @click="closeAllModals">关闭</button>
-                </footer>
-            </article>
+            <article :aria-busy="loading.detail"><header><a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a><strong>{{ modals.detail.data ? modals.detail.data.name : '加载中...' }}</strong></header><div v-if="modals.detail.data"><ul><li><strong>物种:</strong> {{ modals.detail.data.speciesLabel }}</li><li><strong>品种:</strong> {{ modals.detail.data.breedLabel }}</li></ul><hr><h4>近期体重</h4><ul v-if="modals.detail.data.weightLogs && modals.detail.data.weightLogs.length"><li v-for="log in modals.detail.data.weightLogs" :key="log.id">{{ log.logDate }}: {{ log.weightKg }} kg</li></ul><p v-else><i>暂无体重记录</i></p><hr><h4>健康事件</h4><ul v-if="modals.detail.data.healthEvents && modals.detail.data.healthEvents.length"><li v-for="event in modals.detail.data.healthEvents" :key="event.id">{{ event.eventDate }}: {{ event.notes || '执行了事件' }} (下次: {{ event.nextDueDate || 'N/A' }})</li></ul><p v-else><i>暂无健康事件</i></p></div><footer class="grid"><button class="outline" @click="handleShowWeightForm">添加体重</button><button class="outline" @click="handleShowHealthEventForm">添加事件</button><button class="secondary" @click="closeAllModals">关闭</button></footer></article>
         </dialog>
 
         <dialog :open="modals.petForm.show" @click.self="closeAllModals">
-            <article :aria-busy="loading.form">
-                <header>
-                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
-                    <strong>{{ modals.petForm.isEdit ? '编辑宠物' : '创建新宠物' }}</strong>
-                </header>
-                <form @submit.prevent="handleSubmitPetForm">
-                    <label for="petName">名字</label>
-                    <input type="text" id="petName" v-model="modals.petForm.data.name" required>
-                    <label for="petBday">生日</label>
-                    <input type="date" id="petBday" v-model="modals.petForm.data.birthday">
-                    <label for="petSpecies">物种</label>
-                    <select id="petSpecies" v-model="modals.petForm.data.speciesId" required>
-                        <option disabled value="">请选择物种</option>
-                        <option v-for="s in dictionaries.species" :value="s.id" :key="s.id">{{ s.itemLabel }}</option>
-                    </select>
-                    <label for="petBreed">品种</label>
-                    <select id="petBreed" v-model="modals.petForm.data.breedId">
-                        <option value="">请选择品种 (可选)</option>
-                        <option v-for="b in filteredBreeds" :value="b.id" :key="b.id">{{ b.itemLabel }}</option>
-                    </select>
-                    <footer>
-                        <button type="button" class="secondary" @click="closeAllModals">取消</button>
-                        <button type="submit" :aria-busy="loading.form">保存</button>
-                    </footer>
-                </form>
-            </article>
+            <article :aria-busy="loading.form"><header><a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a><strong>{{ modals.petForm.isEdit ? '编辑宠物' : '创建新宠物' }}</strong></header><form @submit.prevent="handleSubmitPetForm"><label for="petName">名字</label><input type="text" id="petName" v-model="modals.petForm.data.name" required><label for="petBday">生日</label><input type="date" id="petBday" v-model="modals.petForm.data.birthday"><label for="petSpecies">物种</label><select id="petSpecies" v-model="modals.petForm.data.speciesId" required><option disabled value="">请选择物种</option><option v-for="s in dictionaries.species" :value="s.id" :key="s.id">{{ s.itemLabel }}</option></select><label for="petBreed">品种</label><select id="petBreed" v-model="modals.petForm.data.breedId"><option value="">请选择品种 (可选)</option><option v-for="b in filteredBreeds" :value="b.id" :key="b.id">{{ b.itemLabel }}</option></select><footer><button type="button" class="secondary" @click="closeAllModals">取消</button><button type="submit" :aria-busy="loading.form">保存</button></footer></form></article>
         </dialog>
 
         <dialog :open="modals.weightForm.show" @click.self="closeAllModals">
-            <article>
-                <header>
-                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
-                    <strong>添加体重记录</strong>
-                </header>
-                <form @submit.prevent="handleSubmitWeightForm">
-                    <label for="weightKg">体重 (kg)</label>
-                    <input type="number" step="0.01" id="weightKg" v-model="modals.weightForm.data.weightKg" required>
-                    <label for="weightDate">记录日期</label>
-                    <input type="date" id="weightDate" v-model="modals.weightForm.data.logDate" required>
-                    <label for="weightNotes">备注</label>
-                    <input type="text" id="weightNotes" v-model="modals.weightForm.data.notes" placeholder="可选">
-                    <footer>
-                        <button type="button" class="secondary" @click="closeAllModals">取消</button>
-                        <button type="submit" :aria-busy="loading.form">保存</button>
-                    </footer>
-                </form>
-            </article>
+            <article><header><a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a><strong>添加体重记录</strong></header><form @submit.prevent="handleSubmitWeightForm"><label for="weightKg">体重 (kg)</label><input type="number" step="0.01" id="weightKg" v-model="modals.weightForm.data.weightKg" required><label for="weightDate">记录日期</label><input type="date" id="weightDate" v-model="modals.weightForm.data.logDate" required><label for="weightNotes">备注</label><input type="text" id="weightNotes" v-model="modals.weightForm.data.notes" placeholder="可选"><footer><button type="button" class="secondary" @click="closeAllModals">取消</button><button type="submit" :aria-busy="loading.form">保存</button></footer></form></article>
         </dialog>
 
         <dialog :open="modals.healthEventForm.show" @click.self="closeAllModals">
-            <article>
-                <header>
-                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
-                    <strong>添加健康事件</strong>
-                </header>
-                <form @submit.prevent="handleSubmitHealthEventForm">
-                    <label for="eventType">事件类型</label>
-                    <select id="eventType" v-model="modals.healthEventForm.data.eventTypeId" required>
-                        <option disabled value="">请选择事件</option>
-                        <option v-for="e in dictionaries.healthEvents" :value="e.id" :key="e.id">{{ e.itemLabel }}</option>
-                    </select>
-                    <label for="eventDate">事件日期</label>
-                    <input type="date" id="eventDate" v-model="modals.healthEventForm.data.eventDate" required>
-                    <label for="eventNextDate">下次日期 (可选)</label>
-                    <input type="date" id="eventNextDate" v-model="modals.healthEventForm.data.nextDueDate">
-                    <label for="eventNotes">备注</label>
-                    <input type="text" id="eventNotes" v-model="modals.healthEventForm.data.notes" placeholder="例如: 疫苗品牌, 医院">
-                    <footer>
-                        <button type="button" class="secondary" @click="closeAllModals">取消</button>
-                        <button type="submit" :aria-busy="loading.form">保存</button>
-                    </footer>
-                </form>
-            </article>
+            <article><header><a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a><strong>添加健康事件</strong></header><form @submit.prevent="handleSubmitHealthEventForm"><label for="eventType">事件类型</label><select id="eventType" v-model="modals.healthEventForm.data.eventTypeId" required><option disabled value="">请选择事件</option><option v-for="e in dictionaries.healthEvents" :value="e.id" :key="e.id">{{ e.itemLabel }}</option></select><label for="eventDate">事件日期</label><input type="date" id="eventDate" v-model="modals.healthEventForm.data.eventDate" required><label for="eventNextDate">下次日期 (可选)</label><input type="date" id="eventNextDate" v-model="modals.healthEventForm.data.nextDueDate"><label for="eventNotes">备注</label><input type="text" id="eventNotes" v-model="modals.healthEventForm.data.notes" placeholder="例如: 疫苗品牌, 医院"><footer><button type="button" class="secondary" @click="closeAllModals">取消</button><button type="submit" :aria-busy="loading.form">保存</button></footer></form></article>
         </dialog>
 
         <dialog :open="modals.dictForm.show" @click.self="closeAllModals">
-            <article :aria-busy="loading.form">
-                <header>
-                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
-                    <strong>{{ modals.dictForm.isEdit ? '编辑字典项' : '创建新字典项' }}</strong>
-                </header>
-                <form @submit.prevent="handleSubmitDictForm">
-                    <label for="dictCode">字典编码 (Code)</label>
-                    <input type="text" id="dictCode" v-model="modals.dictForm.data.dictCode" required readonly>
-
-                    <label for="dictLabel">标签 (Label)</label>
-                    <input type="text" id="dictLabel" v-model="modals.dictForm.data.itemLabel" required placeholder="例如: 猫">
-
-                    <label for="dictValue">值 (Value)</label>
-                    <input type="text" id="dictValue" v-model="modals.dictForm.data.itemValue" required placeholder="例如: cat">
-
-                    <label for="dictParent">父级ID (可选)</label>
-                    <input type="number" id="dictParent" v-model="modals.dictForm.data.parentId" placeholder="用于品种关联物种">
-
-                    <label for="dictSort">排序</label>
-                    <input type="number" id="dictSort" v-model="modals.dictForm.data.sortOrder">
-
-                    <footer>
-                        <button type="button" class="secondary" @click="closeAllModals">取消</button>
-                        <button type="submit" :aria-busy="loading.form">保存</button>
-                        <button type="button" v-if="modals.dictForm.isEdit"
-                                @click="handleDeleteDictItem"
-                                class="outline contrast"
-                                :aria-busy="loading.form">
-                            删除
-                        </button>
-                    </footer>
-                </form>
-            </article>
+            <article :aria-busy="loading.form"><header><a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a><strong>{{ modals.dictForm.isEdit ? '编辑字典项' : '创建新字典项' }}</strong></header><form @submit.prevent="handleSubmitDictForm"><label for="dictCode">字典编码 (Code)</label><input type="text" id="dictCode" v-model="modals.dictForm.data.dictCode" required placeholder="例如: PET_SPECIES"><label for="dictLabel">标签 (Label)</label><input type="text" id="dictLabel" v-model="modals.dictForm.data.itemLabel" required placeholder="例如: 猫"><label for="dictValue">值 (Value)</label><input type="text" id="dictValue" v-model="modals.dictForm.data.itemValue" required placeholder="例如: cat"><label for="dictParent">父级ID (可选)</label><input type="number" id="dictParent" v-model="modals.dictForm.data.parentId" placeholder="用于品种关联物种"><label for="dictSort">排序</label><input type="number" id="dictSort" v-model="modals.dictForm.data.sortOrder"><footer><button type="button" class="secondary" @click="closeAllModals">取消</button><button type="submit" :aria-busy="loading.form">保存</button></footer></form></article>
         </dialog>
 
         <dialog :open="modals.auth.show" @click.self="closeAllModals">
@@ -293,6 +134,7 @@
                     <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
                     <strong>身份认证</strong>
                 </header>
+
                 <form @submit.prevent="login">
                     <label for="authPassword">请输入字典管理密码</label>
                     <input type="password" id="authPassword" v-model="auth.password" autofocus>
@@ -302,45 +144,10 @@
             </article>
         </dialog>
 
-        <dialog :open="modals.dictTypeForm.show" @click.self="closeAllModals">
-            <article :aria-busy="loading.form">
-                <header>
-                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
-                    <strong>{{ modals.dictTypeForm.isEdit ? '编辑字典类型' : '创建新字典类型' }}</strong>
-                </header>
-                <form @submit.prevent="handleSubmitDictTypeForm">
-                    <label for="dtCode">字典编码 (Code)</label>
-                    <input type="text" id="dtCode" v-model="modals.dictTypeForm.data.dictCode"
-                           :readonly="modals.dictTypeForm.isEdit" required placeholder="例如: PET_SPECIES">
-
-                    <label for="dtName">字典名称 (Name)</label>
-                    <input type="text" id="dtName" v-model="modals.dictTypeForm.data.dictName" required placeholder="例如: 宠物物种">
-
-                    <label for="dtParentCode">父级编码 (可选)</label>
-                    <input type="text" id="dtParentCode" v-model="modals.dictTypeForm.data.parentCode" placeholder="例如: PET_BASIC_INFO">
-
-                    <label for="dtNotes">备注 (可选)</label>
-                    <textarea id="dtNotes" v-model="modals.dictTypeForm.data.notes"></textarea>
-
-                    <footer>
-                        <button type="button" class="secondary" @click="closeAllModals">取消</button>
-                        <button type="submit" :aria-busy="loading.form">保存</button>
-                        <button type="button" v-if="modals.dictTypeForm.isEdit"
-                                @click="handleDeleteDictType"
-                                class="outline contrast"
-                                :aria-busy="loading.form">
-                            删除
-                        </button>
-                    </footer>
-                </form>
-            </article>
-        </dialog>
-
     </div> </div> <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-    // 从 Vue 中解构出我们需要的功能
     const { createApp, ref, onMounted, computed, watch } = Vue;
 
     // --- 默认表单数据 ---
@@ -348,39 +155,38 @@
     const defaultWeightForm = () => ({ weightKg: null, logDate: new Date().toISOString().split('T')[0], notes: '' });
     const defaultHealthForm = () => ({ eventTypeId: null, eventDate: new Date().toISOString().split('T')[0], nextDueDate: null, notes: '' });
     const defaultDictForm = () => ({ dictCode: '', itemValue: '', itemLabel: '', parentId: null, sortOrder: 0 });
-    const defaultDictTypeForm = () => ({ dictCode: '', dictName: '', parentCode: null, notes: '' });
 
     createApp({
         setup() {
-            // --- API 地址 (带本地切换开关) ---
-
-            // 1. 线上生产环境 API (Render)
+            // --- API 地址 ---
             const API_BASE_URL = 'https://pets-why3.onrender.com';
-
-            // 2. 本地测试环境 API (❗ 调试时注释掉上面一行, 并放开下面一行)
-            // const API_BASE_URL = 'http://localhost:8080';
-
-            // --------------------------------------------------------
 
             // --- 1. 响应式状态 (State) ---
 
-            const auth = ref({ isAuthenticated: false, password: '', error: '', loading: false });
-            const currentPage = ref('pets');
+            const auth = ref({
+                isAuthenticated: false,
+                password: '',
+                error: '',
+                loading: false
+            });
 
+            const currentPage = ref('pets'); // 'pets' 或 'dictionaries'
+
+            // 宠物
             const upcomingEvents = ref([]);
             const petList = ref([]);
             const pagination = ref({ current: 1, size: 10, total: 0 });
 
+            // 字典
             const dictionaries = ref({ species: [], breeds: [], healthEvents: [] });
-
-            const dictTypeList = ref([]);
-            const selectedDictCode = ref(null);
-            const dictItemList = ref([]);
+            const dictList = ref([]);
 
             const loading = ref({
-                list: false, detail: false, upcoming: false, form: false,
-                dictTypes: false,
-                dictItems: false
+                list: false,
+                detail: false,
+                upcoming: false,
+                form: false,
+                dictList: false
             });
 
             const modals = ref({
@@ -389,68 +195,63 @@
                 weightForm: { show: false, data: defaultWeightForm() },
                 healthEventForm: { show: false, data: defaultHealthForm() },
                 dictForm: { show: false, isEdit: false, data: defaultDictForm() },
-                auth: { show: false },
-                dictTypeForm: { show: false, isEdit: false, data: defaultDictTypeForm() }
+                auth: { show: false } // (新增) 认证模态框
             });
 
             // --- 2. 计算属性 (Computed) ---
-
-            const filteredBreeds = computed(() => {
+            const filteredBreeds = computed(() => { /* (V4 代码不变) */
                 const speciesId = modals.value.petForm.data.speciesId;
                 if (!speciesId) return [];
                 return dictionaries.value.breeds.filter(b => b.parentId === speciesId);
             });
 
-            const dictTypeTree = computed(() => {
-                const types = dictTypeList.value;
-                const parents = types.filter(t => !t.parentCode);
-                const children = types.filter(t => t.parentCode);
-
-                return parents.map(p => ({
-                    ...p,
-                    children: children.filter(c => c.parentCode === p.dictCode)
-                }));
-            });
-
             // --- 3. 方法 (Methods) ---
 
+            // (新增) 登录
             const login = () => {
-                auth.value.loading = true; auth.value.error = '';
+                auth.value.loading = true;
+                auth.value.error = '';
                 setTimeout(() => {
-                    // (❗ 关键修复) 密码从 125456 改为 123456
                     if (auth.value.password === '123456') {
-                        auth.value.isAuthenticated = true; modals.value.auth.show = false; currentPage.value = 'dictionaries';
+                        auth.value.isAuthenticated = true; // 标记为已认证
+                        modals.value.auth.show = false;      // 关闭密码框
+                        currentPage.value = 'dictionaries';  // 切换到字典页
                     } else {
                         auth.value.error = '密码错误';
                     }
-                    auth.value.loading = false; auth.value.password = '';
+                    auth.value.loading = false;
+                    auth.value.password = ''; // 无论成功失败都清空
                 }, 300);
             };
 
+            // (新增) 导航守卫
             const showDictionaryPage = () => {
                 if (auth.value.isAuthenticated) {
                     currentPage.value = 'dictionaries';
                 } else {
-                    auth.value.error = ''; auth.value.password = ''; modals.value.auth.show = true;
+                    // 如果未认证, 弹框
+                    auth.value.error = '';
+                    auth.value.password = '';
+                    modals.value.auth.show = true;
                 }
             };
 
-            // --- 数据获取 (❗ 完整恢复) ---
-            const fetchPetList = () => {
+            // --- 数据获取 (V4 代码不变) ---
+            const fetchPetList = () => { /* (V4 代码不变) */
                 loading.value.list = true;
                 axios.get(`${API_BASE_URL}/pets/page`, { params: { pageNum: pagination.value.current, pageSize: pagination.value.size } })
                     .then(res => { petList.value = res.data.records; pagination.value.total = res.data.total; })
                     .catch(err => alert('获取宠物列表失败: ' + err.message))
                     .finally(() => loading.value.list = false);
             };
-            const fetchUpcomingEvents = () => {
+            const fetchUpcomingEvents = () => { /* (V4 代码不变) */
                 loading.value.upcoming = true;
                 axios.get(`${API_BASE_URL}/health-events/upcoming`)
                     .then(res => upcomingEvents.value = res.data)
                     .catch(err => console.error('获取提醒失败:', err))
                     .finally(() => loading.value.upcoming = false);
             };
-            const fetchDictionaries = async () => {
+            const fetchDictionaries = async () => { /* (V4 代码不变) */
                 try {
                     const [speciesRes, breedsRes, eventsRes] = await Promise.all([
                         axios.get(`${API_BASE_URL}/dictItems/code/PET_SPECIES`),
@@ -464,234 +265,99 @@
                     alert('加载基础数据失败！请刷新页面。' + err.message);
                 }
             };
-            const fetchPetDetail = (petId) => {
+            const fetchPetDetail = (petId) => { /* (V4 代码不变) */
                 loading.value.detail = true;
                 axios.get(`${API_BASE_URL}/pets/detail/${petId}`)
                     .then(res => modals.value.detail.data = res.data)
                     .catch(err => { alert('获取宠物详情失败: ' + err.message); modals.value.detail.show = false; })
                     .finally(() => loading.value.detail = false);
             };
-
-            const fetchDictTypeList = () => {
-                loading.value.dictTypes = true;
-                axios.get(`${API_BASE_URL}/dictTypes`)
-                    .then(res => {
-                        dictTypeList.value = res.data;
-                    })
-                    .catch(err => alert('获取字典类型列表失败: ' + err.message))
-                    .finally(() => loading.value.dictTypes = false);
+            const fetchDictList = () => { /* (V4 代码不变) */
+                loading.value.dictList = true;
+                axios.get(`${API_BASE_URL}/dictItems/page`, { params: { pageNum: 1, pageSize: 200 } })
+                    .then(res => { dictList.value = res.data.records; })
+                    .catch(err => alert('获取字典列表失败: ' + err.message))
+                    .finally(() => loading.value.dictList = false);
             };
 
-            const fetchDictItemList = (dictCode) => {
-                if (!dictCode) {
-                    dictItemList.value = [];
-                    return;
-                }
-                loading.value.dictItems = true;
-                axios.get(`${API_BASE_URL}/dictItems/code/${dictCode}`)
-                    .then(res => {
-                        dictItemList.value = res.data;
-                    })
-                    .catch(err => alert(`获取字典项 [${dictCode}] 失败: ` + err.message))
-                    .finally(() => loading.value.dictItems = false);
-            };
-
-            const selectDictType = (type) => {
-                selectedDictCode.value = type.dictCode;
-                fetchDictItemList(type.dictCode);
-            };
-
-            // --- 模态框控制 (❗ 完整恢复) ---
+            // --- 模态框控制 (V4 代码不变, 只是多了 auth) ---
             const closeAllModals = () => {
                 modals.value.detail.show = false;
                 modals.value.petForm.show = false;
                 modals.value.weightForm.show = false;
                 modals.value.healthEventForm.show = false;
                 modals.value.dictForm.show = false;
-                modals.value.auth.show = false;
-                modals.value.dictTypeForm.show = false;
+                modals.value.auth.show = false; // (新增)
             };
             const handleShowDetail = (petId) => { closeAllModals(); modals.value.detail.petId = petId; modals.value.detail.data = null; modals.value.detail.show = true; fetchPetDetail(petId); };
             const handleCreatePet = () => { closeAllModals(); modals.value.petForm.data = defaultPetForm(); modals.value.petForm.isEdit = false; modals.value.petForm.show = true; };
             const handleEditPet = (pet) => { closeAllModals(); modals.value.petForm.data = { id: pet.id, name: pet.name, birthday: pet.birthday, speciesId: pet.speciesId, breedId: pet.breedId }; modals.value.petForm.isEdit = true; modals.value.petForm.show = true; };
             const handleShowWeightForm = () => { modals.value.weightForm.data = defaultWeightForm(); modals.value.weightForm.show = true; };
             const handleShowHealthEventForm = () => { modals.value.healthEventForm.data = defaultHealthForm(); modals.value.healthEventForm.show = true; };
+            const handleCreateDictItem = () => { closeAllModals(); modals.value.dictForm.data = defaultDictForm(); modals.value.dictForm.isEdit = false; modals.value.dictForm.show = true; };
+            const handleEditDictItem = (item) => { closeAllModals(); modals.value.dictForm.data = { ...item }; modals.value.dictForm.isEdit = true; modals.value.dictForm.show = true; };
 
-            const handleCreateDictItem = () => {
-                if (!selectedDictCode.value) {
-                    alert('请先从左侧选择一个字典类型');
-                    return;
-                }
-                closeAllModals();
-                modals.value.dictForm.data = {
-                    ...defaultDictForm(),
-                    dictCode: selectedDictCode.value
-                };
-                modals.value.dictForm.isEdit = false;
-                modals.value.dictForm.show = true;
-            };
-
-            const handleEditDictItem = (item) => {
-                closeAllModals();
-                modals.value.dictForm.data = { ...item };
-                modals.value.dictForm.isEdit = true;
-                modals.value.dictForm.show = true;
-            };
-
-            const handleCreateDictType = () => {
-                closeAllModals();
-                modals.value.dictTypeForm.data = defaultDictTypeForm();
-                modals.value.dictTypeForm.isEdit = false;
-                modals.value.dictTypeForm.show = true;
-            };
-            const handleEditDictType = (type) => {
-                closeAllModals();
-                const rawType = dictTypeList.value.find(t => t.dictCode === type.dictCode);
-                modals.value.dictTypeForm.data = { ...rawType };
-                modals.value.dictTypeForm.isEdit = true;
-                modals.value.dictTypeForm.show = true;
-            };
-
-            // --- 表单提交 (CRUD) (❗ 完整恢复) ---
-            const handleSubmitPetForm = () => {
-                loading.value.form = true;
-                const { isEdit, data } = modals.value.petForm;
-                const request = isEdit ? axios.put(`${API_BASE_URL}/pets/${data.id}`, data) : axios.post(`${API_BASE_URL}/pets`, data);
-                request.then(() => {
-                    closeAllModals();
-                    fetchPetList();
-                }).catch(err => alert('保存宠物失败: ' + err.message)).finally(() => loading.value.form = false);
-            };
-
-            const handleDeletePet = (petId, petName) => {
-                if (!confirm(`确定要删除 [${petName}] 吗？`)) return;
-                axios.delete(`${API_BASE_URL}/pets/${petId}`)
-                    .then(() => {
-                        fetchPetList();
-                    }).catch(err => alert('删除宠物失败: ' + err.message));
-            };
-
-            const handleSubmitWeightForm = () => {
-                loading.value.form = true;
-                const payload = { ...modals.value.weightForm.data, petId: modals.value.detail.petId };
-                axios.post(`${API_BASE_URL}/weight-logs`, payload)
-                    .then(() => {
-                        modals.value.weightForm.show = false;
-                        fetchPetDetail(modals.value.detail.petId);
-                    }).catch(err => alert('保存体重失败: ' + err.message)).finally(() => loading.value.form = false);
-            };
-
-            const handleSubmitHealthEventForm = () => {
-                loading.value.form = true;
-                const payload = { ...modals.value.healthEventForm.data, petId: modals.value.detail.petId };
-                axios.post(`${API_BASE_URL}/health-events`, payload)
-                    .then(() => {
-                        modals.value.healthEventForm.show = false;
-                        fetchPetDetail(modals.value.detail.petId);
-                        fetchUpcomingEvents();
-                    }).catch(err => alert('保存事件失败: ' + err.message)).finally(() => loading.value.form = false);
-            };
-
-            const handleSubmitDictForm = () => {
-                loading.value.form = true;
-                const { isEdit, data } = modals.value.dictForm;
-                const payload = { ...data, parentId: data.parentId || null };
-                const request = isEdit
-                    ? axios.put(`${API_BASE_URL}/dictItems/${data.id}`, payload)
-                    : axios.post(`${API_BASE_URL}/dictItems`, payload);
-
-                request.then((res) => {
-                    alert(res.data);
-                    closeAllModals();
-                    fetchDictItemList(selectedDictCode.value);
-                    fetchDictionaries();
-                })
-                    .catch(err => alert('保存字典项失败: ' + err.message))
-                    .finally(() => loading.value.form = false);
-            };
-
-            const handleDeleteDictItem = () => {
-                const { data } = modals.value.dictForm;
-                if (!confirm(`确定要删除字典项 [${data.itemLabel}] 吗？`)) return;
-
-                axios.delete(`${API_BASE_URL}/dictItems/${data.id}`)
-                    .then((res) => {
-                        alert(res.data);
-                        closeAllModals();
-                        fetchDictItemList(selectedDictCode.value);
-                        fetchDictionaries();
-                    })
-                    .catch(err => alert('删除字典项失败: ' + err.message));
-            };
-
-            const handleSubmitDictTypeForm = () => {
-                loading.value.form = true;
-                const { isEdit, data } = modals.value.dictTypeForm;
-                const payload = { ...data, parentCode: data.parentCode || null };
-
-                const request = isEdit
-                    ? axios.put(`${API_BASE_URL}/dictTypes/${data.dictCode}`, payload)
-                    : axios.post(`${API_BASE_URL}/dictTypes`, payload);
-
-                request.then((res) => {
-                    alert(res.data);
-                    closeAllModals();
-                    fetchDictTypeList();
-                })
-                    .catch(err => alert('保存字典类型失败: ' + err.message))
-                    .finally(() => loading.value.form = false);
-            };
-
-            const handleDeleteDictType = () => {
-                const { data } = modals.value.dictTypeForm;
-                if (!confirm(`(危险!) 确定要删除字典类型 [${data.dictName}] 吗？\n如果它下面还有字典项, 删除可能会失败。`)) return;
-
-                axios.delete(`${API_BASE_URL}/dictTypes/${data.dictCode}`)
-                    .then((res) => {
-                        alert(res.data);
-                        closeAllModals();
-                        fetchDictTypeList();
-                        if (selectedDictCode.value === data.dictCode) {
-                            selectedDictCode.value = null;
-                            dictItemList.value = [];
-                        }
-                    })
-                    .catch(err => alert('删除字典类型失败: ' + err.message));
-            };
+            // --- 表单提交 (CRUD) (V4 代码不变) ---
+            const handleSubmitPetForm = () => { /* (V4 代码不变) */ loading.value.form = true; const { isEdit, data } = modals.value.petForm; const request = isEdit ? axios.put(`${API_BASE_URL}/pets/${data.id}`, data) : axios.post(`${API_BASE_URL}/pets`, data); request.then(() => { closeAllModals(); fetchPetList(); }).catch(err => alert('保存宠物失败: ' + err.message)).finally(() => loading.value.form = false); };
+            const handleDeletePet = (petId, petName) => { /* (V4 代码不变) */ if (!confirm(`确定要删除 [${petName}] 吗？`)) return; axios.delete(`${API_BASE_URL}/pets/${petId}`).then(() => { fetchPetList(); }).catch(err => alert('删除宠物失败: ' + err.message)); };
+            const handleSubmitWeightForm = () => { /* (V4 代码不变) */ loading.value.form = true; const payload = { ...modals.value.weightForm.data, petId: modals.value.detail.petId }; axios.post(`${API_BASE_URL}/weight-logs`, payload).then(() => { modals.value.weightForm.show = false; fetchPetDetail(modals.value.detail.petId); }).catch(err => alert('保存体重失败: ' + err.message)).finally(() => loading.value.form = false); };
+            const handleSubmitHealthEventForm = () => { /* (V4 代码不变) */ loading.value.form = true; const payload = { ...modals.value.healthEventForm.data, petId: modals.value.detail.petId }; axios.post(`${API_BASE_URL}/health-events`, payload).then(() => { modals.value.healthEventForm.show = false; fetchPetDetail(modals.value.detail.petId); fetchUpcomingEvents(); }).catch(err => alert('保存事件失败: ' + err.message)).finally(() => loading.value.form = false); };
+            const handleSubmitDictForm = () => { /* (V4 代码不变) */ loading.value.form = true; const { isEdit, data } = modals.value.dictForm; const payload = { ...data, parentId: data.parentId || null }; const request = isEdit ? axios.put(`${API_BASE_URL}/dictItems/${data.id}`, payload) : axios.post(`${API_BASE_URL}/dictItems`, payload); request.then((res) => { alert(res.data); closeAllModals(); fetchDictList(); fetchDictionaries(); }).catch(err => alert('保存字典项失败: ' + err.message)).finally(() => loading.value.form = false); };
+            const handleDeleteDictItem = (item) => { /* (V4 代码不变) */ if (!confirm(`确定要删除 [${item.itemLabel}] 吗？`)) return; axios.delete(`${API_BASE_URL}/dictItems/${item.id}`).then((res) => { alert(res.data); fetchDictList(); fetchDictionaries(); }).catch(err => alert('删除字典项失败: ' + err.message)); };
 
             // --- 4. 生命周期 (Lifecycle) ---
 
+            // (修改) 立即加载宠物页所需数据
             onMounted(() => {
                 loading.value.upcoming = true;
                 loading.value.list = true;
+
                 fetchDictionaries().then(() => {
                     fetchPetList();
                     fetchUpcomingEvents();
                 });
             });
 
+            // (V4 代码不变) 监听页面切换, 懒加载字典列表
             watch(currentPage, (newPage) => {
-                if (newPage === 'dictionaries' && dictTypeList.value.length === 0) {
-                    fetchDictTypeList();
+                if (newPage === 'dictionaries' && dictList.value.length === 0) {
+                    fetchDictList();
                 }
             });
 
             // --- 5. 返回 (Return) ---
             return {
-                // 认证 & 页面
-                auth, login, currentPage, showDictionaryPage,
-                // 宠物
-                upcomingEvents, petList, loading, modals, filteredBreeds,
-                // 字典管理
-                dictTypeList, dictTypeTree, selectedDictCode, dictItemList, selectDictType,
-                // 宠物方法
-                handleShowDetail, handleCreatePet, handleEditPet, handleDeletePet,
-                handleSubmitPetForm, handleShowWeightForm, handleSubmitWeightForm,
-                handleShowHealthEventForm, handleSubmitHealthEventForm, closeAllModals,
-                // 字典项方法
-                handleCreateDictItem, handleEditDictItem, handleDeleteDictItem, handleSubmitDictForm,
-                // 字典类型方法
-                handleCreateDictType, handleEditDictType, handleSubmitDictTypeForm, handleDeleteDictType
+                // 认证
+                auth,
+                login,
+                // 页面
+                currentPage,
+                showDictionaryPage, // (新增)
+                // 状态
+                upcomingEvents,
+                petList,
+                dictionaries,
+                dictList,
+                loading,
+                modals,
+                // 计算属性
+                filteredBreeds,
+                // 方法
+                handleShowDetail,
+                handleCreatePet,
+                handleEditPet,
+                handleDeletePet,
+                handleSubmitPetForm,
+                handleShowWeightForm,
+                handleSubmitWeightForm,
+                handleShowHealthEventForm,
+                handleSubmitHealthEventForm,
+                closeAllModals,
+                // 字典 CRUD
+                handleCreateDictItem,
+                handleEditDictItem,
+                handleDeleteDictItem,
+                handleSubmitDictForm
             };
         }
     }).mount('#app');
