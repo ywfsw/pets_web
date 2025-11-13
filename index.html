@@ -1,199 +1,467 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-  
-  <title>宠物管家</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+
+    <title>宠物管家</title>
 </head>
 <body>
 
-  <div id="app" class="container">
+<div id="app" class="container" @click.self="closeAllModals">
 
     <header>
-      <nav>
-        <ul><li><strong>🐾 宠物管家</strong></li></ul>
-        <ul><li><a href="#">首页</a></li></ul>
-      </nav>
+        <nav>
+            <ul><li><strong>🐾 宠物管家</strong></li></ul>
+            <ul><li><a href="#">首页</a></li></ul>
+        </nav>
     </header>
 
     <hr>
 
     <main>
-      <article :aria-busy="loading.list">
-        <header>
-          <h3>我的宠物列表</h3>
-          </header>
-        
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">ID</th>
-              <th scope="col">名字</th>
-              <th scope="col">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="pet in petList" :key="pet.id">
-              <td>{{ pet.id }}</td>
-              <td><strong>{{ pet.name }}</strong></td>
-              <td>
-                <button @click="showPetDetail(pet.id)">
-                  查看详情
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
+        <article :aria-busy="loading.upcoming">
+            <header><h5>🔔 即将到期的事件</h5></header>
+            <ul v-if="upcomingEvents.length">
+                <li v-for="event in upcomingEvents" :key="event.id">
+                    <strong>{{ event.nextDueDate }}</strong> -
+                    宠物ID {{ event.petId }} 需要: {{ event.notes || '执行事件' }}
+                </li>
+            </ul>
+            <p v-else><i>太好了, 7天内没有需要提醒的事件。</i></p>
         </article>
 
-      <dialog :open="modal.show">
-        <article :aria-busy="loading.detail">
-          <header>
-            <a href="#" 
-               aria-label="Close" 
-               class="close"
-               @click.prevent="closeModal">
-            </a>
-            <strong>{{ modal.data ? modal.data.name : '加载中...' }}</strong>
-          </header>
-          
-          <div v-if="modal.data">
-            <ul>
-              <li><strong>物种:</strong> {{ modal.data.speciesLabel }}</li>
-              <li><strong>品种:</strong> {{ modal.data.breedLabel }}</li>
-            </ul>
+        <br>
 
-            <hr>
-            
-            <h4>近期体重</h4>
-            <ul v-if="modal.data.weightLogs && modal.data.weightLogs.length">
-              <li v-for="log in modal.data.weightLogs" :key="log.id">
-                {{ log.logDate }}: {{ log.weightKg }} kg
-              </li>
-            </ul>
-            <p v-else><i>暂无体重记录</i></p>
+        <article :aria-busy="loading.list">
+            <header>
+                <h3>我的宠物</h3>
+                <button @click="handleCreatePet">添加新宠物</button>
+            </header>
 
-            <h4>健康事件</h4>
-            <ul v-if="modal.data.healthEvents && modal.data.healthEvents.length">
-              <li v-for="event in modal.data.healthEvents" :key="event.id">
-                {{ event.eventDate }}: {{ event.notes || '执行了事件' }}
-                (下次: {{ event.nextDueDate || 'N/A' }})
-              </li>
-            </ul>
-            <p v-else><i>暂无健康事件</i></p>
+            <table>
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">名字</th>
+                    <th scope="col">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="pet in petList" :key="pet.id">
+                    <td>{{ pet.id }}</td>
+                    <td><strong>{{ pet.name }}</strong></td>
+                    <td>
+                        <div class="grid" style="--pico-grid-spacing: 0.5rem;">
+                            <button @click="handleShowDetail(pet.id)">查看</button>
+                            <button class="secondary" @click="handleEditPet(pet)">编辑</button>
+                            <button class="outline secondary" @click="handleDeletePet(pet.id, pet.name)">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
 
-          </div>
-          
-          <footer>
-            <button @click="closeModal">关闭</button>
-          </footer>
         </article>
-      </dialog>
+
+        <dialog :open="modals.detail.show" @click.self="closeAllModals">
+            <article :aria-busy="loading.detail">
+                <header>
+                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
+                    <strong>{{ modals.detail.data ? modals.detail.data.name : '加载中...' }}</strong>
+                </header>
+
+                <div v-if="modals.detail.data">
+                    <ul>
+                        <li><strong>物种:</strong> {{ modals.detail.data.speciesLabel }}</li>
+                        <li><strong>品种:</strong> {{ modals.detail.data.breedLabel }}</li>
+                    </ul>
+                    <hr>
+                    <h4>近期体重</h4>
+                    <ul v-if="modals.detail.data.weightLogs && modals.detail.data.weightLogs.length">
+                        <li v-for="log in modals.detail.data.weightLogs" :key="log.id">
+                            {{ log.logDate }}: {{ log.weightKg }} kg
+                        </li>
+                    </ul>
+                    <p v-else><i>暂无体重记录</i></p>
+                    <hr>
+                    <h4>健康事件</h4>
+                    <ul v-if="modals.detail.data.healthEvents && modals.detail.data.healthEvents.length">
+                        <li v-for="event in modals.detail.data.healthEvents" :key="event.id">
+                            {{ event.eventDate }}: {{ event.notes || '执行了事件' }}
+                            (下次: {{ event.nextDueDate || 'N/A' }})
+                        </li>
+                    </ul>
+                    <p v-else><i>暂无健康事件</i></p>
+                </div>
+
+                <footer class="grid">
+                    <button class="outline" @click="handleShowWeightForm">添加体重</button>
+                    <button class="outline" @click="handleShowHealthEventForm">添加事件</button>
+                    <button class="secondary" @click="closeAllModals">关闭</button>
+                </footer>
+            </article>
+        </dialog>
+
+        <dialog :open="modals.petForm.show" @click.self="closeAllModals">
+            <article :aria-busy="loading.form">
+                <header>
+                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
+                    <strong>{{ modals.petForm.isEdit ? '编辑宠物' : '创建新宠物' }}</strong>
+                </header>
+
+                <form @submit.prevent="handleSubmitPetForm">
+                    <label for="petName">名字</label>
+                    <input type="text" id="petName" v-model="modals.petForm.data.name" required>
+
+                    <label for="petBday">生日</label>
+                    <input type="date" id="petBday" v-model="modals.petForm.data.birthday">
+
+                    <label for="petSpecies">物种</label>
+                    <select id="petSpecies" v-model="modals.petForm.data.speciesId" required>
+                        <option disabled value="">请选择物种</option>
+                        <option v-for="s in dictionaries.species" :value="s.id" :key="s.id">
+                            {{ s.itemLabel }}
+                        </option>
+                    </select>
+
+                    <label for="petBreed">品种</label>
+                    <select id="petBreed" v-model="modals.petForm.data.breedId">
+                        <option value="">请选择品种 (可选)</option>
+                        <option v-for="b in filteredBreeds" :value="b.id" :key="b.id">
+                            {{ b.itemLabel }}
+                        </option>
+                    </select>
+
+                    <footer>
+                        <button type="button" class="secondary" @click="closeAllModals">取消</button>
+                        <button type="submit" :aria-busy="loading.form">保存</button>
+                    </footer>
+                </form>
+            </article>
+        </dialog>
+
+        <dialog :open="modals.weightForm.show" @click.self="closeAllModals">
+            <article>
+                <header>
+                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
+                    <strong>添加体重记录</strong>
+                </header>
+                <form @submit.prevent="handleSubmitWeightForm">
+                    <label for="weightKg">体重 (kg)</label>
+                    <input type="number" step="0.01" id="weightKg" v-model="modals.weightForm.data.weightKg" required>
+
+                    <label for="weightDate">记录日期</label>
+                    <input type="date" id="weightDate" v-model="modals.weightForm.data.logDate" required>
+
+                    <label for="weightNotes">备注</label>
+                    <input type="text" id="weightNotes" v-model="modals.weightForm.data.notes" placeholder="可选">
+
+                    <footer>
+                        <button type="button" class="secondary" @click="closeAllModals">取消</button>
+                        <button type="submit" :aria-busy="loading.form">保存</button>
+                    </footer>
+                </form>
+            </article>
+        </dialog>
+
+        <dialog :open="modals.healthEventForm.show" @click.self="closeAllModals">
+            <article>
+                <header>
+                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
+                    <strong>添加健康事件</strong>
+                </header>
+                <form @submit.prevent="handleSubmitHealthEventForm">
+                    <label for="eventType">事件类型</label>
+                    <select id="eventType" v-model="modals.healthEventForm.data.eventTypeId" required>
+                        <option disabled value="">请选择事件</option>
+                        <option v-for="e in dictionaries.healthEvents" :value="e.id" :key="e.id">
+                            {{ e.itemLabel }}
+                        </option>
+                    </select>
+
+                    <label for="eventDate">事件日期</label>
+                    <input type="date" id="eventDate" v-model="modals.healthEventForm.data.eventDate" required>
+
+                    <label for="eventNextDate">下次日期 (可选)</label>
+                    <input type="date" id="eventNextDate" v-model="modals.healthEventForm.data.nextDueDate">
+
+                    <label for="eventNotes">备注</label>
+                    <input type="text" id="eventNotes" v-model="modals.healthEventForm.data.notes" placeholder="例如: 疫苗品牌, 医院">
+
+                    <footer>
+                        <button type="button" class="secondary" @click="closeAllModals">取消</button>
+                        <button type="submit" :aria-busy="loading.form">保存</button>
+                    </footer>
+                </form>
+            </article>
+        </dialog>
 
     </main>
+</div> <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-  </div> <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    // 从 Vue 中解构出我们需要的功能
+    const { createApp, ref, onMounted, computed } = Vue;
 
-  <script>
-    const { createApp, ref, onMounted } = Vue;
+    // 默认表单数据 (用于重置)
+    const defaultPetForm = () => ({ name: '', birthday: '', speciesId: null, breedId: null });
+    const defaultWeightForm = () => ({
+        weightKg: null,
+        logDate: new Date().toISOString().split('T')[0], // 默认为今天
+        notes: ''
+    });
+    const defaultHealthForm = () => ({
+        eventTypeId: null,
+        eventDate: new Date().toISOString().split('T')[0], // 默认为今天
+        nextDueDate: null,
+        notes: ''
+    });
 
+    // 创建 Vue 应用
     createApp({
-      setup() {
-        // --- 你的后端 API 地址 ---
-        // ❗❗❗ 确保你已经在 Spring Boot 上设置了 @CrossOrigin("*") ❗❗❗
-        const API_BASE_URL = 'https://pets-why3.onrender.com';
+        setup() {
+            // --- 你的后端 API 地址 ---
+            // ❗❗❗ 确保你已经在 Spring Boot 上设置了 @CrossOrigin("*") ❗❗❗
+            const API_BASE_URL = 'https://pets-why3.onrender.com';
 
-        // --- 1. 响应式状态 (State) ---
-        
-        // 宠物列表
-        const petList = ref([]); 
-        const pagination = ref({ current: 1, size: 10, total: 0 });
-        
-        // 模态框 (Modal)
-        const modal = ref({
-          show: false,
-          data: null // 存储 /pets/detail/{id} 返回的数据
-        });
+            // --- 1. 响应式状态 (State) ---
 
-        // 加载状态
-        const loading = ref({
-          list: false,
-          detail: false
-        });
+            const upcomingEvents = ref([]);
+            const petList = ref([]);
+            const pagination = ref({ current: 1, size: 10, total: 0 });
 
-        // --- 2. 方法 (Methods) ---
-
-        // (方法 A) 获取宠物列表
-        const fetchPetList = () => {
-          loading.value.list = true;
-          axios.get(`${API_BASE_URL}/pets/page`, {
-            params: {
-              pageNum: pagination.value.current,
-              pageSize: pagination.value.size
-            }
-          })
-          .then(response => {
-            petList.value = response.data.records;
-            pagination.value.total = response.data.total;
-          })
-          .catch(error => {
-            console.error('获取宠物列表失败:', error);
-            alert('获取宠物列表失败');
-          })
-          .finally(() => {
-            loading.value.list = false;
-          });
-        };
-
-        // (方法 B) 获取宠物详情, 并打开模态框
-        const showPetDetail = (petId) => {
-          modal.value.show = true;    // 立即打开模态框
-          loading.value.detail = true; // 显示加载中
-          modal.value.data = null;     // 清空旧数据
-
-          axios.get(`${API_BASE_URL}/pets/detail/${petId}`)
-            .then(response => {
-              modal.value.data = response.data;
-            })
-            .catch(error => {
-              console.error('获取宠物详情失败:', error);
-              alert('获取宠物详情失败');
-              modal.value.show = false; // 加载失败, 关闭模态框
-            })
-            .finally(() => {
-              loading.value.detail = false;
+            // 所有字典
+            const dictionaries = ref({
+                species: [],
+                breeds: [],
+                healthEvents: []
             });
-        };
 
-        // (方法 C) 关闭模态框
-        const closeModal = () => {
-          modal.value.show = false;
-        };
+            // 加载状态
+            const loading = ref({
+                list: false,
+                detail: false,
+                upcoming: false,
+                form: false // 用于所有表单的通用加载
+            });
 
-        // --- 3. 生命周期 (Lifecycle) ---
-        
-        // 当页面 (Vue 实例) 加载完成后, 自动运行
-        onMounted(() => {
-          fetchPetList();
-        });
+            // 模态框状态
+            const modals = ref({
+                detail: { show: false, data: null, petId: null },
+                petForm: { show: false, isEdit: false, data: defaultPetForm() },
+                weightForm: { show: false, data: defaultWeightForm() },
+                healthEventForm: { show: false, data: defaultHealthForm() }
+            });
 
-        // --- 4. 返回 (Return) ---
-        // 必须返回, 这样 HTML 才能使用它们
-        return {
-          petList,
-          loading,
-          modal,
-          showPetDetail,
-          closeModal
-        };
-      }
+            // --- 2. 计算属性 (Computed) ---
+
+            // 动态过滤品种: 仅显示所选物种的品种
+            const filteredBreeds = computed(() => {
+                const speciesId = modals.value.petForm.data.speciesId;
+                if (!speciesId) {
+                    return [];
+                }
+                return dictionaries.value.breeds.filter(b => b.parentId === speciesId);
+            });
+
+            // --- 3. 方法 (Methods) ---
+
+            // --- 数据获取 ---
+            const fetchPetList = () => {
+                loading.value.list = true;
+                axios.get(`${API_BASE_URL}/pets/page`, {
+                    params: { pageNum: pagination.value.current, pageSize: pagination.value.size }
+                })
+                    .then(res => {
+                        petList.value = res.data.records;
+                        pagination.value.total = res.data.total;
+                    })
+                    .catch(err => alert('获取宠物列表失败: ' + err.message))
+                    .finally(() => loading.value.list = false);
+            };
+
+            const fetchUpcomingEvents = () => {
+                loading.value.upcoming = true;
+                axios.get(`${API_BASE_URL}/health-events/upcoming`)
+                    .then(res => upcomingEvents.value = res.data)
+                    .catch(err => console.error('获取提醒失败:', err))
+                    .finally(() => loading.value.upcoming = false);
+            };
+
+            const fetchDictionaries = async () => {
+                try {
+                    // 使用 Promise.all 并行加载所有字典
+                    const [speciesRes, breedsRes, eventsRes] = await Promise.all([
+                        axios.get(`${API_BASE_URL}/dictItems/code/PET_SPECIES`),
+                        axios.get(`${API_BASE_URL}/dictItems/code/PET_BREED`),
+                        axios.get(`${API_BASE_URL}/dictItems/code/HEALTH_EVENT_TYPE`)
+                    ]);
+                    dictionaries.value.species = speciesRes.data;
+                    dictionaries.value.breeds = breedsRes.data;
+                    dictionaries.value.healthEvents = eventsRes.data;
+                } catch (err) {
+                    alert('加载基础数据失败！请刷新页面。' + err.message);
+                }
+            };
+
+            const fetchPetDetail = (petId) => {
+                loading.value.detail = true;
+                axios.get(`${API_BASE_URL}/pets/detail/${petId}`)
+                    .then(res => modals.value.detail.data = res.data)
+                    .catch(err => {
+                        alert('获取宠物详情失败: ' + err.message);
+                        modals.value.detail.show = false;
+                    })
+                    .finally(() => loading.value.detail = false);
+            };
+
+            // --- 模态框控制 ---
+            const closeAllModals = () => {
+                modals.value.detail.show = false;
+                modals.value.petForm.show = false;
+                modals.value.weightForm.show = false;
+                modals.value.healthEventForm.show = false;
+            };
+
+            const handleShowDetail = (petId) => {
+                closeAllModals();
+                modals.value.detail.petId = petId; // 存储当前 petId
+                modals.value.detail.data = null; // 清空旧数据
+                modals.value.detail.show = true;
+                fetchPetDetail(petId);
+            };
+
+            const handleCreatePet = () => {
+                closeAllModals();
+                modals.value.petForm.data = defaultPetForm();
+                modals.value.petForm.isEdit = false;
+                modals.value.petForm.show = true;
+            };
+
+            const handleEditPet = (pet) => {
+                closeAllModals();
+                // 复制数据到表单
+                modals.value.petForm.data = {
+                    id: pet.id,
+                    name: pet.name,
+                    birthday: pet.birthday,
+                    speciesId: pet.speciesId,
+                    breedId: pet.breedId
+                };
+                modals.value.petForm.isEdit = true;
+                modals.value.petForm.show = true;
+            };
+
+            const handleShowWeightForm = () => {
+                // petId 已经存在于 detail modal 中
+                modals.value.weightForm.data = defaultWeightForm();
+                modals.value.weightForm.show = true;
+            };
+
+            const handleShowHealthEventForm = () => {
+                modals.value.healthEventForm.data = defaultHealthForm();
+                modals.value.healthEventForm.show = true;
+            };
+
+            // --- 表单提交 (CRUD) ---
+            const handleSubmitPetForm = () => {
+                loading.value.form = true;
+                const { isEdit, data } = modals.value.petForm;
+                const request = isEdit
+                    ? axios.put(`${API_BASE_URL}/pets/${data.id}`, data)
+                    : axios.post(`${API_BASE_URL}/pets`, data);
+
+                request.then(() => {
+                    closeAllModals();
+                    fetchPetList(); // 刷新列表
+                })
+                    .catch(err => alert('保存宠物失败: ' + err.message))
+                    .finally(() => loading.value.form = false);
+            };
+
+            const handleDeletePet = (petId, petName) => {
+                if (!confirm(`确定要删除 [${petName}] 吗？这个操作不可逆。`)) {
+                    return;
+                }
+                axios.delete(`${API_BASE_URL}/pets/${petId}`)
+                    .then(() => {
+                        fetchPetList(); // 刷新列表
+                    })
+                    .catch(err => alert('删除宠物失败: ' + err.message));
+            };
+
+            const handleSubmitWeightForm = () => {
+                loading.value.form = true;
+                const payload = {
+                    ...modals.value.weightForm.data,
+                    petId: modals.value.detail.petId // 附加上 petId
+                };
+
+                axios.post(`${API_BASE_URL}/weight-logs`, payload)
+                    .then(() => {
+                        modals.value.weightForm.show = false; // 只关闭小模态框
+                        fetchPetDetail(modals.value.detail.petId); // 刷新详情
+                    })
+                    .catch(err => alert('保存体重失败: ' + err.message))
+                    .finally(() => loading.value.form = false);
+            };
+
+            const handleSubmitHealthEventForm = () => {
+                loading.value.form = true;
+                const payload = {
+                    ...modals.value.healthEventForm.data,
+                    petId: modals.value.detail.petId // 附加上 petId
+                };
+
+                axios.post(`${API_BASE_URL}/health-events`, payload)
+                    .then(() => {
+                        modals.value.healthEventForm.show = false; // 只关闭小模态框
+                        fetchPetDetail(modals.value.detail.petId); // 刷新详情
+                        fetchUpcomingEvents(); // 刷新首页提醒
+                    })
+                    .catch(err => alert('保存事件失败: ' + err.message))
+                    .finally(() => loading.value.form = false);
+            };
+
+            // --- 4. 生命周期 (Lifecycle) ---
+
+            // 页面加载时, 自动运行
+            onMounted(async () => {
+                // 并行获取初始数据
+                await fetchDictionaries(); // 必须先加载字典
+                fetchPetList();
+                fetchUpcomingEvents();
+            });
+
+            // --- 5. 返回 (Return) ---
+            return {
+                // 状态
+                upcomingEvents,
+                petList,
+                dictionaries,
+                loading,
+                modals,
+                // 计算属性
+                filteredBreeds,
+                // 方法
+                handleShowDetail,
+                handleCreatePet,
+                handleEditPet,
+                handleDeletePet,
+                handleSubmitPetForm,
+                handleShowWeightForm,
+                handleSubmitWeightForm,
+                handleShowHealthEventForm,
+                handleSubmitHealthEventForm,
+                closeAllModals,
+            };
+        }
     }).mount('#app'); // 挂载到 <div id="app">
-  </script>
+</script>
 
 </body>
 </html>
