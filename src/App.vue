@@ -1,61 +1,44 @@
 <script setup>
-// (❗) 新增: 导入 watch (侦听器)
 import { ref, onMounted, watch } from 'vue';
 
-// (❗) 导入所有 Store
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { usePetStore } from '@/stores/petStore.js';
-import { useAuthStore } from '@/stores/authStore.js'; // (❗ 新增)
+import { useAuthStore } from '@/stores/authStore.js';
 
-// (❗) 导入所有“视图”和“组件”
 import PetManagement from '@/views/PetManagement.vue';
-import DictionaryManagement from '@/views/DictionaryManagement.vue';
-import AuthModal from '@/components/AuthModal.vue'; // (❗ 新增)
+import AdminPage from '@/views/AdminPage.vue';
 
+import AuthModal from '@/components/AuthModal.vue';
+import PetDetailModal from '@/components/PetDetailModal.vue';
+import PetFormModal from '@/components/PetFormModal.vue';
 
-// (逻辑区)
 const currentPage = ref('pets');
 
-// (❗) 实例化所有 Store
 const dictStore = useDictionaryStore();
 const petStore = usePetStore();
-const authStore = useAuthStore(); // (❗ 新增)
+const authStore = useAuthStore();
 
-// (❗ 新增) 认证模态框的本地状态
 const isAuthModalVisible = ref(false);
 
-
-/**
- * (❗ 升级) 点击“字典管理”
- */
-const showDictionaryPage = () => {
-  // (❗) 1. 检查 Store
+const showAdminPage = () => {
   if (authStore.isAuthenticated) {
-    currentPage.value = 'dictionaries';
+    currentPage.value = 'admin';
   } else {
-    // (❗) 2. 否则, 打开模态框
-    authStore.error = null; // (清空旧错误)
+    authStore.error = null;
     isAuthModalVisible.value = true;
   }
 };
 
-/**
- * (❗ 关键) 侦听 store 中的 isAuthenticated 状态
- */
 watch(
-  () => authStore.isAuthenticated, // (侦听这个值)
+  () => authStore.isAuthenticated,
   (isNowAuthenticated) => {
     if (isNowAuthenticated) {
-      // (❗) 如果刚变为 true (登录成功)
-      isAuthModalVisible.value = false; // 1. 关闭模态框
-      currentPage.value = 'dictionaries'; // 2. 切换页面
+      isAuthModalVisible.value = false;
+      currentPage.value = 'admin';
     }
   }
 );
 
-/**
- * (❗) App 启动时, 加载所有必要数据
- */
 onMounted(() => {
   dictStore.loadAllAppDictionaries();
   petStore.loadPetList();
@@ -80,9 +63,9 @@ onMounted(() => {
           </li>
           <li>
             <a href="#"
-               :class="{ 'secondary': currentPage !== 'dictionaries' }"
-               @click.prevent="showDictionaryPage">
-              字典管理
+               :class="{ 'secondary': currentPage !== 'admin' }"
+               @click.prevent="showAdminPage">
+              后台管理
             </a>
           </li>
         </ul>
@@ -93,7 +76,7 @@ onMounted(() => {
 
     <main>
       <PetManagement v-if="currentPage === 'pets'" />
-      <DictionaryManagement v-if="currentPage === 'dictionaries'" />
+      <AdminPage v-if="currentPage === 'admin'" />
     </main>
 
     <AuthModal
@@ -101,11 +84,14 @@ onMounted(() => {
       @close="isAuthModalVisible = false"
     />
 
+    <PetDetailModal />
+    <PetFormModal />
+
   </div>
 </template>
 
-<style scoped>
-/* (CSS 区... 保持不变) */
+<style>
+/* (O_1171 修复) 全局样式 */
 .container {
   max-width: 1100px;
   margin: 0 auto;
