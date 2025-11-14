@@ -258,22 +258,36 @@
         </dialog>
 
         <dialog :open="modals.dictItemForm.show" @click.self="closeAllModals">
-            <article :aria-busy="loading.form">
-                <header>
-                    <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
-                    <strong>{{ modals.dictItemForm.isEdit ? '编辑字典项' : '创建新字典项' }}</strong>
-                </header>
+            <article :aria-busy="loading.form || loading.dictParentOptions"> <header>
+                <a href="#" aria-label="Close" class="close" @click.prevent="closeAllModals"></a>
+                <strong>{{ modals.dictItemForm.isEdit ? '编辑字典项' : '创建新字典项' }}</strong>
+            </header>
                 <form @submit.prevent="handleSubmitDictItemForm">
                     <label for="dictCode">字典编码 (Code)</label>
-                    <input type="text" id="dictCode" v-model="modals.dictItemForm.data.dictCode" required readonly>
+                    <input type="text" id="dictCode" v-model="modals.dictItemForm.data.dictCode" required readonly disabled>
+
                     <label for="dictLabel">标签 (Label)</label>
-                    <input type="text" id="dictLabel" v-model="modals.dictItemForm.data.itemLabel" required placeholder="例如: 猫">
+                    <input type="text" id="dictLabel" v-model="modals.dictItemForm.data.itemLabel" required>
+
                     <label for="dictValue">值 (Value)</label>
-                    <input type="text" id="dictValue" v-model="modals.dictItemForm.data.itemValue" required placeholder="例如: cat">
+                    <input type="text" id="dictValue" v-model="modals.dictItemForm.data.itemValue" required>
+
                     <label for="dictParent">父级ID (可选)</label>
-                    <input type="number" id="dictParent" v-model="modals.dictItemForm.data.parentId" placeholder="用于品种关联物种">
+                    <select id="dictParent"
+                            v-model="modals.dictItemForm.data.parentId"
+                            :aria-busy="loading.dictParentOptions"
+                            :disabled="loading.dictParentOptions || dictParentOptions.length === 0">
+
+                        <option :value="null">(无父级/不关联)</option>
+
+                        <option v-for="opt in dictParentOptions" :value="opt.id" :key="opt.id">
+                            {{ opt.label }} (ID: {{ opt.id }})
+                        </option>
+                    </select>
+
                     <label for="dictSort">排序</label>
                     <input type="number" id="dictSort" v-model="modals.dictItemForm.data.sortOrder">
+
                     <footer>
                         <button type="button" class="secondary" @click="closeAllModals">取消</button>
                         <button type="submit" :aria-busy="loading.form">保存</button>
@@ -281,7 +295,6 @@
                 </form>
             </article>
         </dialog>
-
         <dialog :open="modals.auth.show" @click.self="closeAllModals">
             <article style="max-width: 400px;">
                 <header>
@@ -308,39 +321,26 @@
     const defaultPetForm = () => ({ name: '', birthday: '', speciesId: null, breedId: null });
     const defaultWeightForm = () => ({ petId: null, weightKg: null, logDate: new Date().toISOString().split('T')[0], notes: '' });
     const defaultHealthForm = () => ({ petId: null, eventTypeId: null, eventDate: new Date().toISOString().split('T')[0], nextDueDate: null, notes: '' });
+    // (❗) 确认 parentId: null, 匹配 <option :value="null">
     const defaultDictItemForm = () => ({ dictCode: '', itemValue: '', itemLabel: '', parentId: null, sortOrder: 0 });
-    // (❗ 移除了 defaultDictTypeForm)
 
     // 错误捕获
     const setupError = ref(null);
 
-        createApp({
+    createApp({
         setup() {
-        try {
-        // --- (❗ 关键更新) 全自动环境配置 ---
-
-        const hostname = window.location.hostname;
-
-        // 检查是否在本地环境
-        // (localhost, 127.0.0.1, 0.0.0.0 都是本地)
-        // (hostname === '' 是当你直接打开 file:///... 文件时)
-        const isLocal = (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0' || hostname === '');
-
-        let API_BASE_URL;
-
-        if (isLocal) {
-        // 本地开发: 自动指向您的 Spring Boot
-        API_BASE_URL = 'http://localhost:8080';
-    } else {
-        // 生产环境: 自动指向您的 Render 后端
-        // (hostname 会是 'pets-web-....onrender.com' 之类的)
-        API_BASE_URL = 'https://pets-why3.onrender.com';
-    }
-
-        // (推荐) 在F12控制台打印出当前使用的是哪个环境
-        console.log(`[Config] 当前环境: ${isLocal ? '本地' : '生产'}, API URL: ${API_BASE_URL}`);
-
-        // --------------------------------------------------------
+            try {
+                // --- (❗) 全自动环境配置 (保持不变) ---
+                const hostname = window.location.hostname;
+                const isLocal = (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0' || hostname === '');
+                let API_BASE_URL;
+                if (isLocal) {
+                    API_BASE_URL = 'http://localhost:8080';
+                } else {
+                    API_BASE_URL = 'https://pets-why3.onrender.com';
+                }
+                console.log(`[Config] 当前环境: ${isLocal ? '本地' : '生产'}, API URL: ${API_BASE_URL}`);
+                // --------------------------------------------------------
 
                 // --- 1. 响应式状态 (State) ---
                 const auth = ref({ isAuthenticated: false, password: '', error: '', loading: false });
@@ -350,16 +350,21 @@
                 const pagination = ref({ current: 1, size: 10, total: 0 });
                 const dictionaries = ref({ species: [], breeds: [], healthEvents: [] });
                 const dictTypeList = ref([]);
-                const selectedDictCode = ref(null);
-                const dictItemList = ref([]);
 
+                // (❗ 关键修改)
+                const selectedDictCode = ref(null);
+                const selectedDictType = ref(null); // (❗ 新增) 存储完整的字典类型对象
+                const dictItemList = ref([]);
+                const dictParentOptions = ref([]); // (❗ 新增) 存储父级ID下拉框选项
+
+                // (❗ 关键修改)
                 const loading = ref({
                     list: false, detail: false, upcoming: false, form: false,
                     dictTypes: false,
-                    dictItems: false
+                    dictItems: false,
+                    dictParentOptions: false // (❗ 新增) 父级选项的加载状态
                 });
 
-                // (❗ 移除了 modals.dictTypeForm)
                 const modals = ref({
                     detail: { show: false, data: null, petId: null },
                     petForm: { show: false, isEdit: false, data: defaultPetForm() },
@@ -388,7 +393,7 @@
 
                 // --- 3. 方法 (Methods) ---
 
-                // 认证
+                // (省略) 认证...
                 const login = () => {
                     auth.value.loading = true; auth.value.error = '';
                     setTimeout(() => {
@@ -400,7 +405,6 @@
                         auth.value.loading = false; auth.value.password = '';
                     }, 300);
                 };
-
                 const showDictionaryPage = () => {
                     if (auth.value.isAuthenticated) {
                         currentPage.value = 'dictionaries';
@@ -411,7 +415,7 @@
 
                 // --- 数据获取 (Fetchers) ---
 
-                // (❗ 恢复 V10 完整的函数体)
+                // (省略) 宠物相关的 fetchers...
                 const fetchPetList = () => {
                     loading.value.list = true;
                     axios.get(`${API_BASE_URL}/pets/page`, { params: { pageNum: pagination.value.current, pageSize: pagination.value.size } })
@@ -447,6 +451,8 @@
                         .catch(err => { alert('获取宠物详情失败: ' + err.message); modals.value.detail.show = false; })
                         .finally(() => loading.value.detail = false);
                 };
+
+                // (省略) 字典类型/项 列表的 fetchers...
                 const fetchDictTypeList = () => {
                     loading.value.dictTypes = true;
                     axios.get(`${API_BASE_URL}/dictTypes`)
@@ -470,15 +476,44 @@
                         .finally(() => loading.value.dictItems = false);
                 };
 
+                // (❗❗❗ 新增) 获取字典项的父级下拉框选项
+                const fetchDictParentOptions = async (parentDictCode) => {
+                    loading.value.dictParentOptions = true;
+                    dictParentOptions.value = []; // 先清空
+
+                    // (❗) 校验: 如果 parentCode 为 null (根类型), 直接返回空列表
+                    // 对应后端的 (StringUtils.isBlank(dictCode))
+                    if (!parentDictCode) {
+                        loading.value.dictParentOptions = false;
+                        return; // (e.g., 物种 PET_SPECIES, 它没有父级)
+                    }
+
+                    try {
+                        // (❗) 调用我们新设计的 /lookup 接口
+                        const res = await axios.get(`${API_BASE_URL}/dictItems/lookup`, {
+                            params: { dictCode: parentDictCode } // (e.g., PET_SPECIES)
+                        });
+                        dictParentOptions.value = res.data;
+                    } catch (err) {
+                        console.error('加载父级选项失败:', err);
+                        // 不弹窗, 仅在控制台报错, 下拉框会显示为空
+                    } finally {
+                        loading.value.dictParentOptions = false;
+                    }
+                };
+
+
                 // --- 字典管理页交互 ---
+
+                // (❗ 关键修改)
                 const selectDictType = (type) => {
                     selectedDictCode.value = type.dictCode;
+                    selectedDictType.value = type; // (❗ 关键) 存储完整对象
                     fetchDictItemList(type.dictCode);
                 };
 
                 // --- 模态框控制 (Handlers) ---
 
-                // (❗ 移除了 closeAllModals 中的 dictTypeForm)
                 const closeAllModals = () => {
                     modals.value.detail.show = false;
                     modals.value.petForm.show = false;
@@ -488,10 +523,10 @@
                     modals.value.auth.show = false;
                 };
 
+                // (省略) 宠物相关的 Handlers...
                 const handleShowDetail = (petId) => { closeAllModals(); modals.value.detail.petId = petId; modals.value.detail.data = null; modals.value.detail.show = true; fetchPetDetail(petId); };
                 const handleCreatePet = () => { closeAllModals(); modals.value.petForm.data = defaultPetForm(); modals.value.petForm.isEdit = false; modals.value.petForm.show = true; };
                 const handleEditPet = (pet) => { closeAllModals(); modals.value.petForm.data = { ...pet }; modals.value.petForm.isEdit = true; modals.value.petForm.show = true; };
-
                 const handleShowWeightForm = () => {
                     const petId = modals.value.detail.petId;
                     modals.value.weightForm.data = { ...defaultWeightForm(), petId: petId };
@@ -503,31 +538,44 @@
                     modals.value.healthEventForm.show = true;
                 };
 
+
+                // (❗ 关键修改)
                 const handleCreateDictItem = () => {
-                    if (!selectedDictCode.value) {
+                    // (❗) 使用 selectedDictType 而不是 selectedDictCode
+                    if (!selectedDictType.value) {
                         alert('请先从左侧选择一个字典类型');
                         return;
                     }
                     closeAllModals();
                     modals.value.dictItemForm.data = {
                         ...defaultDictItemForm(),
-                        dictCode: selectedDictCode.value
+                        dictCode: selectedDictType.value.dictCode // (e.g., "PET_BREED")
                     };
                     modals.value.dictItemForm.isEdit = false;
                     modals.value.dictItemForm.show = true;
+
+                    // (❗ 关键) 触发父级选项加载
+                    // (e.g., 传入 "PET_SPECIES")
+                    fetchDictParentOptions(selectedDictType.value.parentCode);
                 };
+
+                // (❗ 关键修改)
                 const handleEditDictItem = (item) => {
                     closeAllModals();
                     modals.value.dictItemForm.data = { ...item };
                     modals.value.dictItemForm.isEdit = true;
                     modals.value.dictItemForm.show = true;
-                };
 
-                // (❗ 移除了 handleCreateDictType 和 handleEditDictType)
+                    // (❗ 关键) 触发父级选项加载
+                    // (selectedDictType.value 此时一定是激活的)
+                    if (selectedDictType.value) {
+                        fetchDictParentOptions(selectedDictType.value.parentCode);
+                    }
+                };
 
                 // --- 表单提交 (Submits / Deletes) ---
 
-                // (❗ 恢复 V10 完整的函数体)
+                // (省略) 宠物, 体重, 健康事件的 Submits...
                 const handleSubmitPetForm = () => {
                     loading.value.form = true;
                     const { isEdit, data } = modals.value.petForm;
@@ -544,7 +592,6 @@
                     }).catch(err => alert('保存宠物失败: ' + (err.response?.data || err.message)))
                         .finally(() => loading.value.form = false);
                 };
-
                 const handleDeletePet = (petId, petName) => {
                     if (!confirm(`确定要删除 [${petName}] 吗？`)) return;
 
@@ -553,7 +600,6 @@
                             fetchPetList();
                         }).catch(err => alert('删除宠物失败: ' + (err.response?.data || err.message)));
                 };
-
                 const handleSubmitWeightForm = () => {
                     loading.value.form = true;
                     const payload = { ...modals.value.weightForm.data };
@@ -566,7 +612,6 @@
                         }).catch(err => alert('保存体重失败: ' + (err.response?.data || err.message)))
                         .finally(() => loading.value.form = false);
                 };
-
                 const handleSubmitHealthEventForm = () => {
                     loading.value.form = true;
                     const payload = { ...modals.value.healthEventForm.data };
@@ -581,9 +626,12 @@
                         .finally(() => loading.value.form = false);
                 };
 
+                // (❗ 字典项提交: 验证 parentId 逻辑)
                 const handleSubmitDictItemForm = () => {
                     loading.value.form = true;
                     const { isEdit, data } = modals.value.dictItemForm;
+                    // (❗) 这里的 || null 逻辑是健壮的
+                    // 它可以处理 v-model 传来的 null (来自 :value="null")
                     const payload = { ...data, parentId: data.parentId || null };
 
                     const request = isEdit
@@ -594,6 +642,7 @@
                         alert(res.data);
                         closeAllModals();
                         fetchDictItemList(selectedDictCode.value);
+                        // (❗) 重新加载字典, 保证 PET_BREED 等的更新
                         fetchDictionaries();
                     })
                         .catch(err => alert('保存字典项失败: ' + (err.response?.data || err.message)))
@@ -607,12 +656,11 @@
                         .then((res) => {
                             alert(res.data);
                             fetchDictItemList(selectedDictCode.value);
+                            // (❗) 重新加载字典
                             fetchDictionaries();
                         })
                         .catch(err => alert('删除字典项失败: ' + (err.response?.data || err.message)));
                 };
-
-                // (❗ 移除了 handleSubmitDictTypeForm 和 handleDeleteDictType)
 
                 // --- 4. 生命周期 (Lifecycle) ---
 
@@ -638,15 +686,16 @@
                     // 状态
                     auth, login, currentPage, showDictionaryPage,
                     upcomingEvents, petList, loading, modals, filteredBreeds,
-                    dictionaries, // (❗ 修复 V9 的白屏 Bug)
+                    dictionaries,
                     dictTypeList, dictTypeTree, selectedDictCode, dictItemList,
+                    selectedDictType, // (❗ 新增)
+                    dictParentOptions, // (❗ 新增)
                     // 方法
                     selectDictType,
                     handleShowDetail, handleCreatePet, handleEditPet, handleDeletePet,
                     handleSubmitPetForm, handleShowWeightForm, handleSubmitWeightForm,
                     handleShowHealthEventForm, handleSubmitHealthEventForm, closeAllModals,
                     handleCreateDictItem, handleEditDictItem, handleDeleteDictItem, handleSubmitDictItemForm,
-                    // (❗ 移除了 DictType 的方法)
                 };
 
             } catch (err) {
@@ -657,7 +706,8 @@
                     // 返回空值防止 v-if="!setupError" 内部的 v-if 崩溃
                     upcomingEvents: [], petList: [], dictTypeTree: [],
                     modals: { detail: {}, petForm: {}, weightForm: {}, healthEventForm: {}, dictItemForm: {}, auth: {} },
-                    loading: {}, filteredBreeds: []
+                    loading: {}, filteredBreeds: [],
+                    dictParentOptions: [] // (❗ 新增)
                 };
             }
         }
