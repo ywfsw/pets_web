@@ -1,13 +1,18 @@
 <script setup>
 import { usePetStore } from '@/stores/petStore.js';
+import PetLeaderboard from '@/components/PetLeaderboard.vue'; // (❗) 导入组件
 const petStore = usePetStore();
 
 // (Handlers)
 const handleCreatePet = () => { petStore.showPetFormModal(null); };
 const handleShowDetail = (petId) => { petStore.showDetailModal(petId); };
+
 </script>
 
 <template>
+  <!-- (❗) 使用 PetLeaderboard 组件 -->
+  <PetLeaderboard />
+
   <article :aria-busy="petStore.loadingUpcoming">
     <header><h5>🔔 即将到期的事件 (7天内)</h5></header>
     <ul v-if="petStore.upcomingEvents.length">

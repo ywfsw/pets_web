@@ -107,3 +107,7 @@ export const createDictItem = (payload) => {
 export const fetchDictItemsByCode = (dictCode) => {
   return apiClient.get(`/api/dictItems/code/${dictCode}`);
 };
+
+export const fetchPetLeaderboard = (topN = 10) => {
+  return apiClient.get('/api/pets/leaderboard', { params: { topN } });
+};
