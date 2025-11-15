@@ -16,6 +16,13 @@ const handleShowHealthEventForm = () => alert("TODO: Show Health Event Form");
         <strong>{{ petStore.detailModal.data ? petStore.detailModal.data.name : '加载中...' }}</strong>
       </header>
 
+      <div v-if="petStore.detailModal.data" class="avatar-wrapper">
+        <img v-if="petStore.detailModal.data.avatarUrl" :src="petStore.detailModal.data.avatarUrl" alt="Pet Avatar" class="pet-detail-avatar">
+        <div v-else class="pet-detail-avatar-placeholder">
+          <span>无头像</span>
+        </div>
+      </div>
+
       <div v-if="petStore.detailModal.data">
         <ul>
           <li><strong>物种:</strong> {{ petStore.detailModal.data.speciesLabel }}</li>
@@ -61,5 +68,28 @@ const handleShowHealthEventForm = () => alert("TODO: Show Health Event Form");
 small {
   margin-left: 0.25rem;
   color: #738290;
+}
+
+.avatar-wrapper {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.pet-detail-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.pet-detail-avatar-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--pico-muted-color);
+  display: inline-grid;
+  place-items: center;
+  color: white;
+  font-weight: bold;
 }
 </style>

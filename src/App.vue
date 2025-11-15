@@ -52,7 +52,7 @@ onMounted(() => {
 
     <header>
       <nav>
-        <ul><li><strong>🐾 宠物管家 (V2)</strong></li></ul>
+        <ul><li><strong>🐾 PETS</strong></li></ul>
         <ul>
           <li>
             <a href="#"

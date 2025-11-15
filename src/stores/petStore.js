@@ -108,7 +108,7 @@ import {
       if (loadingLeaderboard.value) return;
       loadingLeaderboard.value = true;
       try {
-        const response = await fetchPetLeaderboard();
+        const response = await fetchPetLeaderboard(3); // Fetch only top 3
         petLeaderboard.value = response.data;
       } catch (err) {
         console.error("加载宠物排行榜失败:", err);

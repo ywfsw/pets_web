@@ -1,6 +1,6 @@
 <template>
   <div class="pet-leaderboard">
-    <h2><i class="fas fa-trophy"></i> 宠物点赞排行榜</h2>
+    <h2><i class="fas fa-trophy"></i> 点赞排行榜</h2>
     <div v-if="loadingLeaderboard" class="loading">
       <p>正在加载排行榜...</p>
     </div>
@@ -8,13 +8,7 @@
       <p>暂无数据</p>
     </div>
     <table v-else class="leaderboard-table">
-      <thead>
-        <tr>
-          <th>排名</th>
-          <th>宠物名</th>
-          <th>点赞数</th>
-        </tr>
-      </thead>
+
       <tbody>
         <tr v-for="pet in petLeaderboard" :key="pet.petId">
           <td>
@@ -24,7 +18,7 @@
             <span v-else>{{ pet.rank }}</span>
           </td>
           <td>{{ pet.name }}</td>
-          <td>{{ pet.likeCount }} <i class="fas fa-heart"></i></td>
+
         </tr>
       </tbody>
     </table>

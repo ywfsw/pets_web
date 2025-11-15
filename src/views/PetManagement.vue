@@ -33,11 +33,14 @@ const handleShowDetail = (petId) => { petStore.showDetailModal(petId); };
       <tr v-for="pet in petStore.petList" :key="pet.id">
 
         <td>
-          <strong>
-            <a href="#" @click.prevent="handleShowDetail(pet.id)">
-              {{ pet.name }}
-            </a>
-          </strong>
+          <a href="#" @click.prevent="handleShowDetail(pet.id)" class="pet-info-link">
+            <div class="pet-name-avatar-wrapper">
+              <strong>
+                {{ pet.name }}
+              </strong>
+              <img v-if="pet.profileImageUrl" :src="pet.profileImageUrl" alt="Pet Avatar" class="pet-avatar">
+            </div>
+          </a>
         </td>
 
         <td>
@@ -131,6 +134,25 @@ const handleShowDetail = (petId) => { petStore.showDetailModal(petId); };
   0% { transform: scale(1); }
   50% { transform: scale(1.5); }
   100% { transform: scale(1); }
+}
+
+.pet-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+}
+
+.pet-name-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Pushes avatar to the right */
+}
+
+.pet-info-link {
+  text-decoration: none; /* Keep only this */
+  display: block; /* Make it a block element to take full width of td */
 }
 
 td > strong > a {
