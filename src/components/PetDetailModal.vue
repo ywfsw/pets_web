@@ -16,7 +16,7 @@ import {
 } from 'naive-ui';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
-import WeightLogFormModal from './WeightLogFormModal.vue';
+import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
 
 const petStore = usePetStore();
 const { getAvatarUrl } = useCloudinaryImage();
