@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed, defineComponent, h } from 'vue';
 import {
   NConfigProvider,
   NMessageProvider,
@@ -76,11 +76,15 @@ onMounted(() => {
 });
 
 // A component to be able to use message provider
-const AppContent = {
+const AppContent = defineComponent({
   setup() {
     window.$message = useMessage()
+    window.$dialog = useDialog()
+    window.$notification = useNotification()
+    window.$loadingBar = useLoadingBar()
+    return () => h('div')
   }
-}
+})
 
 </script>
 
