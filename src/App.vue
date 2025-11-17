@@ -14,7 +14,10 @@ import {
   NMenu,
   NSpace,
   darkTheme,
-  useMessage
+  useMessage,
+  useDialog,
+  useNotification,
+  useLoadingBar
 } from 'naive-ui';
 
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
