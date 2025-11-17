@@ -63,7 +63,7 @@ const renderPetAvatar = (pet, rank) => {
         <n-space justify="center" align="center">
           <template v-if="top3Pets[0]">
             <n-space vertical align="center">
-              <n-avatar round :size="80" :src="getAvatarUrl(top3Pets[0].profileImageUrl)" />
+              <n-avatar round :size="80" :src="getAvatarUrl(top3Pets[0].avatarUrl)" />
               <n-text strong>{{ top3Pets[0].name }}</n-text>
               <n-text depth="3">🥇</n-text>
             </n-space>
@@ -74,14 +74,14 @@ const renderPetAvatar = (pet, rank) => {
         <n-space justify="space-around" align="center" style="width: 100%;">
           <template v-if="top3Pets[1]">
             <n-space vertical align="center">
-              <n-avatar round :size="60" :src="getAvatarUrl(top3Pets[1].profileImageUrl)" />
+              <n-avatar round :size="60" :src="getAvatarUrl(top3Pets[1].avatarUrl)" />
               <n-text strong>{{ top3Pets[1].name }}</n-text>
               <n-text depth="3">🥈</n-text>
             </n-space>
           </template>
           <template v-if="top3Pets[2]">
             <n-space vertical align="center">
-              <n-avatar round :size="60" :src="getAvatarUrl(top3Pets[2].profileImageUrl)" />
+              <n-avatar round :size="60" :src="getAvatarUrl(top3Pets[2].avatarUrl)" />
               <n-text strong>{{ top3Pets[2].name }}</n-text>
               <n-text depth="3">🥉</n-text>
             </n-space>
