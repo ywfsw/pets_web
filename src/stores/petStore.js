@@ -199,16 +199,21 @@ import {
       petFormModal.value.loading = true;
   
       // (❗ O_1183 修复)
-      const { isEdit, data } = petFormModal.value;
-  
-      try {
-        if (isEdit) {
-          await updatePet(data.id, data);
-        } else {
-          const response = await createPet(data);
-          alert(response.data);
-        }
-        closeAllPetModals();
+            const { isEdit, data } = petFormModal.value;
+            const payload = { ...data };
+      
+            // Convert birthday timestamp to ISO 8601 string if it's a number
+            if (typeof payload.birthday === 'number') {
+              payload.birthday = new Date(payload.birthday).toISOString();
+            }
+      
+            try {
+              if (isEdit) {
+                await updatePet(payload.id, payload);
+              } else {
+                const response = await createPet(payload);
+                alert(response.data);
+              }        closeAllPetModals();
         loadPetList(currentPage.value); // (❗) 刷新当前页
       } catch (err) {
         console.error("保存宠物失败:", err);
