@@ -13,8 +13,12 @@ import {
   NPageHeader,
   NMenu,
   NSpace,
+  NSwitch, // Added NSwitch
+  NIcon,   // Added NIcon
   darkTheme,
+  lightTheme // Added lightTheme
 } from 'naive-ui';
+import { Moon, Sunny } from '@vicons/ionicons5'; // Added Moon and Sunny icons
 
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { usePetStore } from '@/stores/petStore.js';
@@ -30,7 +34,8 @@ import DictItemFormModal from '@/components/DictItemFormModal.vue';
 import GlobalNaiveUIServices from '@/components/GlobalNaiveUIServices.vue'; // New import
 
 // --- Naive UI Setup ---
-const theme = ref(darkTheme);
+const isDarkTheme = ref(true); // Initial theme state
+const theme = computed(() => (isDarkTheme.value ? darkTheme : null)); // Computed theme
 
 // --- App State ---
 const activeKey = ref('pets');
@@ -94,7 +99,17 @@ onMounted(() => {
                     </n-space>
                   </template>
                   <template #extra>
-                    <n-menu v-model:value="activeKey" mode="horizontal" :options="menuOptions" @update:value="handleMenuUpdate" />
+                    <n-space align="center">
+                      <n-menu v-model:value="activeKey" mode="horizontal" :options="menuOptions" @update:value="handleMenuUpdate" />
+                      <n-switch v-model:value="isDarkTheme" size="large">
+                        <template #checked>
+                          <n-icon :component="Moon" />
+                        </template>
+                        <template #unchecked>
+                          <n-icon :component="Sunny" />
+                        </template>
+                      </n-switch>
+                    </n-space>
                   </template>
                 </n-page-header>
               </n-layout-header>
