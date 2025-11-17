@@ -23,6 +23,22 @@ const apiClient = axios.create({
   timeout: 10000
 });
 
+/**
+ * A robust timeout wrapper for promises.
+ * @param {Promise} promise The promise to wrap.
+ * @param {number} ms The timeout duration in milliseconds.
+ * @returns {Promise} A new promise that rejects on timeout.
+ */
+const withTimeout = (promise, ms = 8000) => {
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(`请求超时，超过 ${ms / 1000} 秒`));
+    }, ms);
+  });
+
+  return Promise.race([promise, timeoutPromise]);
+};
+
 
 // =================================================================
 // --- 核心 API 方法 ---
@@ -35,7 +51,8 @@ export const fetchUploadSignature = (params) => {
 
 // --- 宠物 API ---
 export const fetchPetPage = (params = { pageNum: 1, pageSize: 10 }) => {
-  return apiClient.get('/api/pets/page', { params });
+  // Apply the manual timeout wrapper here as a safeguard.
+  return withTimeout(apiClient.get('/api/pets/page', { params }));
 };
 
 export const fetchPetDetail = (petId) => {
