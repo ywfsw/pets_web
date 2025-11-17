@@ -22,7 +22,7 @@ import {
   const defaultPetForm = () => ({
     id: null,
     name: '',
-    birthday: '',
+    birthday: null,
     speciesId: null,
     breedId: null
   });
