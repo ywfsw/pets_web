@@ -89,7 +89,7 @@ const createColumns = ({ handleLike, handleShowDetail, isMobile }) => {
             strong: true,
             circle: true,
             tertiary: true, // Make background transparent
-            loading: petStore.likingPetIds.has(row.id),
+            // loading: petStore.likingPetIds.has(row.id), // Removed to prevent spinning cursor
             onClick: async () => {
               const originalLikeCount = row.likeCount;
               row.likeCount++; // Optimistic update

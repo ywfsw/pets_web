@@ -194,7 +194,6 @@ import {
       const pet = pagination.value.records.find(p => p.id === petId); // (❗)
       if (!pet) return;
       likingPetIds.value.add(petId);
-      pet.likeCount++;
       try {
         await likePet(petId);
       } catch (err) {
