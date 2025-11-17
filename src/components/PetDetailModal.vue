@@ -1,7 +1,9 @@
 <script setup>
 import { usePetStore } from '@/stores/petStore.js';
+import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 
 const petStore = usePetStore();
+const { getAvatarUrl } = useCloudinaryImage();
 
 // (TODO: Handlers for Add Weight / Add Event)
 const handleShowWeightForm = () => {};
@@ -17,7 +19,7 @@ const handleShowHealthEventForm = () => {};
       </header>
 
       <div v-if="petStore.detailModal.data" class="avatar-wrapper">
-        <img v-if="petStore.detailModal.data.avatarUrl" :src="petStore.detailModal.data.avatarUrl" alt="Pet Avatar" class="pet-detail-avatar">
+        <img v-if="petStore.detailModal.data.avatarUrl" :src="getAvatarUrl(petStore.detailModal.data.avatarUrl)" alt="Pet Avatar" class="pet-detail-avatar">
         <div v-else class="pet-detail-avatar-placeholder">
           <span>无头像</span>
         </div>

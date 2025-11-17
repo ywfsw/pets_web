@@ -1,7 +1,10 @@
 <script setup>
 import { usePetStore } from '@/stores/petStore.js';
 import PetLeaderboard from '@/components/PetLeaderboard.vue'; // (❗) 导入组件
+import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
+
 const petStore = usePetStore();
+const { getAvatarUrl } = useCloudinaryImage();
 
 // (Handlers)
 const handleCreatePet = () => { petStore.showPetFormModal(null); };
@@ -38,7 +41,7 @@ const handleShowDetail = (petId) => { petStore.showDetailModal(petId); };
               <strong>
                 {{ pet.name }}
               </strong>
-              <img v-if="pet.profileImageUrl" :src="pet.profileImageUrl" alt="Pet Avatar" class="pet-avatar">
+              <img v-if="pet.profileImageUrl" :src="getAvatarUrl(pet.profileImageUrl)" alt="Pet Avatar" class="pet-avatar">
             </div>
           </a>
         </td>

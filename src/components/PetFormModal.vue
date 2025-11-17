@@ -7,12 +7,14 @@ import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 
 // (❗ 核心) 导入 Composable
 import { useCloudinaryUpload } from '@/composables/useCloudinaryUpload.js';
+import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 
 const petStore = usePetStore();
 const dictStore = useDictionaryStore();
 
 // (❗ 核心) 使用 Composable
 const { isUploading, uploadError, openUploadWidget } = useCloudinaryUpload();
+const { getAvatarUrl } = useCloudinaryImage();
 
 const filteredBreeds = computed(() => {
   if (!petStore.petFormModal.data) return [];
@@ -61,7 +63,7 @@ const handleImageUpload = () => {
         <label>宠物头像 (Avatar)</label>
         <div class="grid" style="grid-template-columns: 150px 1fr;">
           <figure v-if="petStore.petFormModal.data.profileImageUrl" class="avatar-container">
-            <img :src="petStore.petFormModal.data.profileImageUrl" alt="Pet Avatar" class="pet-form-avatar">
+            <img :src="getAvatarUrl(petStore.petFormModal.data.profileImageUrl)" alt="Pet Avatar" class="pet-form-avatar">
           </figure>
           <figure v-else class="avatar-container pet-form-avatar-placeholder">
             <span>无头像</span>
