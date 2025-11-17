@@ -55,22 +55,45 @@ export const useDictionaryStore = defineStore('dictionary', () => {
   // --- 3. Actions ---
 
   async function loadAllAppDictionaries() {
-    // ... (保持不变)
     if (loadingAppDicts.value) return;
     loadingAppDicts.value = true;
     try {
-      const [ typesRes, speciesRes, breedsRes, eventsRes ] = await Promise.all([
+      const results = await Promise.allSettled([
         fetchDictTypeList(),
         fetchDictItemsByCode('PET_SPECIES'),
         fetchDictItemsByCode('PET_BREED'),
         fetchDictItemsByCode('HEALTH_EVENT_TYPE')
       ]);
-      dictTypeList.value = typesRes.data;
-      species.value = speciesRes.data;
-      breeds.value = breedsRes.data;
-      healthEvents.value = eventsRes.data;
+
+      const [typesRes, speciesRes, breedsRes, eventsRes] = results;
+
+      if (typesRes.status === 'fulfilled') {
+        dictTypeList.value = typesRes.value.data;
+      } else {
+        console.error("加载字典类型列表失败:", typesRes.reason);
+      }
+
+      if (speciesRes.status === 'fulfilled') {
+        species.value = speciesRes.value.data;
+      } else {
+        console.error("加载宠物品种字典失败:", speciesRes.reason);
+      }
+
+      if (breedsRes.status === 'fulfilled') {
+        breeds.value = breedsRes.value.data;
+      } else {
+        console.error("加载宠物种类字典失败:", breedsRes.reason);
+      }
+
+      if (eventsRes.status === 'fulfilled') {
+        healthEvents.value = eventsRes.value.data;
+      } else {
+        console.error("加载健康事件类型字典失败:", eventsRes.reason);
+      }
     } catch (err) {
-      console.error("加载 App 核心字典失败:", err);
+      // This catch block will now only catch errors that are not from the promises,
+      // for example, if Promise.allSettled itself fails, which is unlikely.
+      console.error("加载 App 核心字典时发生意外错误:", err);
     } finally {
       loadingAppDicts.value = false;
     }
