@@ -2,6 +2,7 @@
 
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
+import { useDictionaryStore } from './dictionaryStore'; // Import dictionary store
 
 // (❗) 导入所有需要的 API
 import {
@@ -12,7 +13,9 @@ import {
     createPet,
     updatePet,
     deletePet,
-    fetchPetLeaderboard // (❗)
+    fetchPetLeaderboard,
+    createHealthEvent,
+    createWeightLog // (❗)
   } from '@/api.js';
   
   // (❗) 宠物表单的默认值
@@ -33,7 +36,24 @@ import {
     pages: 0    // (总页数)
   });
   
+  // (❗) 健康事件表单的默认值
+  const defaultHealthEventForm = (petId) => ({
+    petId: petId,
+    eventTypeId: null,
+    eventDate: Date.now(), // Default to today
+    notes: '',
+    nextDueDate: null
+  });
+
+  // (❗) 体重记录表单的默认值
+  const defaultWeightLogForm = (petId) => ({
+    petId: petId,
+    weightKg: null,
+    logDate: Date.now() // Default to today
+  });
+  
   export const usePetStore = defineStore('pet', () => {
+    const dictStore = useDictionaryStore(); // Get instance of dictionary store
   
     // --- 1. State ---
     const upcomingEvents = ref([]);
@@ -62,6 +82,18 @@ import {
       data: defaultPetForm(),
       loading: false
     });
+
+    const healthEventFormModal = ref({
+      show: false,
+      data: defaultHealthEventForm(null),
+      loading: false
+    });
+
+    const weightLogFormModal = ref({
+      show: false,
+      data: defaultWeightLogForm(null),
+      loading: false
+    });
   
     // --- 2. Computed (计算属性) ---
   
@@ -76,7 +108,13 @@ import {
       loadingUpcoming.value = true;
       try {
         const response = await fetchUpcomingEvents();
-        upcomingEvents.value = response.data;
+        const eventsWithPetNames = await Promise.all(
+          response.data.map(async (event) => {
+            const petDetail = await fetchPetDetail(event.petId);
+            return { ...event, petName: petDetail.data.name };
+          })
+        );
+        upcomingEvents.value = eventsWithPetNames;
       } catch (err) { console.error("加载提醒事件失败:", err); }
       finally { loadingUpcoming.value = false; }
     }
@@ -92,7 +130,16 @@ import {
           pageNum: pageNum,
           pageSize: pagination.value.size
         });
-        pagination.value = response.data;
+        const enrichedRecords = response.data.records.map(pet => {
+          const species = dictStore.species.find(s => s.id === pet.speciesId);
+          const breed = dictStore.breeds.find(b => b.id === pet.breedId);
+          return {
+            ...pet,
+            speciesLabel: species ? species.itemLabel : '未知物种',
+            breedLabel: breed ? breed.itemLabel : '未知品种'
+          };
+        });
+        pagination.value = { ...response.data, records: enrichedRecords };
       } catch (err) {
         console.error("加载宠物列表失败:", err);
       } finally {
@@ -222,9 +269,72 @@ import {
       }
     }
   
+    function showHealthEventFormModal(petId) {
+      healthEventFormModal.value.data = defaultHealthEventForm(petId);
+      healthEventFormModal.value.show = true;
+    }
+
+    async function handleSaveHealthEvent() {
+      healthEventFormModal.value.loading = true;
+      const payload = { ...healthEventFormModal.value.data };
+
+      // Convert date timestamps to ISO 8601 strings
+      if (typeof payload.eventDate === 'number') {
+        payload.eventDate = new Date(payload.eventDate).toISOString();
+      }
+      if (typeof payload.nextDueDate === 'number') {
+        payload.nextDueDate = new Date(payload.nextDueDate).toISOString();
+      }
+
+      try {
+        await createHealthEvent(payload);
+        closeHealthEventFormModal();
+        loadPetDetail(payload.petId); // Refresh pet details to show new event
+      } catch (err) {
+        console.error("保存健康事件失败:", err);
+      } finally {
+        healthEventFormModal.value.loading = false;
+      }
+    }
+  
+    function closeHealthEventFormModal() {
+      healthEventFormModal.value.show = false;
+    }
+
+    function showWeightLogFormModal(petId) {
+      weightLogFormModal.value.data = defaultWeightLogForm(petId);
+      weightLogFormModal.value.show = true;
+    }
+
+    async function handleSaveWeightLog() {
+      weightLogFormModal.value.loading = true;
+      const payload = { ...weightLogFormModal.value.data };
+
+      // Convert logDate timestamp to ISO 8601 string
+      if (typeof payload.logDate === 'number') {
+        payload.logDate = new Date(payload.logDate).toISOString();
+      }
+
+      try {
+        await createWeightLog(payload);
+        closeWeightLogFormModal();
+        loadPetDetail(payload.petId); // Refresh pet details to show new log
+      } catch (err) {
+        console.error("保存体重记录失败:", err);
+      } finally {
+        weightLogFormModal.value.loading = false;
+      }
+    }
+
+    function closeWeightLogFormModal() {
+      weightLogFormModal.value.show = false;
+    }
+
     function closeAllPetModals() {
       detailModal.value.show = false;
       petFormModal.value.show = false;
+      healthEventFormModal.value.show = false;
+      weightLogFormModal.value.show = false;
     }
   
     function switchToEditMode() {
@@ -288,6 +398,8 @@ import {
       likingPetIds,
       detailModal,
       petFormModal,
+      healthEventFormModal, // (❗)
+      weightLogFormModal, // (❗)
       pagination,
       petLeaderboard, // (❗)
       loadingLeaderboard, // (❗)
@@ -307,7 +419,13 @@ import {
       showDetailModal,
       showPetFormModal,
       handleSavePet,
+      showHealthEventFormModal, // (❗)
+      handleSaveHealthEvent, // (❗)
       closeAllPetModals,
+      closeHealthEventFormModal, // (❗)
+      showWeightLogFormModal, // (❗)
+      handleSaveWeightLog, // (❗)
+      closeWeightLogFormModal, // (❗)
       switchToEditMode,
       handleDeletePet // (❗)
     };

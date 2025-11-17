@@ -15,12 +15,22 @@ import {
   NButton,
 } from 'naive-ui';
 
+import HealthEventFormModal from './HealthEventFormModal.vue';
+import WeightLogFormModal from './WeightLogFormModal.vue';
+
 const petStore = usePetStore();
 const { getAvatarUrl } = useCloudinaryImage();
 
-// TODO: Handlers for Add Weight / Add Event
-const handleShowWeightForm = () => { window.$message.info('功能待开发'); };
-const handleShowHealthEventForm = () => { window.$message.info('功能待开发'); };
+const handleShowWeightForm = () => {
+  if (petStore.detailModal.data?.id) {
+    petStore.showWeightLogFormModal(petStore.detailModal.data.id);
+  }
+};
+const handleShowHealthEventForm = () => {
+  if (petStore.detailModal.data?.id) {
+    petStore.showHealthEventFormModal(petStore.detailModal.data.id);
+  }
+};
 
 const handleClose = () => {
   petStore.closeAllPetModals();
@@ -95,4 +105,6 @@ const handleClose = () => {
       </n-space>
     </template>
   </n-modal>
+  <HealthEventFormModal />
+  <WeightLogFormModal />
 </template>

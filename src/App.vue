@@ -74,8 +74,8 @@ watch(
   }
 );
 
-onMounted(() => {
-  dictStore.loadAllAppDictionaries();
+onMounted(async () => {
+  await dictStore.loadAllAppDictionaries();
   petStore.loadPetList();
   petStore.loadUpcomingEvents();
 });

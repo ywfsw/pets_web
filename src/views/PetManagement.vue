@@ -46,7 +46,7 @@ const createColumns = ({ handleLike, handleShowDetail }) => {
               src: getAvatarUrl(row.profileImageUrl),
               circle: true,
             }),
-            'header-extra': () => h(NText, { depth: 3, style: 'font-size: 12px;' }, () => `#${row.id}`)
+            // 'header-extra': () => h(NText, { depth: 3, style: 'font-size: 12px;' }, () => `#${row.id}`)
           }
         );
       }
@@ -108,7 +108,7 @@ const pagination = computed(() => ({
       <n-h5>🔔 即将到期的事件 (7天内)</n-h5>
       <div v-if="petStore.upcomingEvents.length">
         <n-text v-for="event in petStore.upcomingEvents" :key="event.id" tag="p" style="margin: 4px 0;">
-          <strong>{{ event.nextDueDate }}</strong> - 宠物ID {{ event.petId }} 需要: {{ event.notes || '执行事件' }}
+          <strong>{{ event.nextDueDate }}</strong> - {{ event.petName }} 需要: {{ event.notes || '执行事件' }}
         </n-text>
       </div>
       <n-text v-else depth="3"><i>太好了, 7天内没有需要提醒的事件。</i></n-text>

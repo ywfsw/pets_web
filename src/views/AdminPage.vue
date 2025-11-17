@@ -1,5 +1,5 @@
 <script setup>
-import { ref, h } from 'vue';
+import { ref, h, watch } from 'vue';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { usePetStore } from '@/stores/petStore.js';
 import DictTypeTree from '@/components/DictTypeTree.vue';
@@ -50,15 +50,15 @@ const petTableColumns = [
 ];
 
 // --- Dictionaries Tab ---
-const selectedDictType = ref(null);
+const selectedDictType = ref({ dictCode: null });
 const onTypeSelect = (type) => {
   selectedDictType.value = type;
-  if (type) {
+  if (type && type.dictCode) { // Ensure type and dictCode exist
     dictStore.loadDictItems(type.dictCode);
   }
 };
 const handleCreateItem = () => {
-  if (selectedDictType.value) {
+  if (selectedDictType.value && selectedDictType.value.dictCode) {
     dictStore.showDictItemModal(selectedDictType.value, null);
   } else {
     message.warning('请先从左侧选择一个字典类型');
@@ -87,6 +87,25 @@ const dictItemColumns = [
     }
   }
 ];
+
+// Watch for dictTypeTree data and select the first item if available
+watch(() => dictStore.dictTypeTree, (newTree) => {
+  if (newTree && newTree.length > 0 && currentTab.value === 'dictionaries') {
+    // Select the first top-level item
+    const firstItem = newTree[0];
+    selectedDictType.value = firstItem;
+    dictStore.loadDictItems(firstItem.dictCode);
+  }
+}, { immediate: true });
+
+// Watch for tab changes to trigger initial load if on dictionaries tab
+watch(currentTab, (newTab) => {
+  if (newTab === 'dictionaries' && dictStore.dictTypeTree.length > 0 && !selectedDictType.value.dictCode) {
+    const firstItem = dictStore.dictTypeTree[0];
+    selectedDictType.value = firstItem;
+    dictStore.loadDictItems(firstItem.dictCode);
+  }
+});
 
 </script>
 
@@ -123,11 +142,11 @@ const dictItemColumns = [
         <n-gi :span="2">
           <n-card :loading="dictStore.loadingItems">
             <template #header>
-              <span v-if="selectedDictType">字典项 ({{ selectedDictType.dictCode }})</span>
+              <span v-if="selectedDictType.dictCode">字典项 ({{ selectedDictType.dictCode }})</span>
               <span v-else>字典项</span>
             </template>
             <template #header-extra>
-              <n-button @click="handleCreateItem" type="primary" :disabled="!selectedDictType">
+              <n-button @click="handleCreateItem" type="primary" :disabled="!selectedDictType.dictCode">
                 添加字典项
               </n-button>
             </template>
@@ -136,7 +155,7 @@ const dictItemColumns = [
               :data="dictStore.dictItemList"
               :row-key="row => row.id"
             />
-            <n-text v-if="!selectedDictType" depth="3">请从左侧选择一个字典类型以查看其字典项。</n-text>
+            <n-text v-if="!selectedDictType.dictCode" depth="3">请从左侧选择一个字典类型以查看其字典项。</n-text>
           </n-card>
         </n-gi>
       </n-grid>
