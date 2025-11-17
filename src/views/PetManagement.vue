@@ -1,5 +1,5 @@
 <script setup>
-import { h, computed } from 'vue';
+import { h, computed, ref, onMounted, onUnmounted } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 import PetLeaderboard from '@/components/PetLeaderboard.vue';
@@ -21,13 +21,30 @@ import { Heart as HeartIcon } from '@vicons/ionicons5';
 const petStore = usePetStore();
 const { getAvatarUrl } = useCloudinaryImage();
 
+// Responsive logic
+const isMobile = ref(false);
+const mobileBreakpoint = 768; // Define your mobile breakpoint
+
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < mobileBreakpoint;
+};
+
+onMounted(() => {
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
+});
+
 // Handlers
 const handleCreatePet = () => { petStore.showPetFormModal(null); };
 const handleShowDetail = (petId) => { petStore.showDetailModal(petId); };
 const handlePageChange = (page) => { petStore.loadPetList(page); };
 
-const createColumns = ({ handleLike, handleShowDetail }) => {
-  return [
+const createColumns = ({ handleLike, handleShowDetail, isMobile }) => {
+  const baseColumns = [
     {
       title: '名字',
       key: 'name',
@@ -70,10 +87,29 @@ const createColumns = ({ handleLike, handleShowDetail }) => {
           NButton,
           {
             strong: true,
-            tertiary: true,
             circle: true,
+            tertiary: true, // Make background transparent
             loading: petStore.likingPetIds.has(row.id),
-            onClick: () => handleLike(row.id)
+            onClick: async () => {
+              const originalLikeCount = row.likeCount;
+              row.likeCount++; // Optimistic update
+
+              try {
+                await petStore.handleLike(row.id);
+              } catch (error) {
+                row.likeCount = originalLikeCount; // Revert on error
+                console.error('Failed to like pet:', error);
+                // Optionally show a message to the user
+              }
+            },
+            style: {
+              '--n-text-color': '#fc80a3',
+              '--n-text-color-hover': '#f06083',
+              '--n-text-color-pressed': '#e04063',
+              '--n-border-color': 'transparent',
+              '--n-border-color-hover': 'transparent',
+              '--n-border-color-pressed': 'transparent',
+            }
           },
           {
             icon: () => h(NIcon, null, () => h(HeartIcon)),
@@ -83,12 +119,19 @@ const createColumns = ({ handleLike, handleShowDetail }) => {
       }
     }
   ];
+
+  if (isMobile) {
+    // For mobile, show only Name and Like Count
+    return baseColumns.filter(col => ['name', 'likeCount'].includes(col.key));
+  }
+  return baseColumns;
 };
 
-const columns = createColumns({
+const responsiveColumns = computed(() => createColumns({
   handleLike: petStore.handleLike,
-  handleShowDetail: handleShowDetail
-});
+  handleShowDetail: handleShowDetail,
+  isMobile: isMobile.value
+}));
 
 const pagination = computed(() => ({
   page: petStore.currentPage,
@@ -123,7 +166,7 @@ const pagination = computed(() => ({
       </template>
 
       <n-data-table
-        :columns="columns"
+        :columns="responsiveColumns"
         :data="petStore.petList"
         :loading="petStore.loadingList"
         :pagination="pagination"
