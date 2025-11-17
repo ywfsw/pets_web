@@ -95,7 +95,6 @@ import {
         pagination.value = response.data;
       } catch (err) {
         console.error("加载宠物列表失败:", err);
-        alert("加载宠物列表失败，请刷新页面。");
       } finally {
         loadingList.value = false;
       }
@@ -145,7 +144,6 @@ import {
       } catch (err) {
         pet.likeCount--;
         console.error("点赞失败:", err);
-        alert("点赞失败: " + (err.response?.data?.error || err.message));
       } finally {
         setTimeout(() => { likingPetIds.value.delete(petId); }, 400);
       }
@@ -160,7 +158,6 @@ import {
         detailModal.value.data = response.data;
       } catch (err) {
         console.error("加载宠物详情失败:", err);
-        alert("加载宠物详情失败");
         detailModal.value.show = false;
       } finally {
         detailModal.value.loading = false;
@@ -206,7 +203,6 @@ import {
         loadPetList(currentPage.value); // (❗) 刷新当前页
       } catch (err) {
         console.error("保存宠物失败:", err);
-        alert("保存宠物失败: " + (err.response?.data || err.message));
       } finally {
         petFormModal.value.loading = false;
       }
@@ -263,7 +259,6 @@ import {
       } catch (err) {
         // (❗) API 失败, 必须回滚
         console.error("删除宠物失败:", err);
-        alert("删除宠物失败: " + (err.response?.data || err.message));
   
         // (把删除的宠物“加回去”)
         pagination.value.records.splice(index, 0, petToRemove);

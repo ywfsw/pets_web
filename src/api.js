@@ -60,7 +60,7 @@ export const likePet = (petId) => {
 };
 
 export const getPetLikeCount = (petId) => {
-  return apiClient.get(`/api/pets/{petId}/likes/count`);
+  return apiClient.get(`/api/pets/${petId}/likes/count`);
 };
 
 // --- 体重 & 健康事件 API ---

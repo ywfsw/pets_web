@@ -71,7 +71,6 @@ export const useDictionaryStore = defineStore('dictionary', () => {
       healthEvents.value = eventsRes.data;
     } catch (err) {
       console.error("加载 App 核心字典失败:", err);
-      alert("加载核心数据失败，请刷新页面。");
     } finally {
       loadingAppDicts.value = false;
     }
@@ -87,7 +86,6 @@ export const useDictionaryStore = defineStore('dictionary', () => {
       dictItemList.value = response.data;
     } catch (err) {
       console.error(`加载字典项 [${dictCode}] 失败:`, err);
-      alert(`加载字典项 [${dictCode}] 失败`);
     } finally {
       loadingItems.value = false;
     }
@@ -134,7 +132,6 @@ export const useDictionaryStore = defineStore('dictionary', () => {
 
     } catch (err) {
       console.error("保存字典项失败:", err);
-      alert("保存字典项失败: " + (err.response?.data || err.message));
     } finally {
       itemFormModal.value.loading = false;
     }

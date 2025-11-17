@@ -4,8 +4,8 @@ import { usePetStore } from '@/stores/petStore.js';
 const petStore = usePetStore();
 
 // (TODO: Handlers for Add Weight / Add Event)
-const handleShowWeightForm = () => alert("TODO: Show Weight Form");
-const handleShowHealthEventForm = () => alert("TODO: Show Health Event Form");
+const handleShowWeightForm = () => {};
+const handleShowHealthEventForm = () => {};
 </script>
 
 <template>
