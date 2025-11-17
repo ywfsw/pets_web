@@ -1,14 +1,11 @@
 <script setup>
-// (❗) 这是一个“哑组件 (Dumb Component)”
-// 它只负责接收数据 (props) 和发送事件 (emits)
+import { computed } from 'vue';
+import { NTree } from 'naive-ui';
 
-// 1. (Props) 定义它能接收的数据
-// 'treeData' 是从 Pinia 拿到的 dictTypeTree
-// 'selectedCode' 是当前选中的 code
-defineProps({
+const props = defineProps({
   treeData: {
     type: Array,
-    default: () => [] // 默认空数组
+    default: () => []
   },
   selectedCode: {
     type: String,
@@ -16,59 +13,43 @@ defineProps({
   }
 });
 
-// 2. (Emits) 定义它能发出的事件
-// (当用户点击一个类型时, 我们要"通知"父组件)
-const emit = defineEmits(['select']);
+const emit = defineEmits(['update:selectedCode', 'select']);
 
-// 3. (Handler) 内部点击事件
-const handleSelect = (type) => {
-  // (❗) 发射事件，把被点击的 type 对象传出去
-  emit('select', type);
+const formattedTreeData = computed(() => {
+  return props.treeData.map(node => ({
+    key: node.dictCode,
+    label: `${node.dictName} (${node.dictCode})`,
+    ...node, // Pass along the original object
+    children: node.children?.map(child => ({
+      key: child.dictCode,
+      label: `${child.dictName} (${child.dictCode})`,
+      ...child,
+    }))
+  }));
+});
+
+const handleUpdateSelectedKeys = (keys, options) => {
+  if (keys.length > 0) {
+    emit('update:selectedCode', keys[0]);
+    emit('select', options[0]); // Emit the full node object for the parent
+  } else {
+    emit('update:selectedCode', null);
+    emit('select', null);
+  }
 };
+
 </script>
 
 <template>
-  <article>
-    <header>
-      <strong>字典类型 (只读)</strong>
-    </header>
-    <ul style="padding-left: 0; list-style: none;">
-
-      <li v-for="type in treeData" :key="type.dictCode">
-
-        <details :open="type.children && type.children.length > 0">
-
-          <summary>
-            <a href="#"
-               :style="{ color: type.dictCode === selectedCode ? 'var(--pico-primary)' : 'inherit' }"
-               @click.prevent="handleSelect(type)">
-              {{ type.dictName }} (<code>{{ type.dictCode }}</code>)
-            </a>
-          </summary>
-
-          <ul v-if="type.children && type.children.length > 0"
-              style="padding-left: 1rem; margin-top: 0.5rem;">
-
-            <li v-for="child in type.children" :key="child.dictCode">
-              <a href="#"
-                 :style="{ color: child.dictCode === selectedCode ? 'var(--pico-primary)' : 'inherit' }"
-                 @click.prevent="handleSelect(child)">
-                {{ child.dictName }} (<code>{{ child.dictCode }}</code>)
-              </a>
-            </li>
-          </ul>
-
-        </details>
-      </li>
-    </ul>
-  </article>
+  <n-tree
+    block-line
+    :data="formattedTreeData"
+    :selected-keys="selectedCode ? [selectedCode] : []"
+    :on-update:selected-keys="handleUpdateSelectedKeys"
+    key-field="key"
+    label-field="label"
+    children-field="children"
+    default-expand-all
+    selectable
+  />
 </template>
-
-<style scoped>
-/* 'scoped': 这里的 CSS 只对这个组件生效
-  (保持 Pico.css 默认 <details> 样式)
-*/
-summary {
-  cursor: pointer;
-}
-</style>

@@ -1,14 +1,22 @@
 <script setup>
-import { ref, reactive, watch } from 'vue';
-
-// (❗) 导入 API 层 (只为加载下拉框)
+import { ref, reactive, watch, computed } from 'vue';
 import { fetchDictParentOptions } from '@/api.js';
-// (❗) 导入 Store (读/写状态)
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
+import {
+  NModal,
+  NCard,
+  NForm,
+  NFormItem,
+  NInput,
+  NSelect,
+  NInputNumber,
+  NButton,
+  NSpace,
+} from 'naive-ui';
 
 const dictStore = useDictionaryStore();
 
-// --- 3. State (内部状态) ---
+// --- State ---
 const defaultForm = () => ({
   dictCode: '', itemLabel: '', itemValue: '', parentId: null, sortOrder: 0
 });
@@ -17,93 +25,100 @@ const formData = reactive(defaultForm());
 const loadingOptions = ref(false);
 const parentOptions = ref([]);
 
-// --- 4. Logic (核心逻辑) ---
-
-/**
- * (❗) 监听 store 中的 'show' 状态
- */
+// --- Logic ---
 watch(() => dictStore.itemFormModal.show, (newVal) => {
   if (newVal) {
     const { contextType, data, isEdit } = dictStore.itemFormModal;
-
     if (isEdit) {
       Object.assign(formData, data);
     } else {
       Object.assign(formData, defaultForm());
       formData.dictCode = contextType.dictCode;
     }
-
     loadOptions(contextType.parentCode);
-
   } else {
     parentOptions.value = [];
   }
 });
 
+const parentSelectOptions = computed(() =>
+  parentOptions.value.map(opt => ({ label: opt.label, value: opt.id }))
+);
+
 const loadOptions = async (parentDictCode) => {
+  if (!parentDictCode) {
+    parentOptions.value = [];
+    return;
+  }
   loadingOptions.value = true;
   parentOptions.value = [];
   try {
     const response = await fetchDictParentOptions(parentDictCode);
     parentOptions.value = response.data;
-  } catch (err) { console.error("加载父级选项失败:", err); }
-  finally { loadingOptions.value = false; }
+  } catch (err) {
+    console.error("加载父级选项失败:", err);
+    window.$message.error('加载父级选项失败');
+  } finally {
+    loadingOptions.value = false;
+  }
 };
 
-/**
- * (❗) 提交表单, 直接调用 store action
- */
 const handleSubmit = () => {
-  const payload = {
-    ...formData,
-    parentId: formData.parentId || null
-  };
+  const payload = { ...formData, parentId: formData.parentId || null };
   dictStore.handleSaveItem(payload);
+};
+
+const handleClose = () => {
+  dictStore.closeDictItemModal();
 };
 
 </script>
 
 <template>
-  <dialog :open="dictStore.itemFormModal.show" @click.self="dictStore.closeDictItemModal()">
-    <article :aria-busy="dictStore.itemFormModal.loading || loadingOptions">
-      <header>
-        <a href="#" aria-label="Close" class="close" @click.prevent="dictStore.closeDictItemModal()"></a>
-        <strong>{{ dictStore.itemFormModal.isEdit ? '编辑字典项' : '创建新字典项' }}</strong>
-      </header>
+  <n-modal
+    :show="dictStore.itemFormModal.show"
+    @update:show="handleClose"
+    preset="card"
+    style="width: 600px;"
+    :title="dictStore.itemFormModal.isEdit ? '编辑字典项' : '创建新字典项'"
+    :bordered="false"
+    :loading="dictStore.itemFormModal.loading || loadingOptions"
+  >
+    <n-form @submit.prevent="handleSubmit">
+      <n-form-item label="字典编码 (Code)">
+        <n-input v-model:value="formData.dictCode" required readonly disabled />
+      </n-form-item>
 
-      <form @submit.prevent="handleSubmit">
-        <label for="dictCode">字典编码 (Code)</label>
-        <input type="text" id="dictCode" v-model="formData.dictCode" required readonly disabled>
+      <n-form-item label="标签 (Label)" required>
+        <n-input v-model:value="formData.itemLabel" />
+      </n-form-item>
 
-        <label for="dictLabel">标签 (Label)</label>
-        <input type="text" id="dictLabel" v-model="formData.itemLabel" required>
+      <n-form-item label="值 (Value)" required>
+        <n-input v-model:value="formData.itemValue" />
+      </n-form-item>
 
-        <label for="dictValue">值 (Value)</label>
-        <input type="text" id="dictValue" v-model="formData.itemValue" required>
+      <n-form-item label="父级 (可选)">
+        <n-select
+          v-model:value="formData.parentId"
+          :options="parentSelectOptions"
+          :loading="loadingOptions"
+          :disabled="loadingOptions || !dictStore.itemFormModal.contextType?.parentCode"
+          placeholder="请选择父级"
+          clearable
+        />
+      </n-form-item>
 
-        <label for="dictParent">父级ID (可选)</label>
-        <select id="dictParent"
-                v-model="formData.parentId"
-                :aria-busy="loadingOptions"
-                :disabled="loadingOptions || !dictStore.itemFormModal.contextType?.parentCode">
-
-          <option :value="null" v-if="!dictStore.itemFormModal.contextType?.parentCode">(无父级)</option>
-          <option :value="null" v-else-if="!loadingOptions && parentOptions.length === 0">(无选项)</option>
-          <option :value="null" v-else>(请选择...)</option>
-
-          <option v-for="opt in parentOptions" :value="opt.id" :key="opt.id">
-            {{ opt.label }}
-          </option>
-        </select>
-
-        <label for="dictSort">排序</label>
-        <input type="number" id="dictSort" v-model="formData.sortOrder">
-
-        <footer>
-          <button type="button" class="secondary" @click="dictStore.closeDictItemModal()">取消</button>
-          <button type="submit" :aria-busy="dictStore.itemFormModal.loading">保存</button>
-        </footer>
-      </form>
-    </article>
-  </dialog>
+      <n-form-item label="排序">
+        <n-input-number v-model:value="formData.sortOrder" style="width: 100%;" />
+      </n-form-item>
+    </n-form>
+    <template #footer>
+      <n-space justify="end">
+        <n-button @click="handleClose">取消</n-button>
+        <n-button type="primary" @click="handleSubmit" :loading="dictStore.itemFormModal.loading">
+          保存
+        </n-button>
+      </n-space>
+    </template>
+  </n-modal>
 </template>

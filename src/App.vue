@@ -1,5 +1,21 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
+import {
+  NConfigProvider,
+  NMessageProvider,
+  NDialogProvider,
+  NNotificationProvider,
+  NLoadingBarProvider,
+  NLayout,
+  NLayoutHeader,
+  NLayoutContent,
+  NLayoutFooter,
+  NPageHeader,
+  NMenu,
+  NSpace,
+  darkTheme,
+  useMessage
+} from 'naive-ui';
 
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { usePetStore } from '@/stores/petStore.js';
@@ -11,8 +27,18 @@ import AdminPage from '@/views/AdminPage.vue';
 import AuthModal from '@/components/AuthModal.vue';
 import PetDetailModal from '@/components/PetDetailModal.vue';
 import PetFormModal from '@/components/PetFormModal.vue';
+import DictItemFormModal from '@/components/DictItemFormModal.vue';
 
-const currentPage = ref('pets');
+// --- Naive UI Setup ---
+const theme = ref(darkTheme);
+
+// --- App State ---
+const activeKey = ref('pets');
+
+const menuOptions = [
+  { label: '宠物管理', key: 'pets' },
+  { label: '后台管理', key: 'admin' },
+];
 
 const dictStore = useDictionaryStore();
 const petStore = usePetStore();
@@ -20,12 +46,16 @@ const authStore = useAuthStore();
 
 const isAuthModalVisible = ref(false);
 
-const showAdminPage = () => {
-  if (authStore.isAuthenticated) {
-    currentPage.value = 'admin';
+const handleMenuUpdate = (key) => {
+  if (key === 'admin') {
+    if (authStore.isAuthenticated) {
+      activeKey.value = 'admin';
+    } else {
+      authStore.error = null;
+      isAuthModalVisible.value = true;
+    }
   } else {
-    authStore.error = null;
-    isAuthModalVisible.value = true;
+    activeKey.value = key;
   }
 };
 
@@ -34,7 +64,7 @@ watch(
   (isNowAuthenticated) => {
     if (isNowAuthenticated) {
       isAuthModalVisible.value = false;
-      currentPage.value = 'admin';
+      activeKey.value = 'admin';
     }
   }
 );
@@ -45,55 +75,66 @@ onMounted(() => {
   petStore.loadUpcomingEvents();
 });
 
+// A component to be able to use message provider
+const AppContent = {
+  setup() {
+    window.$message = useMessage()
+  }
+}
+
 </script>
 
 <template>
-  <div class="container">
+  <n-config-provider :theme="theme">
+    <n-loading-bar-provider>
+      <n-message-provider>
+        <n-notification-provider>
+          <n-dialog-provider>
+            <app-content />
+            <n-layout style="height: 100vh;">
+              <n-layout-header bordered>
+                <n-page-header>
+                  <template #title>
+                    <n-space align="center">
+                      <a href="/">🐾</a>
+                      <span>PETS</span>
+                    </n-space>
+                  </template>
+                  <template #extra>
+                    <n-menu v-model:value="activeKey" mode="horizontal" :options="menuOptions" @update:value="handleMenuUpdate" />
+                  </template>
+                </n-page-header>
+              </n-layout-header>
 
-    <header>
-      <nav>
-        <ul><li><strong>🐾 PETS</strong></li></ul>
-        <ul>
-          <li>
-            <a href="#"
-               :class="{ 'secondary': currentPage !== 'pets' }"
-               @click.prevent="currentPage = 'pets'">
-              宠物管理
-            </a>
-          </li>
-          <li>
-            <a href="#"
-               :class="{ 'secondary': currentPage !== 'admin' }"
-               @click.prevent="showAdminPage">
-              后台管理
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </header>
+              <n-layout-content content-style="padding: 24px; max-width: 1200px; margin: 0 auto;">
+                <PetManagement v-if="activeKey === 'pets'" />
+                <AdminPage v-if="activeKey === 'admin'" />
+              </n-layout-content>
 
-    <hr>
+              <n-layout-footer bordered position="absolute" style="text-align: center; padding: 12px;">
+                Made with ❤️ and Naive UI
+              </n-layout-footer>
+            </n-layout>
 
-    <main>
-      <PetManagement v-if="currentPage === 'pets'" />
-      <AdminPage v-if="currentPage === 'admin'" />
-    </main>
+            <!-- Modals -->
+            <AuthModal
+              :show="isAuthModalVisible"
+              @close="isAuthModalVisible = false"
+            />
+            <PetDetailModal />
+            <PetFormModal />
+            <DictItemFormModal />
 
-    <AuthModal
-      :open="isAuthModalVisible"
-      @close="isAuthModalVisible = false"
-    />
-
-    <PetDetailModal />
-    <PetFormModal />
-
-  </div>
+          </n-dialog-provider>
+        </n-notification-provider>
+      </n-message-provider>
+    </n-loading-bar-provider>
+  </n-config-provider>
 </template>
 
 <style>
-/* (O_1171 修复) 全局样式 */
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
+body {
+  margin: 0;
+  padding: 0;
 }
 </style>
