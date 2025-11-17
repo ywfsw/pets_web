@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed, defineComponent, h } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import {
   NConfigProvider,
   NMessageProvider,
@@ -14,10 +14,6 @@ import {
   NMenu,
   NSpace,
   darkTheme,
-  useMessage,
-  useDialog,
-  useNotification,
-  useLoadingBar
 } from 'naive-ui';
 
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
@@ -31,6 +27,7 @@ import AuthModal from '@/components/AuthModal.vue';
 import PetDetailModal from '@/components/PetDetailModal.vue';
 import PetFormModal from '@/components/PetFormModal.vue';
 import DictItemFormModal from '@/components/DictItemFormModal.vue';
+import GlobalNaiveUIServices from '@/components/GlobalNaiveUIServices.vue'; // New import
 
 // --- Naive UI Setup ---
 const theme = ref(darkTheme);
@@ -78,17 +75,6 @@ onMounted(() => {
   petStore.loadUpcomingEvents();
 });
 
-// A component to be able to use message provider
-const AppContent = defineComponent({
-  setup() {
-    window.$message = useMessage()
-    window.$dialog = useDialog()
-    window.$notification = useNotification()
-    window.$loadingBar = useLoadingBar()
-    return () => h('div')
-  }
-})
-
 </script>
 
 <template>
@@ -97,7 +83,7 @@ const AppContent = defineComponent({
       <n-message-provider>
         <n-notification-provider>
           <n-dialog-provider>
-            <app-content />
+            <GlobalNaiveUIServices />
             <n-layout style="height: 100vh;">
               <n-layout-header bordered>
                 <n-page-header>
