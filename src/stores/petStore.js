@@ -155,16 +155,11 @@ import {
       loadingLeaderboard.value = true;
       try {
         const response = await fetchPetLeaderboard(3); // Fetch only top 3
-        const leaderboardData = response.data;
-
-        // Fetch avatarUrl for each pet in the leaderboard
-        const detailedLeaderboard = await Promise.all(
-          leaderboardData.map(async (pet) => {
-            const detailResponse = await fetchPetDetail(pet.petId);
-            return { ...pet, avatarUrl: detailResponse.data.avatarUrl };
-          })
-        );
-        petLeaderboard.value = detailedLeaderboard;
+        const leaderboardData = response.data.map(pet => ({
+          ...pet,
+          profileImageUrl: pet.profileImageUrl // Ensure the correct property name is used
+        }));
+        petLeaderboard.value = leaderboardData;
       } catch (err) {
         console.error("加载宠物排行榜失败:", err);
       } finally {
