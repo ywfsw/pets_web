@@ -22,7 +22,40 @@ export function useCloudinaryImage() {
     return originalUrl.replace('/upload/', `/upload/${transformation}`);
   };
 
+  /**
+   * Generates a Cloudinary URL for the full-resolution image, with auto format and quality.
+   *
+   * @param {string} originalUrl The original Cloudinary image URL from the backend.
+   * @returns {string} The transformed URL for the original size image.
+   */
+  const getFullResolutionUrl = (originalUrl) => {
+    if (!originalUrl || !originalUrl.includes('/upload/')) {
+      return originalUrl;
+    }
+    // Only apply format and quality optimizations, no resizing.
+    const transformation = 'f_auto,q_auto/';
+    return originalUrl.replace('/upload/', `/upload/${transformation}`);
+  };
+
+  /**
+   * Generates a Cloudinary URL for a gallery thumbnail, preserving aspect ratio.
+   *
+   * @param {string} originalUrl The original Cloudinary image URL from the backend.
+   * @returns {string} The transformed URL for a width-constrained thumbnail.
+   */
+  const getGalleryThumbnailUrl = (originalUrl) => {
+    if (!originalUrl || !originalUrl.includes('/upload/')) {
+      return originalUrl;
+    }
+    // Scale to a width of 400, height adjusts automatically.
+    const transformation = 'w_400,c_limit/f_auto,q_auto/';
+    return originalUrl.replace('/upload/', `/upload/${transformation}`);
+  };
+
+
   return {
     getAvatarUrl,
+    getFullResolutionUrl,
+    getGalleryThumbnailUrl,
   };
 }

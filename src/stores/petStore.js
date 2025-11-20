@@ -15,7 +15,11 @@ import {
     deletePet,
     fetchPetLeaderboard,
     createHealthEvent,
-    createWeightLog // (❗)
+    createWeightLog,
+    getAllPetGallery, // New
+    getPetGalleryByPetId,
+    addPetGalleryImage,
+    deletePetGalleryImage
   } from '@/api.js';
   
   // (❗) 宠物表单的默认值
@@ -67,6 +71,10 @@ import {
     // (❗) 排行榜状态
     const petLeaderboard = ref([]);
     const loadingLeaderboard = ref(false);
+
+    // (❗) 相册状态
+    const petGallery = ref([]);
+    const loadingGallery = ref(false);
   
     // (模态框状态)
     const detailModal = ref({
@@ -164,6 +172,52 @@ import {
         console.error("加载宠物排行榜失败:", err);
       } finally {
         loadingLeaderboard.value = false;
+      }
+    }
+
+    async function loadAllPetGallery() {
+      if (loadingGallery.value) return;
+      loadingGallery.value = true;
+      try {
+        const response = await getAllPetGallery();
+        petGallery.value = response.data;
+      } catch (err) {
+        console.error("加载所有宠物相册失败:", err);
+        petGallery.value = [];
+      } finally {
+        loadingGallery.value = false;
+      }
+    }
+
+    async function loadPetGalleryByPetId(petId) {
+      if (loadingGallery.value) return;
+      loadingGallery.value = true;
+      try {
+        const response = await getPetGalleryByPetId(petId);
+        petGallery.value = response.data;
+      } catch (err) {
+        console.error("加载宠物相册失败:", err);
+        petGallery.value = [];
+      } finally {
+        loadingGallery.value = false;
+      }
+    }
+
+    async function addPetGallery(imageData) {
+      try {
+        await addPetGalleryImage(imageData);
+        await loadAllPetGallery(); // 刷新
+      } catch (err) {
+        console.error("添加宠物图片失败:", err);
+      }
+    }
+
+    async function deletePetGallery(imageId) {
+      try {
+        await deletePetGalleryImage(imageId);
+        await loadAllPetGallery(); // 刷新
+      } catch (err) {
+        console.error("删除宠物图片失败:", err);
       }
     }
   
@@ -397,6 +451,8 @@ import {
       pagination,
       petLeaderboard, // (❗)
       loadingLeaderboard, // (❗)
+      petGallery,
+      loadingGallery,
   
       // Computed
       petList,
@@ -407,6 +463,10 @@ import {
       loadUpcomingEvents,
       loadPetList,
       loadPetLeaderboard, // (❗)
+      loadAllPetGallery,
+      loadPetGalleryByPetId,
+      addPetGallery,
+      deletePetGallery,
       goToNextPage,
       goToPrevPage,
       handleLike,

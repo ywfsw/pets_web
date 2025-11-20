@@ -55,7 +55,7 @@ const fallbackAvatar = 'https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jp
         </n-space>
 
         <!-- Second row: 2nd and 3rd place -->
-        <n-space justify="space-around" align="center" style="width: 100%;">
+        <n-space justify="center" align="center" :size="80" style="width: 100%;">
           <template v-if="top3Pets[1]">
             <n-space vertical align="center">
               <n-avatar

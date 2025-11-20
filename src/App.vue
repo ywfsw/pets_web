@@ -25,6 +25,7 @@ import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 
 import PetManagement from '@/views/PetManagement.vue';
+import PetAlbum from '@/views/PetAlbum.vue';
 import AdminPage from '@/views/AdminPage.vue';
 
 import AuthModal from '@/components/AuthModal.vue';
@@ -42,15 +43,14 @@ const activeKey = ref('pets');
 
 const menuOptions = [
   { label: '宠物管理', key: 'pets' },
+  { label: '宠物相册', key: 'pet-album' },
   { label: '后台管理', key: 'admin' },
 ];
 
 const dictStore = useDictionaryStore();
 const petStore = usePetStore();
 const authStore = useAuthStore();
-
 const isAuthModalVisible = ref(false);
-
 const handleMenuUpdate = (key) => {
   if (key === 'admin') {
     if (authStore.isAuthenticated) {
@@ -63,7 +63,6 @@ const handleMenuUpdate = (key) => {
     activeKey.value = key;
   }
 };
-
 watch(
   () => authStore.isAuthenticated,
   (isNowAuthenticated) => {
@@ -73,15 +72,12 @@ watch(
     }
   }
 );
-
 onMounted(async () => {
   await dictStore.loadAllAppDictionaries();
   petStore.loadPetList();
   petStore.loadUpcomingEvents();
 });
-
 </script>
-
 <template>
   <n-config-provider :theme="theme">
     <n-loading-bar-provider>
@@ -113,17 +109,15 @@ onMounted(async () => {
                   </template>
                 </n-page-header>
               </n-layout-header>
-
               <n-layout-content content-style="padding: 24px; max-width: 1200px; margin: 0 auto;">
                 <PetManagement v-if="activeKey === 'pets'" />
+                <PetAlbum v-if="activeKey === 'pet-album'" />
                 <AdminPage v-if="activeKey === 'admin'" />
               </n-layout-content>
-
               <n-layout-footer bordered position="absolute" style="text-align: center; padding: 12px;">
                 Made with ❤️ and Naive UI
               </n-layout-footer>
             </n-layout>
-
             <!-- Modals -->
             <AuthModal
               :show="isAuthModalVisible"
@@ -132,14 +126,12 @@ onMounted(async () => {
             <PetDetailModal />
             <PetFormModal />
             <DictItemFormModal />
-
           </n-dialog-provider>
         </n-notification-provider>
       </n-message-provider>
     </n-loading-bar-provider>
   </n-config-provider>
 </template>
-
 <style>
 body {
   margin: 0;

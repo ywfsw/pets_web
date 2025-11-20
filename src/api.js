@@ -123,3 +123,24 @@ export const fetchDictItemsByCode = (dictCode) => {
 export const fetchPetLeaderboard = (topN = 10) => {
   return apiClient.get('/api/pets/leaderboard', { params: { topN } });
 };
+
+// --- 宠物相册 API ---
+export const getAllPetGallery = () => {
+  return apiClient.get('/api/petGallery');
+};
+
+export const getPetGalleryByPetId = (petId) => {
+  return apiClient.get(`/api/petGallery/pet/${petId}`);
+};
+
+export const addPetGalleryImage = (payload) => {
+  return apiClient.post('/api/petGallery', payload);
+};
+
+export const deletePetGalleryImage = (id) => {
+  return apiClient.delete(`/api/petGallery/${id}`);
+};
+
+export const updatePetGalleryImage = (id, payload) => {
+  return apiClient.put(`/api/petGallery/${id}`, payload);
+};
