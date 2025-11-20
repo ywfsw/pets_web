@@ -199,14 +199,13 @@ async function handleConfirmDescription() {
           :src="fullImageUrl"
           style="max-width: 100%; max-height: 100%; object-fit: contain;"
         />
-      </n-spin>
-      <template #footer>
-        <div style="text-align: center;">
-          <n-text v-if="fullImageDescription" style="color: white; font-size: 16px;">
+        <div v-if="fullImageDescription" class="lightbox-description-overlay">
+          <n-text class="lightbox-description-text">
             {{ fullImageDescription }}
           </n-text>
         </div>
-      </template>
+      </n-spin>
+
     </n-modal>
   </n-card>
 </template>
@@ -271,6 +270,25 @@ async function handleConfirmDescription() {
   font-size: 16px;
   z-index: 1;
   pointer-events: none;
+}
+
+.lightbox-description-overlay {
+  position: absolute;
+  bottom: 30px; /* Leave a little gap from the bottom edge */
+  left: 0;
+  right: 0;
+  text-align: center; /* Center the inline-block text */
+  z-index: 2;
+  pointer-events: none; /* Allow clicks to pass through to the image */
+}
+.lightbox-description-text {
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px; /* Rounded corners for the background */
+  font-size: 16px;
+  display: inline-block; /* Make background fit content */
+  max-width: 80%; /* Limit width to avoid being too wide */
 }
 
 /* Responsive Columns */
