@@ -108,7 +108,7 @@ async function handleConfirmDescription() {
 </script>
 
 <template>
-  <n-card title="所有宠物图片">
+  <n-card>
     <!-- Add Image FAB -->
     <n-button
       strong
