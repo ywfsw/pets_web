@@ -4,7 +4,7 @@ import { usePetStore } from '@/stores/petStore.js';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import {
   NModal,
-  NCard,
+
   NForm,
   NFormItem,
   NInput,
@@ -12,7 +12,7 @@ import {
   NDatePicker,
   NButton,
   NSpace,
-  NInputNumber,
+
 } from 'naive-ui';
 
 const petStore = usePetStore();

@@ -8,7 +8,7 @@ import {
   NCard,
   NDataTable,
   NButton,
-  NPagination,
+
   NAvatar,
   NThing,
   NSpace,
@@ -43,7 +43,7 @@ const handleCreatePet = () => { petStore.showPetFormModal(null); };
 const handleShowDetail = (petId) => { petStore.showDetailModal(petId); };
 const handlePageChange = (page) => { petStore.loadPetList(page); };
 
-const createColumns = ({ handleLike, handleShowDetail, isMobile }) => {
+const createColumns = ({ handleShowDetail, isMobile }) => {
   const baseColumns = [
     {
       title: '名字',

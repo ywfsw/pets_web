@@ -4,7 +4,7 @@ import { fetchDictParentOptions } from '@/api.js';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import {
   NModal,
-  NCard,
+
   NForm,
   NFormItem,
   NInput,

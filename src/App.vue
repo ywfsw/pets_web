@@ -15,8 +15,7 @@ import {
   NSpace,
   NSwitch, // Added NSwitch
   NIcon,   // Added NIcon
-  darkTheme,
-  lightTheme // Added lightTheme
+  darkTheme
 } from 'naive-ui';
 import { Moon, Sunny } from '@vicons/ionicons5'; // Added Moon and Sunny icons
 

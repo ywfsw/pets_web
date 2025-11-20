@@ -3,7 +3,7 @@ import { usePetStore } from '@/stores/petStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 import {
   NModal,
-  NCard,
+
   NSpace,
   NAvatar,
   NList,

@@ -7,7 +7,7 @@ import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 
 import {
   NModal,
-  NCard,
+
   NForm,
   NFormItem,
   NInput,

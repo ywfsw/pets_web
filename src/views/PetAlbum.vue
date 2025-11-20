@@ -4,41 +4,53 @@ import { storeToRefs } from 'pinia';
 import { usePetStore } from '@/stores/petStore';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage';
 import { useCloudinaryUpload } from '@/composables/useCloudinaryUpload';
-import { NCard, NImage, NSpin, NEmpty, NModal, NText, NButton, NIcon, NSelect, NSpace, useMessage } from 'naive-ui';
+import { getPetGalleryDetail } from '@/api.js';
+import { NCard, NSpin, NEmpty, NModal, NText, NButton, NIcon, NSelect, NSpace, useMessage, NInput } from 'naive-ui';
 import { Add } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const { petGallery, loadingGallery, petList, loadingList } = storeToRefs(petStore);
 const { getFullResolutionUrl, getGalleryThumbnailUrl } = useCloudinaryImage();
-const { openUploadWidget, isUploading, uploadError } = useCloudinaryUpload();
+const { openUploadWidget, isUploading } = useCloudinaryUpload();
 const message = useMessage();
 
 
 // --- Lightbox Modal State ---
 const showFullImageModal = ref(false);
 const fullImageUrl = ref('');
-const fullImageCaption = ref(''); // State for the caption
+const fullImageDescription = ref('');
+const lightboxLoading = ref(false);
 
 onMounted(() => {
   petStore.loadAllPetGallery();
-  // Also load pet list for the uploader
   if (petList.value.length === 0) {
     petStore.loadPetList();
   }
 });
 
 // --- Lightbox Logic ---
-function showFullImage(image) {
+async function showFullImage(image) {
   fullImageUrl.value = getFullResolutionUrl(image.imageUrl);
-  fullImageCaption.value = image.caption; // Set the caption
+  fullImageDescription.value = '';
   showFullImageModal.value = true;
+  lightboxLoading.value = true;
+
+  try {
+    const response = await getPetGalleryDetail(image.id);
+    fullImageDescription.value = response.data.description;
+  } catch (err) {
+    console.error("获取图片详情失败:", err);
+    message.error('加载图片描述失败');
+  } finally {
+    lightboxLoading.value = false;
+  }
 }
 
 // --- Upload Logic ---
 const showSelectPetModal = ref(false);
-const showCaptionModal = ref(false);
+const showDescriptionModal = ref(false);
 const newImageData = ref(null);
-const imageCaption = ref('');
+const imageDescription = ref('');
 const uploadTargetPetId = ref(null);
 
 const petOptions = computed(() =>
@@ -69,27 +81,26 @@ function handlePetSelected() {
         petId: uploadTargetPetId.value,
         imageUrl: url,
         publicId: publicId, // Also save publicId
-        caption: ''
+        description: ''
       };
-      showCaptionModal.value = true;
+      showDescriptionModal.value = true;
     }
   );
 }
 
-async function handleConfirmCaption() {
+async function handleConfirmDescription() {
   if (!newImageData.value) return;
-  newImageData.value.caption = imageCaption.value;
+  newImageData.value.description = imageDescription.value;
 
   try {
-    // We call addPetGallery which now reloads the whole list
     await petStore.addPetGallery(newImageData.value);
     message.success('图片添加成功');
   } catch (error) {
     console.error('添加图片失败:', error);
     message.error('添加图片失败');
   } finally {
-    showCaptionModal.value = false;
-    imageCaption.value = '';
+    showDescriptionModal.value = false;
+    imageDescription.value = '';
     newImageData.value = null;
   }
 }
@@ -127,7 +138,7 @@ async function handleConfirmCaption() {
               class="masonry-image"
               loading="lazy"
             />
-            <n-text v-if="image.caption" class="caption">{{ image.caption }}</n-text>
+            <n-text v-if="image.description" class="description">{{ image.description }}</n-text>
           </div>
         </div>
       </div>
@@ -160,17 +171,17 @@ async function handleConfirmCaption() {
       </n-space>
     </n-modal>
 
-    <!-- Add Caption Modal -->
+    <!-- Add Description Modal -->
     <n-modal
-        v-model:show="showCaptionModal"
+        v-model:show="showDescriptionModal"
         preset="card"
         style="width: 500px"
         title="为图片添加描述"
         :mask-closable="false"
       >
         <n-space vertical>
-          <n-input v-model:value="imageCaption" placeholder="输入图片描述..." @keydown.enter="handleConfirmCaption"/>
-          <n-button type="primary" @click="handleConfirmCaption">确认</n-button>
+          <n-input v-model:value="imageDescription" placeholder="输入图片描述..." @keydown.enter="handleConfirmDescription"/>
+          <n-button type="primary" @click="handleConfirmDescription">确认</n-button>
         </n-space>
       </n-modal>
 
@@ -179,17 +190,23 @@ async function handleConfirmCaption() {
       v-model:show="showFullImageModal"
       preset="card"
       style="width: 90vw; max-width: 1200px; height: 90vh; background: rgba(0, 0, 0, 0.8);"
-      content-style="display: flex; align-items: center; justify-content: center; height: 100%; padding: 0; position: relative;"
+      content-style="display: flex; align-items: center; justify-content: center; height: 100%; padding: 0;"
       :bordered="false"
-      :on-after-leave="() => { fullImageUrl = ''; fullImageCaption = ''; }"
+      :on-after-leave="() => { fullImageUrl = ''; fullImageDescription = ''; }"
     >
-      <img
-        :src="fullImageUrl"
-        style="max-width: 100%; max-height: 100%; object-fit: contain;"
-      />
-      <div v-if="fullImageCaption" class="lightbox-caption">
-        {{ fullImageCaption }}
-      </div>
+      <n-spin :show="lightboxLoading" size="large">
+        <img
+          :src="fullImageUrl"
+          style="max-width: 100%; max-height: 100%; object-fit: contain;"
+        />
+      </n-spin>
+      <template #footer>
+        <div style="text-align: center;">
+          <n-text v-if="fullImageDescription" style="color: white; font-size: 16px;">
+            {{ fullImageDescription }}
+          </n-text>
+        </div>
+      </template>
     </n-modal>
   </n-card>
 </template>
@@ -224,7 +241,7 @@ async function handleConfirmCaption() {
   display: block;
 }
 
-.masonry-item .caption {
+.masonry-item .description {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -236,11 +253,11 @@ async function handleConfirmCaption() {
   transition: opacity 0.3s ease;
   font-size: 14px;
 }
-.masonry-item:hover .caption {
+.masonry-item:hover .description {
   opacity: 1;
 }
 
-.lightbox-caption {
+.lightbox-description {
   position: absolute;
   bottom: 24px;
   left: 50%;

@@ -2,7 +2,7 @@
 import { usePetStore } from '@/stores/petStore.js';
 import {
   NModal,
-  NCard,
+
   NForm,
   NFormItem,
   NInputNumber,

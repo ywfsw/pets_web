@@ -3,7 +3,7 @@ import { ref, watch } from 'vue';
 import { useAuthStore } from '@/stores/authStore.js';
 import {
   NModal,
-  NCard,
+
   NForm,
   NFormItem,
   NInput,

@@ -129,6 +129,11 @@ export const getAllPetGallery = () => {
   return apiClient.get('/api/petGallery');
 };
 
+export const getPetGalleryDetail = (id) => {
+  return apiClient.get(`/api/petGallery/${id}`);
+};
+
+
 export const getPetGalleryByPetId = (petId) => {
   return apiClient.get(`/api/petGallery/pet/${petId}`);
 };
