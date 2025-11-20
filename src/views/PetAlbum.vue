@@ -1,32 +1,118 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { usePetStore } from '@/stores/petStore';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage';
-import { NCard, NImage, NSpin, NEmpty, NModal, NText } from 'naive-ui';
+import { useCloudinaryUpload } from '@/composables/useCloudinaryUpload';
+import { NCard, NImage, NSpin, NEmpty, NModal, NText, NButton, NIcon, NSelect, NSpace, useMessage } from 'naive-ui';
+import { Add } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
-const { petGallery, loadingGallery } = storeToRefs(petStore);
+const { petGallery, loadingGallery, petList, loadingList } = storeToRefs(petStore);
 const { getFullResolutionUrl, getGalleryThumbnailUrl } = useCloudinaryImage();
+const { openUploadWidget, isUploading, uploadError } = useCloudinaryUpload();
+const message = useMessage();
+
 
 // --- Lightbox Modal State ---
 const showFullImageModal = ref(false);
 const fullImageUrl = ref('');
+const fullImageCaption = ref(''); // State for the caption
 
 onMounted(() => {
   petStore.loadAllPetGallery();
+  // Also load pet list for the uploader
+  if (petList.value.length === 0) {
+    petStore.loadPetList();
+  }
 });
 
 // --- Lightbox Logic ---
-function showFullImage(imageUrl) {
-  fullImageUrl.value = getFullResolutionUrl(imageUrl);
+function showFullImage(image) {
+  fullImageUrl.value = getFullResolutionUrl(image.imageUrl);
+  fullImageCaption.value = image.caption; // Set the caption
   showFullImageModal.value = true;
+}
+
+// --- Upload Logic ---
+const showSelectPetModal = ref(false);
+const showCaptionModal = ref(false);
+const newImageData = ref(null);
+const imageCaption = ref('');
+const uploadTargetPetId = ref(null);
+
+const petOptions = computed(() =>
+  petList.value.map(pet => ({
+    label: pet.name,
+    value: pet.id
+  }))
+);
+
+function handleAddClick() {
+  uploadTargetPetId.value = null; // Reset selection
+  showSelectPetModal.value = true;
+}
+
+function handlePetSelected() {
+  if (!uploadTargetPetId.value) {
+    message.error('请选择一个宠物');
+    return;
+  }
+  showSelectPetModal.value = false;
+  openUploadWidget(
+    {
+      folder: 'pet-gallery',
+      tags: ['gallery', `pet-${uploadTargetPetId.value}`]
+    },
+    ({ url, publicId }) => {
+      newImageData.value = {
+        petId: uploadTargetPetId.value,
+        imageUrl: url,
+        publicId: publicId, // Also save publicId
+        caption: ''
+      };
+      showCaptionModal.value = true;
+    }
+  );
+}
+
+async function handleConfirmCaption() {
+  if (!newImageData.value) return;
+  newImageData.value.caption = imageCaption.value;
+
+  try {
+    // We call addPetGallery which now reloads the whole list
+    await petStore.addPetGallery(newImageData.value);
+    message.success('图片添加成功');
+  } catch (error) {
+    console.error('添加图片失败:', error);
+    message.error('添加图片失败');
+  } finally {
+    showCaptionModal.value = false;
+    imageCaption.value = '';
+    newImageData.value = null;
+  }
 }
 
 </script>
 
 <template>
   <n-card title="所有宠物图片">
+    <!-- Add Image FAB -->
+    <n-button
+      strong
+      secondary
+      circle
+      type="primary"
+      class="add-button"
+      @click="handleAddClick"
+      :loading="isUploading"
+    >
+      <template #icon>
+        <n-icon><Add /></n-icon>
+      </template>
+    </n-button>
+
     <n-spin :show="loadingGallery">
       <div v-if="petGallery.length > 0">
         <div class="masonry-grid">
@@ -34,12 +120,12 @@ function showFullImage(imageUrl) {
             v-for="image in petGallery"
             :key="image.id"
             class="masonry-item"
-            @click="showFullImage(image.imageUrl)"
+            @click="showFullImage(image)"
           >
-            <n-image
+            <img
               :src="getGalleryThumbnailUrl(image.imageUrl)"
-              preview-disabled
-              lazy
+              class="masonry-image"
+              loading="lazy"
             />
             <n-text v-if="image.caption" class="caption">{{ image.caption }}</n-text>
           </div>
@@ -48,21 +134,76 @@ function showFullImage(imageUrl) {
       <n-empty v-else description="相册里还没有照片" style="margin-top: 24px;" />
     </n-spin>
 
+    <!-- Select Pet Modal -->
+    <n-modal
+      v-model:show="showSelectPetModal"
+      preset="card"
+      style="width: 500px"
+      title="选择一个宠物"
+      :mask-closable="false"
+    >
+      <n-space vertical>
+        <n-select
+          v-model:value="uploadTargetPetId"
+          placeholder="这张照片属于哪个小可爱？"
+          :options="petOptions"
+          :loading="loadingList"
+        />
+        <n-button
+          type="primary"
+          @click="handlePetSelected"
+          :disabled="!uploadTargetPetId || isUploading"
+          :loading="isUploading"
+        >
+          下一步：上传图片
+        </n-button>
+      </n-space>
+    </n-modal>
+
+    <!-- Add Caption Modal -->
+    <n-modal
+        v-model:show="showCaptionModal"
+        preset="card"
+        style="width: 500px"
+        title="为图片添加描述"
+        :mask-closable="false"
+      >
+        <n-space vertical>
+          <n-input v-model:value="imageCaption" placeholder="输入图片描述..." @keydown.enter="handleConfirmCaption"/>
+          <n-button type="primary" @click="handleConfirmCaption">确认</n-button>
+        </n-space>
+      </n-modal>
+
     <!-- Full Image Lightbox Modal -->
     <n-modal
       v-model:show="showFullImageModal"
       preset="card"
-      style="width: 90vw; max-width: 1200px; height: 90vh;"
-      content-style="display: flex; align-items: center; justify-content: center; height: 100%;"
+      style="width: 90vw; max-width: 1200px; height: 90vh; background: rgba(0, 0, 0, 0.8);"
+      content-style="display: flex; align-items: center; justify-content: center; height: 100%; padding: 0; position: relative;"
       :bordered="false"
-      :on-after-leave="() => fullImageUrl = ''"
+      :on-after-leave="() => { fullImageUrl = ''; fullImageCaption = ''; }"
     >
-      <n-image :src="fullImageUrl" object-fit="contain" style="max-height: 100%; max-width: 100%;"/>
+      <img
+        :src="fullImageUrl"
+        style="max-width: 100%; max-height: 100%; object-fit: contain;"
+      />
+      <div v-if="fullImageCaption" class="lightbox-caption">
+        {{ fullImageCaption }}
+      </div>
     </n-modal>
   </n-card>
 </template>
 
 <style scoped>
+.add-button {
+  position: fixed;
+  top: 84px;
+  right: 40px;
+  z-index: 10;
+  width: 50px;
+  height: 50px;
+}
+
 .masonry-grid {
   column-count: 4;
   column-gap: 12px;
@@ -78,6 +219,11 @@ function showFullImage(imageUrl) {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
+.masonry-item .masonry-image {
+  width: 100%;
+  display: block;
+}
+
 .masonry-item .caption {
   position: absolute;
   bottom: 0;
@@ -90,9 +236,24 @@ function showFullImage(imageUrl) {
   transition: opacity 0.3s ease;
   font-size: 14px;
 }
-
 .masonry-item:hover .caption {
   opacity: 1;
+}
+
+.lightbox-caption {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  max-width: 80%;
+  text-align: center;
+  font-size: 16px;
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* Responsive Columns */
@@ -101,13 +262,16 @@ function showFullImage(imageUrl) {
     column-count: 3;
   }
 }
-
 @media (max-width: 768px) {
   .masonry-grid {
     column-count: 2;
   }
+  .add-button {
+    top: auto;
+    bottom: 20px;
+    right: 20px;
+  }
 }
-
 @media (max-width: 576px) {
   .masonry-grid {
     column-count: 1;
