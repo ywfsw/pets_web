@@ -23,6 +23,19 @@ const apiClient = axios.create({
   timeout: 10000
 });
 
+// 添加请求拦截器，在请求头中携带 token
+apiClient.interceptors.request.use(
+  config => {
+    const token = localStorage.getItem('token');
+    const tokenName = localStorage.getItem('tokenName') || 'satoken';
+    if (token) {
+      config.headers[tokenName] = token;
+    }
+    return config;
+  },
+  error => Promise.reject(error)
+);
+
 /**
  * A robust timeout wrapper for promises.
  * @param {Promise} promise The promise to wrap.
@@ -148,4 +161,21 @@ export const deletePetGalleryImage = (id) => {
 
 export const updatePetGalleryImage = (id, payload) => {
   return apiClient.put(`/api/petGallery/${id}`, payload);
+};
+
+// --- Auth API ---
+export const login = (payload) => {
+  return apiClient.post('/api/auth/login', payload);
+};
+
+export const register = (payload) => {
+  return apiClient.post('/api/auth/register', payload);
+};
+
+export const getUserInfo = () => {
+  return apiClient.get('/api/auth/info');
+};
+
+export const logout = () => {
+  return apiClient.post('/api/auth/logout');
 };

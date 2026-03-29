@@ -1,44 +1,99 @@
-# pets-web-v2
+# 🐾 萌宠之家 - 宠物管理系统
 
-This template should help get you started developing with Vue 3 in Vite.
+一个温馨可爱的宠物管理 Web 应用，支持宠物信息管理、相册、点赞排行榜等功能。
 
-## Recommended IDE Setup
+## ✨ 特性
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- 🏠 **宠物管理** - 添加、编辑、删除宠物信息
+- 📸 **宠物相册** - 上传和管理宠物照片，瀑布流展示
+- ❤️ **点赞排行榜** - 展示最受欢迎的萌宠
+- 📅 **健康提醒** - 记录疫苗、驱虫等健康事件
+- ⚖️ **体重追踪** - 记录宠物体重变化
+- 🌙 **主题切换** - 支持明暗主题
+- 📱 **响应式设计** - 完美支持移动端
 
-## Recommended Browser Setup
+## 🛠️ 技术栈
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+- **前端框架:** Vue 3 + Composition API
+- **UI 组件库:** Naive UI
+- **状态管理:** Pinia
+- **图片上传:** Cloudinary
+- **构建工具:** Vite
 
-## Customize configuration
+## 🚀 快速开始
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### 安装依赖
 
-## Project Setup
-
-```sh
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### 开发模式
 
-```sh
+```bash
 npm run dev
 ```
 
-### Compile and Minify for Production
+访问 http://localhost:5173
 
-```sh
+### 生产构建
+
+```bash
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+## 📁 项目结构
 
-```sh
-npm run lint
 ```
+src/
+├── api.js                 # API 请求封装
+├── main.js               # 应用入口
+├── App.vue               # 根组件
+├── styles/               # 全局样式
+│   ├── global.css
+│   └── pet-theme.js
+├── stores/               # Pinia 状态管理
+│   ├── authStore.js
+│   ├── dictionaryStore.js
+│   └── petStore.js
+├── composables/          # 组合式函数
+│   ├── useCloudinaryImage.js
+│   └── useCloudinaryUpload.js
+├── views/                # 页面组件
+│   ├── PetManagement.vue
+│   ├── PetAlbum.vue
+│   └── AdminPage.vue
+└── components/           # 公共组件
+    ├── AuthModal.vue
+    ├── PetDetailModal.vue
+    ├── PetFormModal.vue
+    ├── PetLeaderboard.vue
+    └── ...
+```
+
+## 🎨 UI 设计
+
+- **主色调:** 柔和粉 (#FF9BA8)
+- **辅助色:** 薄荷绿 (#86EFAC)、天空蓝 (#7DD3FC)
+- **背景:** 奶油白 (#FFF9F5)
+- **风格:** 温馨可爱、圆角卡片、渐变按钮
+
+## 🔗 后端 API
+
+后端服务地址: `http://localhost:8080`
+
+详细 API 文档请参考后端项目 [README.md](../IdeaProjects/pets/README.md)
+
+## 📱 移动端适配
+
+- 响应式布局，完美适配手机、平板
+- 移动端优化菜单和交互
+- 触摸友好的按钮和表单
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 📄 许可证
+
+MIT License

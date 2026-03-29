@@ -1,0 +1,321 @@
+/* 宠物管理系统 - 全局样式 */
+
+/* 引入 Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+
+/* CSS 变量 */
+:root {
+  /* 主色调 */
+  --pet-primary: #FF9BA8;
+  --pet-primary-hover: #FF7A8A;
+  --pet-primary-pressed: #FF5A6A;
+  --pet-primary-light: #FFE4E9;
+  --pet-primarySuppl: #FFBFC5;
+
+  /* 辅助色 */
+  --pet-info: #7DD3FC;
+  --pet-success: #86EFAC;
+  --pet-warning: #FCD34D;
+  --pet-error: #FCA5A5;
+
+  /* 背景色 */
+  --pet-bg: #FFF9F5;
+  --pet-card: #FFFFFF;
+  --pet-modal: #FFFFFF;
+
+  /* 文字色 */
+  --pet-text: #4A4A4A;
+  --pet-text-primary: #2D2D2D;
+  --pet-text-secondary: #6B6B6B;
+  --pet-text-tertiary: #9CA3AF;
+
+  /* 边框 */
+  --pet-border: #F0E6E0;
+  --pet-divider: #F5EDE8;
+
+  /* 圆角 */
+  --pet-radius: 16px;
+  --pet-radius-sm: 8px;
+  --pet-radius-lg: 24px;
+
+  /* 阴影 */
+  --pet-shadow: 0 4px 20px rgba(255, 155, 168, 0.15);
+  --pet-shadow-hover: 0 8px 30px rgba(255, 155, 168, 0.25);
+  --pet-shadow-sm: 0 2px 10px rgba(255, 155, 168, 0.1);
+
+  /* 字体 */
+  --pet-font: 'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* 全局重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--pet-font);
+  background: var(--pet-bg);
+  color: var(--pet-text);
+  min-height: 100vh;
+  /* 温馨背景装饰 */
+  background-image:
+    radial-gradient(circle at 20% 80%, rgba(255, 155, 168, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(125, 211, 252, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(134, 239, 172, 0.06) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--pet-bg);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pet-primary-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pet-primary);
+}
+
+/* 卡片样式 */
+.pet-card {
+  background: var(--pet-card);
+  border-radius: var(--pet-radius);
+  border: 1px solid var(--pet-border);
+  box-shadow: var(--pet-shadow);
+  transition: all 0.3s ease;
+}
+
+.pet-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--pet-shadow-hover);
+}
+
+/* 按钮样式 */
+.pet-button {
+  border-radius: var(--pet-radius-lg);
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.pet-button-primary {
+  background: linear-gradient(135deg, var(--pet-primary) 0%, var(--pet-primarySuppl) 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 155, 168, 0.3);
+}
+
+.pet-button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 155, 168, 0.4);
+}
+
+/* 输入框样式 */
+.pet-input {
+  border-radius: var(--pet-radius-sm);
+  border: 2px solid var(--pet-border);
+  transition: all 0.3s ease;
+}
+
+.pet-input:focus {
+  border-color: var(--pet-primary);
+  box-shadow: 0 0 0 3px rgba(255, 155, 168, 0.1);
+}
+
+/* 头像样式 */
+.pet-avatar {
+  border-radius: 50%;
+  border: 3px solid var(--pet-primary-light);
+  box-shadow: var(--pet-shadow-sm);
+}
+
+/* 标签样式 */
+.pet-tag {
+  border-radius: var(--pet-radius-sm);
+  padding: 2px 10px;
+  font-weight: 500;
+}
+
+/* 点赞按钮 - 表格中使用 */
+.like-button-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: linear-gradient(145deg, #FFF5F7 0%, #FFE4E9 100%);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow:
+    0 2px 8px rgba(255, 107, 138, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 155, 168, 0.3);
+  user-select: none;
+}
+
+.like-button-wrapper:hover {
+  background: linear-gradient(145deg, #FFE4E9 0%, #FFD1D9 100%);
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 12px rgba(255, 107, 138, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.like-button-wrapper:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 4px rgba(255, 107, 138, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.like-icon {
+  font-size: 14px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(255, 107, 138, 0.3));
+}
+
+.like-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FF6B8A;
+  min-width: 20px;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* 页面标题 */
+.pet-page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--pet-text-primary);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pet-page-title::before {
+  content: '🐾';
+  font-size: 24px;
+}
+
+/* 列表项 */
+.pet-list-item {
+  background: var(--pet-card);
+  border-radius: var(--pet-radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid var(--pet-border);
+  transition: all 0.3s ease;
+}
+
+.pet-list-item:hover {
+  border-color: var(--pet-primary-light);
+  box-shadow: var(--pet-shadow-sm);
+}
+
+/* 空状态 */
+.pet-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--pet-text-tertiary);
+}
+
+.pet-empty-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* 加载状态 */
+.pet-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .pet-page-title {
+    font-size: 22px;
+  }
+
+  .pet-card {
+    border-radius: var(--pet-radius-sm);
+  }
+}
+
+/* 动画 */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+}
+
+@keyframes pet-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes pet-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pet-fade-in {
+  animation: pet-fade-in 0.3s ease;
+}
+
+/* 渐变背景 */
+.pet-gradient-bg {
+  background: linear-gradient(135deg, var(--pet-primary) 0%, var(--pet-primarySuppl) 100%);
+}
+
+/* 装饰性元素 */
+.pet-decoration {
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.pet-decoration-1 {
+  top: 10%;
+  left: 5%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255, 155, 168, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.pet-decoration-2 {
+  bottom: 20%;
+  right: 10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(125, 211, 252, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+}

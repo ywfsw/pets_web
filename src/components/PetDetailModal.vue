@@ -3,7 +3,6 @@ import { usePetStore } from '@/stores/petStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 import {
   NModal,
-
   NSpace,
   NAvatar,
   NList,
@@ -13,7 +12,13 @@ import {
   NText,
   NSkeleton,
   NButton,
+  NCard,
+  NGrid,
+  NGi,
+  NIcon,
+  NTag
 } from 'naive-ui';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline } from '@vicons/ionicons5';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
 import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
@@ -35,6 +40,19 @@ const handleShowHealthEventForm = () => {
 const handleClose = () => {
   petStore.closeAllPetModals();
 };
+
+// 获取物种标签类型
+const getSpeciesTagType = (species) => {
+  const typeMap = {
+    'dog': 'warning',
+    'cat': 'success',
+    'bird': 'info',
+    'fish': 'info',
+    'rabbit': 'warning',
+    'hamster': 'warning'
+  };
+  return typeMap[species?.toLowerCase()] || 'default';
+};
 </script>
 
 <template>
@@ -42,69 +60,191 @@ const handleClose = () => {
     :show="petStore.detailModal.show"
     @update:show="handleClose"
     preset="card"
-    style="width: 600px;"
-    :title="petStore.detailModal.data?.name || '宠物详情'"
+    style="width: 650px; border-radius: 24px;"
     :bordered="false"
+    class="pet-detail-modal"
+    :mask-closable="false"
   >
     <template v-if="petStore.detailModal.loading">
-      <n-space vertical>
-        <n-skeleton height="120px" width="120px" :sharp="false" style="border-radius: 50%; margin: 0 auto;" />
+      <n-space vertical align="center">
+        <n-skeleton height="120px" width="120px" :sharp="false" style="border-radius: 50%;" />
         <n-skeleton text :repeat="6" />
       </n-space>
     </template>
 
     <template v-else-if="petStore.detailModal.data">
-      <n-space vertical :size="24">
-        <div style="text-align: center;">
+      <!-- 头部头像区域 -->
+      <div class="detail-header">
+        <div class="avatar-container">
           <n-avatar
             round
             :size="120"
-            :src="getAvatarUrl(petStore.detailModal.data.avatarUrl)"
+            :src="getAvatarUrl(petStore.detailModal.data.avatarUrl || petStore.detailModal.data.profileImageUrl)"
+            style="border: 4px solid #FFE4E9; box-shadow: 0 4px 20px rgba(255, 155, 168, 0.3);"
           />
         </div>
+        <h2 class="pet-name">{{ petStore.detailModal.data.name }}</h2>
+        <n-space align="center" :size="8">
+          <n-tag v-if="petStore.detailModal.data.speciesLabel" :type="getSpeciesTagType(petStore.detailModal.data.species)" round size="small">
+            <template #icon>
+              <n-icon :component="PawOutline" size="14" />
+            </template>
+            {{ petStore.detailModal.data.speciesLabel }}
+          </n-tag>
+          <n-tag v-if="petStore.detailModal.data.breedLabel" type="default" round size="small">
+            {{ petStore.detailModal.data.breedLabel }}
+          </n-tag>
+        </n-space>
+      </div>
 
-        <n-list bordered>
-          <n-list-item>
-            <n-thing title="物种" :description="petStore.detailModal.data.speciesLabel" />
-          </n-list-item>
-          <n-list-item>
-            <n-thing title="品种" :description="petStore.detailModal.data.breedLabel" />
-          </n-list-item>
-        </n-list>
+      <!-- 基本信息 -->
+      <n-card class="info-card" :bordered="false" size="small">
+        <n-grid :cols="2" :x-gap="16" :y-gap="12">
+          <n-gi>
+            <n-space align="center" :size="8">
+              <n-icon :component="CalendarOutline" color="#FF9BA8" />
+              <n-text depth="3">生日:</n-text>
+              <n-text>{{ petStore.detailModal.data.birthday || '未知' }}</n-text>
+            </n-space>
+          </n-gi>
+          <n-gi>
+            <n-space align="center" :size="8">
+              <n-icon :component="HeartOutline" color="#FF6B8A" />
+              <n-text depth="3">获赞:</n-text>
+              <n-text strong style="color: #FF6B8A;">{{ petStore.detailModal.data.likeCount || 0 }}</n-text>
+            </n-space>
+          </n-gi>
+        </n-grid>
+      </n-card>
 
-        <div>
-          <n-h4>近期体重</n-h4>
-          <n-list v-if="petStore.detailModal.data.weightLogs?.length">
+      <!-- 体重记录 -->
+      <div class="section">
+        <n-space align="center" :size="8" class="section-header">
+          <n-icon :component="ScaleOutline" size="18" color="#7DD3FC" />
+          <n-h4 prefix-bar style="margin: 0;">近期体重</n-h4>
+        </n-space>
+        <n-card class="section-card" :bordered="false" size="small">
+          <n-list v-if="petStore.detailModal.data.weightLogs?.length" hoverable>
             <n-list-item v-for="log in petStore.detailModal.data.weightLogs" :key="log.id">
-              {{ log.logDate }}: {{ log.weightKg }} kg
+              <n-space justify="space-between">
+                <n-text>{{ log.logDate }}</n-text>
+                <n-text strong>{{ log.weightKg }} kg</n-text>
+              </n-space>
             </n-list-item>
           </n-list>
           <n-text v-else depth="3"><i>暂无体重记录</i></n-text>
-        </div>
+        </n-card>
+      </div>
 
-        <div>
-          <n-h4>健康事件</n-h4>
-          <n-list v-if="petStore.detailModal.data.healthEvents?.length">
+      <!-- 健康事件 -->
+      <div class="section">
+        <n-space align="center" :size="8" class="section-header">
+          <n-icon :component="HeartOutline" size="18" color="#86EFAC" />
+          <n-h4 prefix-bar style="margin: 0;">健康事件</n-h4>
+        </n-space>
+        <n-card class="section-card" :bordered="false" size="small">
+          <n-list v-if="petStore.detailModal.data.healthEvents?.length" hoverable>
             <n-list-item v-for="event in petStore.detailModal.data.healthEvents" :key="event.id">
-              {{ event.eventDate }}:
-              <strong>{{ event.eventTypeLabel || '未知事件' }}</strong>
-              <n-text depth="3" v-if="event.notes"> ({{ event.notes }})</n-text>
-              <n-text depth="3" v-if="event.nextDueDate"> (下次: {{ event.nextDueDate }})</n-text>
+              <n-space vertical :size="4">
+                <n-space align="center">
+                  <n-text>{{ event.eventDate }}</n-text>
+                  <n-tag :type="event.nextDueDate ? 'warning' : 'success'" size="small" round>
+                    {{ event.eventTypeLabel || '未知事件' }}
+                  </n-tag>
+                </n-space>
+                <n-text v-if="event.notes" depth="3">{{ event.notes }}</n-text>
+                <n-text v-if="event.nextDueDate" depth="2" style="color: #F59E0B;">
+                  下次: {{ event.nextDueDate }}
+                </n-text>
+              </n-space>
             </n-list-item>
           </n-list>
           <n-text v-else depth="3"><i>暂无健康事件</i></n-text>
-        </div>
-      </n-space>
+        </n-card>
+      </div>
     </template>
 
     <template #footer>
       <n-space justify="end">
-        <n-button @click="handleShowWeightForm">体重变化</n-button>
-        <n-button @click="handleShowHealthEventForm">添加事件</n-button>
-        <n-button type="primary" @click="petStore.switchToEditMode()">编辑</n-button>
+        <n-button @click="handleShowWeightForm" class="action-btn">
+          <template #icon>
+            <n-icon><ScaleOutline /></n-icon>
+          </template>
+          体重记录
+        </n-button>
+        <n-button @click="handleShowHealthEventForm" class="action-btn">
+          <template #icon>
+            <n-icon><HeartOutline /></n-icon>
+          </template>
+          添加事件
+        </n-button>
+        <n-button type="primary" @click="petStore.switchToEditMode()" class="edit-btn">
+          编辑信息
+        </n-button>
       </n-space>
     </template>
   </n-modal>
   <HealthEventFormModal />
   <WeightLogFormModal />
 </template>
+
+<style scoped>
+.pet-detail-modal :deep(.n-card-header) {
+  padding-bottom: 0;
+}
+
+/* 头部 */
+.detail-header {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.avatar-container {
+  margin-bottom: 16px;
+}
+
+.pet-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2D2D2D;
+  margin-bottom: 12px;
+}
+
+/* 信息卡片 */
+.info-card {
+  background: #FFF5F7;
+  border-radius: 16px;
+  margin: 16px 0;
+}
+
+/* 区块 */
+.section {
+  margin-top: 16px;
+}
+
+.section-header {
+  margin-bottom: 8px;
+}
+
+.section-header :deep(.n-h4) {
+  font-weight: 600;
+  color: #4A4A4A;
+}
+
+.section-card {
+  background: #FFF9F5;
+  border-radius: 16px;
+}
+
+/* 按钮 */
+.action-btn {
+  border-radius: 12px;
+}
+
+.edit-btn {
+  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+}
+</style>

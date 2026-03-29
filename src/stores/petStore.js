@@ -62,8 +62,7 @@ import {
     // --- 1. State ---
     const upcomingEvents = ref([]);
     const loadingUpcoming = ref(false);
-    const likingPetIds = ref(new Set());
-  
+
     // (❗) 分页状态
     const pagination = ref(defaultPagination());
     const loadingList = ref(false);
@@ -236,21 +235,21 @@ import {
     }
   
     /**
-     * (❗) 动作: 点赞 (乐观更新)
+     * (❗) 动作: 点赞 (乐观更新 + 不等待响应)
      */
     async function handleLike(petId) {
-      if (likingPetIds.value.has(petId)) return;
-      const pet = pagination.value.records.find(p => p.id === petId); // (❗)
+      const pet = pagination.value.records.find(p => p.id === petId);
       if (!pet) return;
-      likingPetIds.value.add(petId);
-      try {
-        await likePet(petId);
-      } catch (err) {
+
+      // 立即增加计数（乐观更新）
+      pet.likeCount++;
+
+      // 发送请求但不等待，允许连点
+      likePet(petId).catch(err => {
+        // 请求失败，回滚计数
         pet.likeCount--;
         console.error("点赞失败:", err);
-      } finally {
-        setTimeout(() => { likingPetIds.value.delete(petId); }, 400);
-      }
+      });
     }
   
     // --- 模态框 Actions ---
@@ -443,7 +442,6 @@ import {
       // State
       upcomingEvents, loadingUpcoming,
       loadingList,
-      likingPetIds,
       detailModal,
       petFormModal,
       healthEventFormModal, // (❗)

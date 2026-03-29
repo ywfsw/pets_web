@@ -14,7 +14,9 @@ import {
   NSpace,
   NPopconfirm,
   useMessage,
+  NIcon
 } from 'naive-ui';
+import { PawOutline, BookOutline, Add } from '@vicons/ionicons5';
 
 const dictStore = useDictionaryStore();
 const petStore = usePetStore();
@@ -33,14 +35,23 @@ const handleDeletePet = (petId) => {
 
 const petTableColumns = [
   { title: 'ID', key: 'id', width: 80 },
-  { title: '名字', key: 'name' },
+  { title: '名字', key: 'name', width: 120 },
+  { title: '物种', key: 'speciesLabel', width: 100 },
+  { title: '品种', key: 'breedLabel', width: 120 },
+  { title: '生日', key: 'birthday', width: 120 },
   {
     title: '操作',
     key: 'actions',
+    width: 150,
     render(row) {
-      return h(NSpace, null, () => [
-        h(NButton, { size: 'small', onClick: () => handleEditPet(row) }, () => '编辑'),
-        h(NPopconfirm, { onPositiveClick: () => handleDeletePet(row.id) }, {
+      return h(NSpace, { size: 'small' }, () => [
+        h(NButton, {
+          size: 'small',
+          onClick: () => handleEditPet(row)
+        }, () => '编辑'),
+        h(NPopconfirm, {
+          onPositiveClick: () => handleDeletePet(row.id)
+        }, {
           trigger: () => h(NButton, { size: 'small', type: 'error' }, () => '删除'),
           default: () => `确定要删除 [${row.name}] 吗？`
         })
@@ -53,7 +64,7 @@ const petTableColumns = [
 const selectedDictType = ref({ dictCode: null });
 const onTypeSelect = (type) => {
   selectedDictType.value = type;
-  if (type && type.dictCode) { // Ensure type and dictCode exist
+  if (type && type.dictCode) {
     dictStore.loadDictItems(type.dictCode);
   }
 };
@@ -76,10 +87,16 @@ const dictItemColumns = [
   {
     title: '操作',
     key: 'actions',
+    width: 150,
     render(row) {
-      return h(NSpace, null, () => [
-        h(NButton, { size: 'small', onClick: () => handleEditDictItem(row) }, () => '编辑'),
-        h(NPopconfirm, { onPositiveClick: () => message.info('删除功能待开发') }, {
+      return h(NSpace, { size: 'small' }, () => [
+        h(NButton, {
+          size: 'small',
+          onClick: () => handleEditDictItem(row)
+        }, () => '编辑'),
+        h(NPopconfirm, {
+          onPositiveClick: () => message.info('删除功能待开发')
+        }, {
           trigger: () => h(NButton, { size: 'small', type: 'error' }, () => '删除'),
           default: () => `确定要删除 [${row.itemLabel}] 吗？`
         })
@@ -91,7 +108,6 @@ const dictItemColumns = [
 // Watch for dictTypeTree data and select the first item if available
 watch(() => dictStore.dictTypeTree, (newTree) => {
   if (newTree && newTree.length > 0 && currentTab.value === 'dictionaries') {
-    // Select the first top-level item
     const firstItem = newTree[0];
     selectedDictType.value = firstItem;
     dictStore.loadDictItems(firstItem.dictCode);
@@ -106,59 +122,175 @@ watch(currentTab, (newTab) => {
     dictStore.loadDictItems(firstItem.dictCode);
   }
 });
-
 </script>
 
 <template>
-  <n-tabs type="line" animated v-model:value="currentTab">
-    <n-tab-pane name="pets" tab="宠物管理">
-      <n-card title="宠物列表 (后台)">
-        <template #header-extra>
-          <n-button @click="handleCreatePet" type="primary">添加新宠物</n-button>
-        </template>
-        <n-data-table
-          :columns="petTableColumns"
-          :data="petStore.petList"
-          :loading="petStore.loadingList"
-          :pagination="{ page: petStore.currentPage, pageCount: petStore.totalPages, itemCount: petStore.pagination.total }"
-          :remote="true"
-          @update:page="petStore.loadPetList"
-          :row-key="row => row.id"
-        />
-      </n-card>
-    </n-tab-pane>
+  <div class="admin-page">
+    <!-- 页面标题 -->
+    <div class="admin-header">
+      <h2 class="admin-title">
+        <n-icon :component="PawOutline" size="28" color="#FF9BA8" />
+        后台管理
+      </h2>
+    </div>
 
-    <n-tab-pane name="dictionaries" tab="字典管理">
-      <n-grid :x-gap="24" :y-gap="24" :cols="3">
-        <n-gi :span="1">
-          <n-card title="字典类型 (只读)" :loading="dictStore.loadingTypes">
-            <DictTypeTree
-              :treeData="dictStore.dictTypeTree"
-              v-model:selectedCode="selectedDictType.dictCode"
-              @select="onTypeSelect"
-            />
-          </n-card>
-        </n-gi>
-        <n-gi :span="2">
-          <n-card :loading="dictStore.loadingItems">
+    <n-card class="admin-card">
+      <n-tabs type="line" animated v-model:value="currentTab" size="large">
+        <n-tab-pane name="pets" tab="宠物管理">
+          <template #tab>
+            <n-space align="center" :size="8">
+              <n-icon :component="PawOutline" />
+              <span>宠物管理</span>
+            </n-space>
+          </template>
+          <n-card class="inner-card" :bordered="false">
             <template #header>
-              <span v-if="selectedDictType.dictCode">字典项 ({{ selectedDictType.dictCode }})</span>
-              <span v-else>字典项</span>
-            </template>
-            <template #header-extra>
-              <n-button @click="handleCreateItem" type="primary" :disabled="!selectedDictType.dictCode">
-                添加字典项
-              </n-button>
+              <n-space align="center" justify="space-between">
+                <span class="section-title">宠物列表</span>
+                <n-button @click="handleCreatePet" type="primary" class="add-btn">
+                  <template #icon>
+                    <n-icon><Add /></n-icon>
+                  </template>
+                  添加新宠物
+                </n-button>
+              </n-space>
             </template>
             <n-data-table
-              :columns="dictItemColumns"
-              :data="dictStore.dictItemList"
+              :columns="petTableColumns"
+              :data="petStore.petList"
+              :loading="petStore.loadingList"
+              :pagination="{ page: petStore.currentPage, pageCount: petStore.totalPages, itemCount: petStore.pagination.total }"
+              :remote="true"
+              @update:page="petStore.loadPetList"
               :row-key="row => row.id"
+              :bordered="false"
             />
-            <n-text v-if="!selectedDictType.dictCode" depth="3">请从左侧选择一个字典类型以查看其字典项。</n-text>
           </n-card>
-        </n-gi>
-      </n-grid>
-    </n-tab-pane>
-  </n-tabs>
+        </n-tab-pane>
+
+        <n-tab-pane name="dictionaries" tab="字典管理">
+          <template #tab>
+            <n-space align="center" :size="8">
+              <n-icon :component="BookOutline" />
+              <span>字典管理</span>
+            </n-space>
+          </template>
+          <n-grid :x-gap="24" :y-gap="24" :cols="3">
+            <n-gi :span="1">
+              <n-card title="字典类型" :loading="dictStore.loadingTypes" class="dict-type-card">
+                <DictTypeTree
+                  :treeData="dictStore.dictTypeTree"
+                  v-model:selectedCode="selectedDictType.dictCode"
+                  @select="onTypeSelect"
+                />
+              </n-card>
+            </n-gi>
+            <n-gi :span="2">
+              <n-card :loading="dictStore.loadingItems" class="dict-item-card">
+                <template #header>
+                  <span v-if="selectedDictType.dictCode">字典项 ({{ selectedDictType.dictCode }})</span>
+                  <span v-else>字典项</span>
+                </template>
+                <template #header-extra>
+                  <n-button
+                    @click="handleCreateItem"
+                    type="primary"
+                    size="small"
+                    :disabled="!selectedDictType.dictCode"
+                  >
+                    添加字典项
+                  </n-button>
+                </template>
+                <n-data-table
+                  :columns="dictItemColumns"
+                  :data="dictStore.dictItemList"
+                  :row-key="row => row.id"
+                  :bordered="false"
+                />
+                <n-text v-if="!selectedDictType.dictCode" depth="3" style="display: block; text-align: center; padding: 40px;">
+                  请从左侧选择一个字典类型以查看其字典项。
+                </n-text>
+              </n-card>
+            </n-gi>
+          </n-grid>
+        </n-tab-pane>
+      </n-tabs>
+    </n-card>
+  </div>
 </template>
+
+<style scoped>
+.admin-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* 页面头部 */
+.admin-header {
+  margin-bottom: 24px;
+}
+
+.admin-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2D2D2D;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 卡片样式 */
+.admin-card {
+  border-radius: 20px;
+}
+
+.inner-card {
+  background: #FFF9F5;
+  border-radius: 16px;
+  margin-top: 16px;
+}
+
+.dict-type-card, .dict-item-card {
+  border-radius: 16px;
+}
+
+.section-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #4A4A4A;
+}
+
+/* 添加按钮 */
+.add-btn {
+  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
+  border: none;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+/* 表格样式 */
+:deep(.n-data-table-th) {
+  background: #FFF5F7 !important;
+  font-weight: 600;
+}
+
+:deep(.n-data-table-tr:hover) {
+  background: #FFF9F5 !important;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .admin-title {
+    font-size: 22px;
+  }
+
+  :deep(.n-grid) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  :deep(.n-gi) {
+    width: 100% !important;
+  }
+}
+</style>

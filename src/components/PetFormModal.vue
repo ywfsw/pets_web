@@ -7,7 +7,6 @@ import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 
 import {
   NModal,
-
   NForm,
   NFormItem,
   NInput,
@@ -17,7 +16,9 @@ import {
   NSpace,
   NAvatar,
   NText,
+  NIcon
 } from 'naive-ui';
+import { CameraOutline, PawOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const dictStore = useDictionaryStore();
@@ -57,7 +58,6 @@ const handleImageUpload = () => {
 const handleClose = () => {
   petStore.closeAllPetModals();
 };
-
 </script>
 
 <template>
@@ -65,74 +65,163 @@ const handleClose = () => {
     :show="petStore.petFormModal.show"
     @update:show="handleClose"
     preset="card"
-    style="width: 600px;"
-    :title="petStore.petFormModal.isEdit ? '编辑宠物' : '创建新宠物'"
+    style="width: 550px; border-radius: 24px;"
+    :title="petStore.petFormModal.isEdit ? '编辑萌宠' : '添加新萌宠'"
     :bordered="false"
     :loading="petStore.petFormModal.loading || isUploading"
+    class="pet-form-modal"
+    :mask-closable="false"
   >
     <div v-if="petStore.petFormModal.data">
-      <n-form @submit.prevent="handleSubmit">
-        <n-form-item label="宠物头像">
-          <n-space align="center">
-            <n-avatar
-              round
-              :size="120"
-              :src="getAvatarUrl(petStore.petFormModal.data.profileImageUrl)"
-            />
-            <n-space vertical>
-              <n-button
-                @click="handleImageUpload"
-                :loading="isUploading"
-                :disabled="isUploading"
-              >
-                {{ petStore.petFormModal.data.profileImageUrl ? '更换图片' : '上传图片' }}
-              </n-button>
-              <n-text v-if="uploadError" type="error">
-                上传失败: {{ uploadError }}
-              </n-text>
-            </n-space>
+      <n-form @submit.prevent="handleSubmit" label-placement="top">
+        <!-- 头像上传 -->
+        <n-form-item label="宠物头像" label-style="font-weight: 600;">
+          <n-space align="center" justify="center" vertical>
+            <div class="avatar-upload-wrapper">
+              <n-avatar
+                round
+                :size="120"
+                :src="getAvatarUrl(petStore.petFormModal.data.profileImageUrl)"
+                style="border: 4px solid #FFE4E9; box-shadow: 0 4px 20px rgba(255, 155, 168, 0.2);"
+              />
+              <div class="avatar-upload-overlay" @click="handleImageUpload" :class="{ uploading: isUploading }">
+                <n-icon :component="CameraOutline" size="28" />
+                <span>{{ isUploading ? '上传中...' : '更换' }}</span>
+              </div>
+            </div>
+            <n-text v-if="uploadError" type="error" depth="2">
+              上传失败: {{ uploadError }}
+            </n-text>
           </n-space>
         </n-form-item>
 
-        <n-form-item label="名字" required>
-          <n-input v-model:value="petStore.petFormModal.data.name" placeholder="输入宠物的名字" />
+        <!-- 名字 -->
+        <n-form-item label="名字" required label-style="font-weight: 600;">
+          <n-input
+            v-model:value="petStore.petFormModal.data.name"
+            placeholder="输入宠物的名字"
+            size="large"
+          >
+            <template #prefix>
+              <n-icon :component="PawOutline" color="#9CA3AF" />
+            </template>
+          </n-input>
         </n-form-item>
 
-        <n-form-item label="生日">
+        <!-- 生日 -->
+        <n-form-item label="生日" label-style="font-weight: 600;">
           <n-date-picker
             v-model:value="petStore.petFormModal.data.birthday"
             type="date"
             value-format="yyyy-MM-dd"
             style="width: 100%;"
+            size="large"
           />
         </n-form-item>
 
-        <n-form-item label="物种" required>
+        <!-- 物种 -->
+        <n-form-item label="物种" required label-style="font-weight: 600;">
           <n-select
             v-model:value="petStore.petFormModal.data.speciesId"
             :options="speciesOptions"
             placeholder="请选择物种"
+            size="large"
           />
         </n-form-item>
 
-        <n-form-item label="品种">
+        <!-- 品种 -->
+        <n-form-item label="品种" label-style="font-weight: 600;">
           <n-select
             v-model:value="petStore.petFormModal.data.breedId"
             :options="breedOptions"
             :disabled="!petStore.petFormModal.data.speciesId"
             placeholder="请先选择物种"
             clearable
+            size="large"
           />
         </n-form-item>
       </n-form>
     </div>
-     <template #footer>
+
+    <template #footer>
       <n-space justify="end">
-        <n-button @click="handleClose">取消</n-button>
-        <n-button type="primary" @click="handleSubmit" :loading="petStore.petFormModal.loading">
-          保存
+        <n-button @click="handleClose" size="large" class="cancel-btn">取消</n-button>
+        <n-button type="primary" @click="handleSubmit" :loading="petStore.petFormModal.loading" size="large" class="save-btn">
+          {{ petStore.petFormModal.isEdit ? '保存修改' : '添加萌宠' }}
         </n-button>
       </n-space>
     </template>
   </n-modal>
 </template>
+
+<style scoped>
+.pet-form-modal :deep(.n-card-header) {
+  padding-bottom: 0;
+}
+
+/* 头像上传 */
+.avatar-upload-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.avatar-upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  opacity: 0;
+  transition: all 0.3s ease;
+  font-size: 12px;
+}
+
+.avatar-upload-wrapper:hover .avatar-upload-overlay {
+  opacity: 1;
+}
+
+.avatar-upload-overlay.uploading {
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+/* 按钮 */
+.cancel-btn {
+  border-radius: 12px;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 15px rgba(255, 155, 168, 0.3);
+  transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 155, 168, 0.4);
+}
+
+/* 表单项样式 */
+.pet-form-modal :deep(.n-form-item-label) {
+  font-weight: 600;
+  color: #4A4A4A;
+}
+
+.pet-form-modal :deep(.n-input) {
+  border-radius: 12px;
+}
+
+.pet-form-modal :deep(.n-select) {
+  border-radius: 12px;
+}
+</style>

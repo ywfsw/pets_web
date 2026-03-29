@@ -2,10 +2,10 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 
-// General Fonts
+// Global Styles
 import 'vfonts/Lato.css'
-// Monospace Fonts
 import 'vfonts/FiraCode.css'
+import './styles/global.css'
 
 const app = createApp(App)
 

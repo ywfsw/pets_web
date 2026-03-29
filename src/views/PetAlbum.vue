@@ -5,15 +5,27 @@ import { usePetStore } from '@/stores/petStore';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage';
 import { useCloudinaryUpload } from '@/composables/useCloudinaryUpload';
 import { getPetGalleryDetail } from '@/api.js';
-import { NCard, NSpin, NEmpty, NModal, NText, NButton, NIcon, NSelect, NSpace, useMessage, NInput } from 'naive-ui';
-import { Add } from '@vicons/ionicons5';
+import {
+  NCard,
+  NSpin,
+  NEmpty,
+  NModal,
+  NText,
+  NButton,
+  NIcon,
+  NSelect,
+  NSpace,
+  useMessage,
+  NInput,
+  NBadge
+} from 'naive-ui';
+import { Add, ImageOutline, CloseOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const { petGallery, loadingGallery, petList, loadingList } = storeToRefs(petStore);
 const { getFullResolutionUrl, getGalleryThumbnailUrl } = useCloudinaryImage();
 const { openUploadWidget, isUploading } = useCloudinaryUpload();
 const message = useMessage();
-
 
 // --- Lightbox Modal State ---
 const showFullImageModal = ref(false);
@@ -46,6 +58,12 @@ async function showFullImage(image) {
   }
 }
 
+function closeLightbox() {
+  showFullImageModal.value = false;
+  fullImageUrl.value = '';
+  fullImageDescription.value = '';
+}
+
 // --- Upload Logic ---
 const showSelectPetModal = ref(false);
 const showDescriptionModal = ref(false);
@@ -61,7 +79,7 @@ const petOptions = computed(() =>
 );
 
 function handleAddClick() {
-  uploadTargetPetId.value = null; // Reset selection
+  uploadTargetPetId.value = null;
   showSelectPetModal.value = true;
 }
 
@@ -80,7 +98,7 @@ function handlePetSelected() {
       newImageData.value = {
         petId: uploadTargetPetId.value,
         imageUrl: url,
-        publicId: publicId, // Also save publicId
+        publicId: publicId,
         description: ''
       };
       showDescriptionModal.value = true;
@@ -104,209 +122,361 @@ async function handleConfirmDescription() {
     newImageData.value = null;
   }
 }
-
 </script>
 
 <template>
-  <n-card>
-    <!-- Add Image FAB -->
-    <n-button
-      strong
-      secondary
-      circle
-      type="primary"
-      class="add-button"
-      @click="handleAddClick"
-      :loading="isUploading"
-    >
-      <template #icon>
-        <n-icon><Add /></n-icon>
-      </template>
-    </n-button>
+  <div class="pet-album-page">
+    <!-- 页面标题 -->
+    <div class="album-header">
+      <h2 class="album-title">
+        <n-icon :component="ImageOutline" size="28" color="#FF9BA8" />
+        萌宠相册
+      </h2>
+      <p class="album-subtitle">记录萌宠的每一个可爱瞬间</p>
+    </div>
 
-    <n-spin :show="loadingGallery">
-      <div v-if="petGallery.length > 0">
-        <div class="masonry-grid">
-          <div
-            v-for="image in petGallery"
-            :key="image.id"
-            class="masonry-item"
-            @click="showFullImage(image)"
-          >
-            <img
-              :src="getGalleryThumbnailUrl(image.imageUrl)"
-              class="masonry-image"
-              loading="lazy"
-            />
-            <n-text v-if="image.description" class="description">{{ image.description }}</n-text>
+    <n-card class="album-card">
+      <!-- 添加图片按钮 -->
+      <n-button
+        strong
+        secondary
+        circle
+        type="primary"
+        class="add-button"
+        @click="handleAddClick"
+        :loading="isUploading"
+        size="large"
+      >
+        <template #icon>
+          <n-icon size="24"><Add /></n-icon>
+        </template>
+      </n-button>
+
+      <n-spin :show="loadingGallery">
+        <div v-if="petGallery.length > 0">
+          <div class="masonry-grid">
+            <div
+              v-for="image in petGallery"
+              :key="image.id"
+              class="masonry-item"
+              @click="showFullImage(image)"
+            >
+              <img
+                :src="getGalleryThumbnailUrl(image.imageUrl)"
+                class="masonry-image"
+                loading="lazy"
+                alt="宠物相册"
+              />
+              <div class="image-overlay">
+                <n-icon v-if="image.description" :component="ImageOutline" size="20" />
+              </div>
+              <n-text v-if="image.description" class="description">{{ image.description }}</n-text>
+            </div>
           </div>
         </div>
-      </div>
-      <n-empty v-else description="相册里还没有照片" style="margin-top: 24px;" />
-    </n-spin>
+        <n-empty v-else description="相册里还没有照片，快去添加吧～" class="empty-state">
+          <template #icon>
+            <span style="font-size: 64px;">📷</span>
+          </template>
+        </n-empty>
+      </n-spin>
+    </n-card>
 
-    <!-- Select Pet Modal -->
+    <!-- 选择宠物弹窗 -->
     <n-modal
       v-model:show="showSelectPetModal"
       preset="card"
-      style="width: 500px"
-      title="选择一个宠物"
+      style="width: 450px"
+      title="选择萌宠"
       :mask-closable="false"
+      class="pet-select-modal"
     >
-      <n-space vertical>
+      <n-space vertical :size="16">
+        <n-text depth="3">这张照片属于哪个小可爱？</n-text>
         <n-select
           v-model:value="uploadTargetPetId"
-          placeholder="这张照片属于哪个小可爱？"
+          placeholder="选择宠物"
           :options="petOptions"
           :loading="loadingList"
+          size="large"
         />
         <n-button
           type="primary"
+          block
           @click="handlePetSelected"
           :disabled="!uploadTargetPetId || isUploading"
           :loading="isUploading"
+          class="next-btn"
         >
           下一步：上传图片
         </n-button>
       </n-space>
     </n-modal>
 
-    <!-- Add Description Modal -->
+    <!-- 添加描述弹窗 -->
     <n-modal
-        v-model:show="showDescriptionModal"
-        preset="card"
-        style="width: 500px"
-        title="为图片添加描述"
-        :mask-closable="false"
-      >
-        <n-space vertical>
-          <n-input v-model:value="imageDescription" placeholder="输入图片描述..." @keydown.enter="handleConfirmDescription"/>
-          <n-button type="primary" @click="handleConfirmDescription">确认</n-button>
-        </n-space>
-      </n-modal>
+      v-model:show="showDescriptionModal"
+      preset="card"
+      style="width: 450px"
+      title="为图片添加描述"
+      :mask-closable="false"
+      class="description-modal"
+    >
+      <n-space vertical :size="16">
+        <n-input
+          v-model:value="imageDescription"
+          placeholder="输入图片描述..."
+          type="textarea"
+          :rows="3"
+          @keydown.enter.ctrl="handleConfirmDescription"
+        />
+        <n-button
+          type="primary"
+          block
+          @click="handleConfirmDescription"
+          class="confirm-btn"
+        >
+          确认添加
+        </n-button>
+      </n-space>
+    </n-modal>
 
-    <!-- Full Image Lightbox Modal -->
+    <!-- 全屏图片查看弹窗 -->
     <n-modal
       v-model:show="showFullImageModal"
       preset="card"
-      style="width: 90vw; max-width: 1200px; height: 90vh; background: rgba(0, 0, 0, 0.8);"
-      content-style="display: flex; align-items: center; justify-content: center; height: 100%; padding: 0;"
+      style="width: 95vw; max-width: 1400px; height: 90vh; background: rgba(20, 20, 20, 0.95);"
+      content-style="display: flex; align-items: center; justify-content: center; height: 100%; padding: 0; position: relative;"
       :bordered="false"
-      :on-after-leave="() => { fullImageUrl = ''; fullImageDescription = ''; }"
+      :closable="false"
+      :on-after-leave="closeLightbox"
     >
+      <!-- 关闭按钮 -->
+      <n-button
+        circle
+        size="large"
+        class="lightbox-close-btn"
+        @click="closeLightbox"
+      >
+        <template #icon>
+          <n-icon size="24"><CloseOutline /></n-icon>
+        </template>
+      </n-button>
+
       <n-spin :show="lightboxLoading" size="large">
         <img
           :src="fullImageUrl"
-          style="max-width: 100%; max-height: 100%; object-fit: contain;"
+          class="lightbox-image"
+          alt="全屏查看"
         />
-        <div v-if="fullImageDescription" class="lightbox-description-overlay">
-          <n-text class="lightbox-description-text">
-            {{ fullImageDescription }}
-          </n-text>
-        </div>
       </n-spin>
 
+      <div v-if="fullImageDescription" class="lightbox-description">
+        <n-text class="lightbox-description-text">
+          {{ fullImageDescription }}
+        </n-text>
+      </div>
     </n-modal>
-  </n-card>
+  </div>
 </template>
 
 <style scoped>
-.add-button {
-  position: fixed;
-  top: 84px;
-  right: 40px;
-  z-index: 10;
-  width: 50px;
-  height: 50px;
+.pet-album-page {
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
+/* 页面头部 */
+.album-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.album-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2D2D2D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.album-subtitle {
+  color: #9CA3AF;
+  font-size: 14px;
+}
+
+/* 相册卡片 */
+.album-card {
+  border-radius: 20px;
+  position: relative;
+  min-height: 400px;
+}
+
+/* 添加按钮 */
+.add-button {
+  position: fixed;
+  top: 100px;
+  right: 40px;
+  z-index: 10;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
+  border: none;
+  box-shadow: 0 4px 20px rgba(255, 155, 168, 0.4);
+  transition: all 0.3s ease;
+}
+
+.add-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(255, 155, 168, 0.5);
+}
+
+/* 瀑布流布局 */
 .masonry-grid {
   column-count: 4;
-  column-gap: 12px;
+  column-gap: 16px;
 }
 
 .masonry-item {
   break-inside: avoid;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.masonry-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(255, 155, 168, 0.2);
 }
 
 .masonry-item .masonry-image {
   width: 100%;
   display: block;
+  transition: transform 0.3s ease;
 }
 
+.masonry-item:hover .masonry-image {
+  transform: scale(1.05);
+}
+
+/* 图片遮罩 */
+.image-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.masonry-item:hover .image-overlay {
+  opacity: 1;
+}
+
+/* 描述文字 */
 .masonry-item .description {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
   color: white;
-  padding: 20px 10px 10px 10px;
+  padding: 30px 12px 12px 12px;
   opacity: 0;
   transition: opacity 0.3s ease;
   font-size: 14px;
 }
+
 .masonry-item:hover .description {
   opacity: 1;
 }
 
+/* 空状态 */
+.empty-state {
+  padding: 60px 20px;
+}
+
+/* 弹窗按钮样式 */
+.next-btn, .confirm-btn {
+  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
+  border: none;
+  border-radius: 12px;
+  height: 44px;
+  font-weight: 600;
+}
+
+/* 全屏查看 */
+.lightbox-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: none;
+  color: white !important;
+}
+
+.lightbox-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 .lightbox-description {
   position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  max-width: 80%;
+  bottom: 30px;
+  left: 0;
+  right: 0;
   text-align: center;
-  font-size: 16px;
-  z-index: 1;
+  z-index: 10;
   pointer-events: none;
 }
 
-.lightbox-description-overlay {
-  position: absolute;
-  bottom: 30px; /* Leave a little gap from the bottom edge */
-  left: 0;
-  right: 0;
-  text-align: center; /* Center the inline-block text */
-  z-index: 2;
-  pointer-events: none; /* Allow clicks to pass through to the image */
-}
 .lightbox-description-text {
-  background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+  background: rgba(0, 0, 0, 0.6);
   color: white;
-  padding: 8px 16px;
-  border-radius: 8px; /* Rounded corners for the background */
+  padding: 10px 20px;
+  border-radius: 20px;
   font-size: 16px;
-  display: inline-block; /* Make background fit content */
-  max-width: 80%; /* Limit width to avoid being too wide */
+  display: inline-block;
 }
 
-/* Responsive Columns */
+/* 响应式 */
 @media (max-width: 1200px) {
   .masonry-grid {
     column-count: 3;
   }
 }
+
 @media (max-width: 768px) {
   .masonry-grid {
     column-count: 2;
   }
+
   .add-button {
     top: auto;
-    bottom: 20px;
-    right: 20px;
+    bottom: 24px;
+    right: 24px;
+  }
+
+  .album-title {
+    font-size: 22px;
   }
 }
+
 @media (max-width: 576px) {
   .masonry-grid {
     column-count: 1;
