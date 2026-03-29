@@ -15,6 +15,7 @@ import {
   NSpace,
   NSwitch, // Added NSwitch
   NIcon,   // Added NIcon
+  NButton, // Added NButton
   darkTheme
 } from 'naive-ui';
 import { Moon, Sunny } from '@vicons/ionicons5'; // Added Moon and Sunny icons
@@ -62,6 +63,14 @@ const handleMenuUpdate = (key) => {
     activeKey.value = key;
   }
 };
+
+const handleLogout = async () => {
+  await authStore.logout();
+  if (activeKey.value === 'admin') {
+    activeKey.value = 'pets'; // Redirect to pets page if currently on admin page
+  }
+};
+
 watch(
   () => authStore.isAuthenticated,
   (isNowAuthenticated) => {
@@ -96,6 +105,12 @@ onMounted(async () => {
                   <template #extra>
                     <n-space align="center">
                       <n-menu v-model:value="activeKey" mode="horizontal" :options="menuOptions" @update:value="handleMenuUpdate" />
+                      
+                      <div v-if="authStore.isAuthenticated" style="display: flex; align-items: center; gap: 8px; margin-right: 8px;">
+                        <span>欢迎, {{ authStore.userInfo?.username || '用户' }}</span>
+                        <n-button size="small" @click="handleLogout">退出登录</n-button>
+                      </div>
+
                       <n-switch v-model:value="isDarkTheme" size="large">
                         <template #checked>
                           <n-icon :component="Moon" />

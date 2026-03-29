@@ -2,45 +2,87 @@
 
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
+import { login as apiLogin, register as apiRegister, getUserInfo as apiGetUserInfo, logout as apiLogout } from '@/api.js';
 
 // (❗) 定义一个叫 'auth' 的 store (仓库)
 export const useAuthStore = defineStore('auth', () => {
 
   // --- 1. State (状态) ---
-  // (对应你旧的 auth.isAuthenticated)
-  const isAuthenticated = ref(false);
-  const loading = ref(false); // (对应 auth.loading)
-  const error = ref(null);    // (对应 auth.error)
+  const isAuthenticated = ref(!!localStorage.getItem('token'));
+  const loading = ref(false); 
+  const error = ref(null);    
+  const userInfo = ref(null);
+
+  // 初始化时尝试获取用户信息
+  const initAuth = async () => {
+    if (isAuthenticated.value) {
+      try {
+        const res = await apiGetUserInfo();
+        userInfo.value = res.data;
+      } catch (err) {
+        // Token 失效或错误
+        logout();
+      }
+    }
+  };
+  initAuth();
 
   // --- 2. Actions (动作) ---
 
-  /**
-   * (❗) 登录逻辑 (和你旧的 login() 一样)
-   * @param {string} password
-   */
-  async function login(password) {
+  async function login(username, password) {
     loading.value = true;
     error.value = null;
 
-    // 模拟 API 延迟
-    await new Promise(resolve => setTimeout(resolve, 300));
-
-    if (password === '123456') { // (硬编码密码)
+    try {
+      const res = await apiLogin({ username, password });
+      const { token, tokenName } = res.data;
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('tokenName', tokenName || 'satoken');
+      
       isAuthenticated.value = true;
+      
+      // 登录成功后获取用户信息
+      const userRes = await apiGetUserInfo();
+      userInfo.value = userRes.data;
+      
       loading.value = false;
-      return true; // (返回成功)
-    } else {
-      error.value = '密码错误';
+      return true;
+    } catch (err) {
+      error.value = err.response?.data?.error || '登录失败';
       loading.value = false;
-      return false; // (返回失败)
+      return false;
     }
   }
 
-  /**
-   * (❗) 登出 (可选, 暂时用不到)
-   */
-  function logout() {
-    isAuthenticated.value = false;
+  async function register(username, password) {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      await apiRegister({ username, password });
+      loading.value = false;
+      return true;
+    } catch (err) {
+      error.value = err.response?.data?.error || '注册失败';
+      loading.value = false;
+      return false;
+    }
+  }
+
+  async function logout() {
+    try {
+      if (isAuthenticated.value) {
+        await apiLogout();
+      }
+    } catch (err) {
+      console.error("Logout error", err);
+    } finally {
+      isAuthenticated.value = false;
+      userInfo.value = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('tokenName');
+    }
   }
 
   // --- 3. Return (暴露) ---
@@ -49,9 +91,11 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     loading,
     error,
+    userInfo,
 
     // Actions
     login,
+    register,
     logout
   };
 });
