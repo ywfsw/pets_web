@@ -212,7 +212,7 @@ const getSpeciesTagType = (species) => {
 
 /* 信息卡片 */
 .info-card {
-  background: #FFF5F7;
+  background: var(--pet-bg-secondary);
   border-radius: 16px;
   margin: 16px 0;
 }
@@ -228,11 +228,11 @@ const getSpeciesTagType = (species) => {
 
 .section-header :deep(.n-h4) {
   font-weight: 600;
-  color: #4A4A4A;
+  color: var(--pet-text);
 }
 
 .section-card {
-  background: #FFF9F5;
+  background: var(--pet-bg-secondary);
   border-radius: 16px;
 }
 
@@ -242,9 +242,9 @@ const getSpeciesTagType = (species) => {
 }
 
 .edit-btn {
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
-  border: none;
-  border-radius: 12px;
+  background: linear-gradient(135deg, var(--pet-primary) 0%, var(--pet-primarySuppl) 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
   font-weight: 600;
 }
 </style>

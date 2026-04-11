@@ -2,6 +2,7 @@
 import { ref, h, watch } from 'vue';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { usePetStore } from '@/stores/petStore.js';
+import { useAuthStore } from '@/stores/authStore.js';
 import DictTypeTree from '@/components/DictTypeTree.vue';
 import {
   NTabs,
@@ -20,6 +21,7 @@ import { PawOutline, BookOutline, Add } from '@vicons/ionicons5';
 
 const dictStore = useDictionaryStore();
 const petStore = usePetStore();
+const authStore = useAuthStore();
 const message = useMessage();
 
 const currentTab = ref('pets');
@@ -242,10 +244,12 @@ watch(currentTab, (newTab) => {
 /* 卡片样式 */
 .admin-card {
   border-radius: 20px;
+  background: var(--pet-card);
+  border: 1px solid var(--pet-border);
 }
 
 .inner-card {
-  background: #FFF9F5;
+  background: var(--pet-bg-secondary);
   border-radius: 16px;
   margin-top: 16px;
 }
@@ -257,25 +261,25 @@ watch(currentTab, (newTab) => {
 .section-title {
   font-weight: 600;
   font-size: 16px;
-  color: #4A4A4A;
+  color: var(--pet-text);
 }
 
 /* 添加按钮 */
 .add-btn {
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
-  border: none;
-  border-radius: 16px;
+  background: linear-gradient(135deg, var(--pet-primary) 0%, var(--pet-primarySuppl) 100%) !important;
+  border: none !important;
+  border-radius: 16px !important;
   font-weight: 600;
 }
 
 /* 表格样式 */
 :deep(.n-data-table-th) {
-  background: #FFF5F7 !important;
+  background: var(--pet-bg-secondary) !important;
   font-weight: 600;
 }
 
 :deep(.n-data-table-tr:hover) {
-  background: #FFF9F5 !important;
+  background: var(--pet-bg) !important;
 }
 
 /* 响应式 */

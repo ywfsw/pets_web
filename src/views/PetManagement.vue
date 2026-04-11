@@ -1,7 +1,9 @@
 <script setup>
 import { h, computed, ref, onMounted, onUnmounted } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
+import { useAuthStore } from '@/stores/authStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
+import { useMessage } from 'naive-ui';
 import PetLeaderboard from '@/components/PetLeaderboard.vue';
 
 import {
@@ -21,6 +23,8 @@ import {
 import { PawOutline, CalendarOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
+const authStore = useAuthStore();
+const message = useMessage();
 const { getAvatarUrl } = useCloudinaryImage();
 
 // Responsive logic
@@ -41,7 +45,13 @@ onUnmounted(() => {
 });
 
 // Handlers
-const handleCreatePet = () => { petStore.showPetFormModal(null); };
+const handleCreatePet = () => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再添加宠物');
+    return;
+  }
+  petStore.showPetFormModal(null);
+};
 const handleShowDetail = (petId) => { petStore.showDetailModal(petId); };
 const handlePageChange = (page) => { petStore.loadPetList(page); };
 
@@ -226,9 +236,9 @@ const pagination = computed(() => ({
 
 /* 事件卡片 */
 .event-card {
-  background: linear-gradient(135deg, #FFF5F7 0%, #FFF9F5 100%);
+  background: var(--pet-card);
   border-radius: 20px;
-  border: none;
+  border: 1px solid var(--pet-border);
 }
 
 .event-title {
@@ -278,12 +288,12 @@ const pagination = computed(() => ({
 }
 
 .add-pet-btn {
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%);
-  border: none;
-  border-radius: 20px;
-  font-weight: 600;
-  box-shadow: 0 4px 15px rgba(255, 155, 168, 0.3);
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, var(--pet-primary) 0%, var(--pet-primarySuppl) 100%) !important;
+  border: none !important;
+  border-radius: 20px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 15px rgba(255, 155, 168, 0.3) !important;
+  transition: all 0.3s ease !important;
 }
 
 .add-pet-btn:hover {
@@ -293,12 +303,12 @@ const pagination = computed(() => ({
 
 /* 表格样式 */
 .pet-table :deep(.n-data-table-th) {
-  background: #FFF5F7 !important;
+  background: var(--pet-bg-secondary) !important;
   font-weight: 600;
 }
 
 .pet-table :deep(.n-data-table-tr:hover) {
-  background: #FFF9F5 !important;
+  background: var(--pet-bg) !important;
 }
 
 /* 响应式 */

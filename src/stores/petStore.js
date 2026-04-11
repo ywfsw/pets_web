@@ -3,6 +3,7 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 import { useDictionaryStore } from './dictionaryStore'; // Import dictionary store
+import { useAuthStore } from './authStore.js';
 
 // (❗) 导入所有需要的 API
 import {
@@ -58,6 +59,7 @@ import {
   
   export const usePetStore = defineStore('pet', () => {
     const dictStore = useDictionaryStore(); // Get instance of dictionary store
+    const authStore = useAuthStore();
   
     // --- 1. State ---
     const upcomingEvents = ref([]);
@@ -275,6 +277,11 @@ import {
     }
   
     function showPetFormModal(petToEdit = null) {
+      // 检查是否登录
+      if (!authStore.isAuthenticated) {
+        throw new Error('请先登录后再操作');
+      }
+
       // (❗) petToEdit 是从 pagination.records 来的
       if (petToEdit) {
         petFormModal.value.data = { ...petToEdit };

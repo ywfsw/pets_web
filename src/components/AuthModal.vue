@@ -179,7 +179,7 @@ watch(() => props.show, (isShown) => {
 .auth-icon {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #FFF5F7 0%, #FFE4E9 100%);
+  background: linear-gradient(135deg, var(--pet-primary-light) 0%, var(--pet-primarySuppl) 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -190,12 +190,12 @@ watch(() => props.show, (isShown) => {
 .auth-title {
   font-size: 24px;
   font-weight: 700;
-  color: #2D2D2D;
+  color: var(--pet-text-primary);
   margin-bottom: 8px;
 }
 
 .auth-subtitle {
-  color: #9CA3AF;
+  color: var(--pet-text-tertiary);
   font-size: 14px;
 }
 
@@ -206,7 +206,7 @@ watch(() => props.show, (isShown) => {
 
 .auth-form :deep(.n-form-item-label) {
   font-weight: 600;
-  color: #4A4A4A;
+  color: var(--pet-text);
 }
 
 .auth-form :deep(.n-input) {
@@ -224,9 +224,9 @@ watch(() => props.show, (isShown) => {
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
-  border: none;
-  border-radius: 16px;
+  background: linear-gradient(135deg, var(--pet-primary) 0%, var(--pet-primarySuppl) 100%) !important;
+  border: none !important;
+  border-radius: 16px !important;
   height: 48px;
   font-size: 16px;
   font-weight: 600;

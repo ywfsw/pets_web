@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { usePetStore } from '@/stores/petStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage';
 import { useCloudinaryUpload } from '@/composables/useCloudinaryUpload';
 import { getPetGalleryDetail } from '@/api.js';
@@ -22,6 +23,7 @@ import {
 import { Add, ImageOutline, CloseOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
+const authStore = useAuthStore();
 const { petGallery, loadingGallery, petList, loadingList } = storeToRefs(petStore);
 const { getFullResolutionUrl, getGalleryThumbnailUrl } = useCloudinaryImage();
 const { openUploadWidget, isUploading } = useCloudinaryUpload();
@@ -79,6 +81,10 @@ const petOptions = computed(() =>
 );
 
 function handleAddClick() {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再添加照片');
+    return;
+  }
   uploadTargetPetId.value = null;
   showSelectPetModal.value = true;
 }
@@ -313,6 +319,8 @@ async function handleConfirmDescription() {
   border-radius: 20px;
   position: relative;
   min-height: 400px;
+  background: var(--pet-card);
+  border: 1px solid var(--pet-border);
 }
 
 /* 添加按钮 */
@@ -323,7 +331,7 @@ async function handleConfirmDescription() {
   z-index: 10;
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
+  background: linear-gradient(135deg, var(--pet-primary) 0%, var(--pet-primarySuppl) 100%) !important;
   border: none;
   box-shadow: 0 4px 20px rgba(255, 155, 168, 0.4);
   transition: all 0.3s ease;
@@ -411,9 +419,9 @@ async function handleConfirmDescription() {
 
 /* 弹窗按钮样式 */
 .next-btn, .confirm-btn {
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
-  border: none;
-  border-radius: 12px;
+  background: linear-gradient(135deg, var(--pet-primary) 0%, var(--pet-primarySuppl) 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
   height: 44px;
   font-weight: 600;
 }

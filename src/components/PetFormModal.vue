@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
+import { useAuthStore } from '@/stores/authStore.js';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { useCloudinaryUpload } from '@/composables/useCloudinaryUpload.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
@@ -16,12 +17,15 @@ import {
   NSpace,
   NAvatar,
   NText,
-  NIcon
+  NIcon,
+  useMessage
 } from 'naive-ui';
 import { CameraOutline, PawOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
+const authStore = useAuthStore();
 const dictStore = useDictionaryStore();
+const message = useMessage();
 const { isUploading, uploadError, openUploadWidget } = useCloudinaryUpload();
 const { getAvatarUrl } = useCloudinaryImage();
 
@@ -198,9 +202,9 @@ const handleClose = () => {
 }
 
 .save-btn {
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
-  border: none;
-  border-radius: 12px;
+  background: linear-gradient(135deg, var(--pet-primary) 0%, var(--pet-primarySuppl) 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
   font-weight: 600;
   box-shadow: 0 4px 15px rgba(255, 155, 168, 0.3);
   transition: all 0.3s ease;
@@ -214,7 +218,7 @@ const handleClose = () => {
 /* 表单项样式 */
 .pet-form-modal :deep(.n-form-item-label) {
   font-weight: 600;
-  color: #4A4A4A;
+  color: var(--pet-text);
 }
 
 .pet-form-modal :deep(.n-input) {

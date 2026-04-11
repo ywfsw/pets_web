@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed, h } from 'vue';
 import {
   NConfigProvider,
   NMessageProvider,
@@ -36,8 +36,8 @@ import PetFormModal from '@/components/PetFormModal.vue';
 import DictItemFormModal from '@/components/DictItemFormModal.vue';
 import GlobalNaiveUIServices from '@/components/GlobalNaiveUIServices.vue';
 
-// 宠物主题色
-const petThemeOverrides = {
+// 宠物主题色 - 白天模式
+const lightThemeOverrides = {
   common: {
     primaryColor: '#FF9BA8',
     primaryColorHover: '#FF7A8A',
@@ -96,28 +96,108 @@ const petThemeOverrides = {
   },
 };
 
+// 宠物主题色 - 夜间模式
+const darkThemeOverrides = {
+  common: {
+    primaryColor: '#FF9BA8',
+    primaryColorHover: '#FFB4C2',
+    primaryColorPressed: '#FF7A8A',
+    primaryColorSuppl: '#FFBFC5',
+    primaryColorDesc: '#FFB4C2',
+    infoColor: '#7DD3FC',
+    successColor: '#86EFAC',
+    warningColor: '#FCD34D',
+    errorColor: '#FCA5A5',
+    bodyColor: '#1A1A2E',
+    cardColor: '#252542',
+    modalColor: '#252542',
+    popoverColor: '#252542',
+    tableColor: '#252542',
+    inputColor: '#1F1F3A',
+    actionColor: '#252542',
+    borderColor: '#3D3D5C',
+    dividerColor: '#3D3D5C',
+    textColorBase: '#E8E8E8',
+    textColor1: '#FFFFFF',
+    textColor2: '#B8B8CC',
+    textColor3: '#8888A0',
+    borderRadius: '12px',
+    borderRadiusSmall: '8px',
+    fontFamily: '"Nunito", "PingFang SC", "Microsoft YaHei", sans-serif',
+  },
+  Button: {
+    borderRadiusMedium: '20px',
+    borderRadiusSmall: '12px',
+    borderRadiusLarge: '24px',
+    heightMedium: '40px',
+    fontWeight: '600',
+  },
+  Card: {
+    borderRadius: '20px',
+    paddingMedium: '20px',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+  },
+  Input: {
+    borderRadius: '12px',
+    heightMedium: '40px',
+  },
+  DataTable: {
+    borderRadius: '16px',
+  },
+  Tag: {
+    borderRadius: '10px',
+  },
+  Avatar: {
+    borderRadius: '50%',
+  },
+  Menu: {
+    borderRadius: '12px',
+    itemBorderRadius: '10px',
+  },
+};
+
 // 主题状态
 const isDarkTheme = ref(false);
 const theme = computed(() => (isDarkTheme.value ? darkTheme : null));
+const themeOverrides = computed(() => isDarkTheme.value ? darkThemeOverrides : lightThemeOverrides);
 
-// 菜单选项
-const menuOptions = [
-  {
-    label: '宠物管理',
-    key: 'pets',
-    icon: () => h(NIcon, null, { default: () => h(PawOutline) })
-  },
-  {
-    label: '宠物相册',
-    key: 'pet-album',
-    icon: () => h(NIcon, null, { default: () => h(Images) })
-  },
-  {
-    label: '后台管理',
-    key: 'admin',
-    icon: () => h(NIcon, null, { default: () => h(Settings) })
-  },
-];
+// 监听主题变化，动态设置 data-theme 属性
+watch(isDarkTheme, (dark) => {
+  if (dark) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.body.classList.add('dark-mode');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    document.body.classList.remove('dark-mode');
+  }
+}, { immediate: true });
+
+// 菜单选项 - 根据角色动态生成
+const menuOptions = computed(() => {
+  const options = [
+    {
+      label: '宠物管理',
+      key: 'pets',
+      icon: () => h(NIcon, null, { default: () => h(PawOutline) })
+    },
+    {
+      label: '宠物相册',
+      key: 'pet-album',
+      icon: () => h(NIcon, null, { default: () => h(Images) })
+    }
+  ];
+
+  // 只有管理员才能看到后台管理
+  if (authStore.isAuthenticated && authStore.isAdmin) {
+    options.push({
+      label: '后台管理',
+      key: 'admin',
+      icon: () => h(NIcon, null, { default: () => h(Settings) })
+    });
+  }
+
+  return options;
+});
 
 // 用户下拉菜单
 const userMenuOptions = [
@@ -127,6 +207,12 @@ const userMenuOptions = [
     icon: () => h(NIcon, null, { default: () => h(LogOutOutline) })
   }
 ];
+
+// 打开登录弹窗
+const openAuthModal = () => {
+  authStore.error = null;
+  isAuthModalVisible.value = true;
+};
 
 // App State
 const activeKey = ref('pets');
@@ -138,8 +224,12 @@ const isAuthModalVisible = ref(false);
 
 const handleMenuUpdate = (key) => {
   if (key === 'admin') {
-    if (authStore.isAuthenticated) {
+    if (authStore.isAuthenticated && authStore.isAdmin) {
       activeKey.value = 'admin';
+    } else if (authStore.isAuthenticated && !authStore.isAdmin) {
+      // 普通用户尝试访问后台，跳转到宠物管理
+      window.$message.warning('只有管理员才能访问后台管理');
+      activeKey.value = 'pets';
     } else {
       authStore.error = null;
       isAuthModalVisible.value = true;
@@ -167,7 +257,22 @@ watch(
   (isNowAuthenticated) => {
     if (isNowAuthenticated) {
       isAuthModalVisible.value = false;
-      activeKey.value = 'admin';
+      // 登录后如果当前是admin但不是管理员，跳转到pets
+      if (activeKey.value === 'admin' && !authStore.isAdmin) {
+        activeKey.value = 'pets';
+        window.$message.warning('只有管理员才能访问后台管理');
+      }
+    }
+  }
+);
+
+// 监听角色变化，更新菜单
+watch(
+  () => authStore.isAdmin,
+  (isAdmin) => {
+    // 如果不再是管理员但当前在admin页面，跳转到pets
+    if (!isAdmin && activeKey.value === 'admin') {
+      activeKey.value = 'pets';
     }
   }
 );
@@ -177,19 +282,16 @@ onMounted(async () => {
   petStore.loadPetList();
   petStore.loadUpcomingEvents();
 });
-
-// 引入 h 函数
-import { h } from 'vue';
 </script>
 
 <template>
-  <n-config-provider :theme="theme" :theme-overrides="petThemeOverrides">
+  <n-config-provider :theme="theme" :theme-overrides="themeOverrides">
     <n-loading-bar-provider>
       <n-message-provider>
         <n-notification-provider>
           <n-dialog-provider>
             <GlobalNaiveUIServices />
-            <n-layout style="min-height: 100vh;" class="pet-layout">
+            <n-layout style="min-height: 100vh;" class="pet-layout" :class="{ 'dark-mode': isDarkTheme }">
               <n-layout-header bordered class="pet-header">
                 <n-page-header>
                   <template #title>
@@ -223,9 +325,20 @@ import { h } from 'vue';
                               {{ authStore.userInfo?.username?.charAt(0)?.toUpperCase() || 'U' }}
                             </n-avatar>
                             <span class="pet-username">{{ authStore.userInfo?.username || '用户' }}</span>
+                            <span v-if="authStore.isAdmin" class="pet-role-badge">管理员</span>
                           </n-space>
                         </n-dropdown>
                       </div>
+
+                      <!-- 未登录时显示登录按钮 -->
+                      <n-button
+                        v-if="!authStore.isAuthenticated"
+                        type="primary"
+                        class="pet-login-btn"
+                        @click="openAuthModal"
+                      >
+                        登录 / 注册
+                      </n-button>
 
                       <n-switch v-model:value="isDarkTheme" size="large" class="pet-theme-switch">
                         <template #checked>
@@ -268,14 +381,16 @@ import { h } from 'vue';
 <style>
 /* 全局样式在 main.js 中导入 */
 
-/* 头部样式 */
+/* 头部样式 - 白天模式 */
 .pet-header {
   background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(10px);
+  transition: background-color 0.3s ease;
 }
 
-.pet-header[data-theme="dark"] {
-  background: rgba(30, 30, 30, 0.95) !important;
+/* 头部样式 - 夜间模式 */
+.dark-mode .pet-header {
+  background: rgba(37, 37, 66, 0.95) !important;
 }
 
 .pet-logo {
@@ -312,8 +427,16 @@ import { h } from 'vue';
   transition: all 0.3s ease;
 }
 
+.dark-mode .pet-user-area {
+  background: #3D3D5C;
+}
+
 .pet-user-area:hover {
   background: #FFE4E9;
+}
+
+.dark-mode .pet-user-area:hover {
+  background: #4D4D6C;
 }
 
 .pet-user-info {
@@ -323,6 +446,43 @@ import { h } from 'vue';
 .pet-username {
   font-weight: 600;
   color: #4A4A4A;
+}
+
+.dark-mode .pet-username {
+  color: #E8E8E8;
+}
+
+/* 登录按钮 */
+.pet-login-btn {
+  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
+  border: none !important;
+  border-radius: 20px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 15px rgba(255, 155, 168, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.pet-login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 155, 168, 0.4) !important;
+}
+
+.dark-mode .pet-login-btn {
+  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
+}
+
+.dark-mode .pet-username {
+  color: #E8E8E8;
+}
+
+/* 角色徽章 */
+.pet-role-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%);
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
 }
 
 /* 主题切换 */
@@ -342,6 +502,12 @@ import { h } from 'vue';
   background: rgba(255, 255, 255, 0.9) !important;
   color: #9CA3AF;
   font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.dark-mode .pet-footer {
+  background: rgba(37, 37, 66, 0.9) !important;
+  color: #8888A0;
 }
 
 /* 响应式 */
@@ -356,6 +522,10 @@ import { h } from 'vue';
 
   .pet-user-area {
     padding: 4px 8px;
+  }
+
+  .pet-role-badge {
+    display: none;
   }
 }
 </style>

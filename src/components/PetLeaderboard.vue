@@ -130,15 +130,15 @@ const getRankEmoji = (index) => {
 
 <style scoped>
 .leaderboard-card {
-  background: linear-gradient(135deg, #FFF9F5 0%, #FFF5F7 100%);
+  background: var(--pet-card);
   border-radius: 20px;
-  border: none;
+  border: 1px solid var(--pet-border);
 }
 
 .leaderboard-title {
   font-size: 18px;
   font-weight: 700;
-  color: #2D2D2D;
+  color: var(--pet-text-primary);
 }
 
 .leaderboard-content {

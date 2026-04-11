@@ -1,6 +1,7 @@
-// (这是 src/api.js 的“Cloudinary 签名”升级版)
+// (这是 src/api.js 的"Cloudinary 签名"升级版)
 
 import axios from 'axios';
+import { useAuthStore } from '@/stores/authStore.js';
 
 // (环境配置... 保持不变)
 const hostname = window.location.hostname;
@@ -34,6 +35,38 @@ apiClient.interceptors.request.use(
     return config;
   },
   error => Promise.reject(error)
+);
+
+// 响应拦截器 - 处理 token 过期、无效等错误
+apiClient.interceptors.response.use(
+  response => response,
+  error => {
+    const { response } = error;
+
+    // 处理 401 未授权、403 禁止访问等认证错误
+    if (response) {
+      const status = response.status;
+      const errorMsg = response.data?.error || '';
+
+      // token 过期、无效、被踢下线等情况
+      if (status === 401 || status === 403 || errorMsg.includes('登录') || errorMsg.includes('token') || errorMsg.includes('Token')) {
+        // 尝试获取 authStore 并处理登出
+        try {
+          const authStore = useAuthStore();
+          if (authStore.isAuthenticated) {
+            console.warn('检测到登录状态异常，自动登出:', errorMsg);
+            authStore.handleTokenInvalid();
+          }
+        } catch (e) {
+          // 如果无法获取 store，直接清除 localStorage
+          localStorage.removeItem('token');
+          localStorage.removeItem('tokenName');
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  }
 );
 
 /**
