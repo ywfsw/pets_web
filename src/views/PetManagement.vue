@@ -98,16 +98,30 @@ const getSpeciesTagType = (species) => {
 
 // 事件提醒：获取剩余天数徽章样式
 const getDaysBadgeClass = (daysLeft) => {
-  if (daysLeft <= 0) return 'days-urgent';
+  if (daysLeft < 0) return 'days-overdue';
+  if (daysLeft === 0) return 'days-today';
   if (daysLeft <= 2) return 'days-warning';
   return 'days-normal';
 };
 
 // 事件提醒：获取天数标签类型
 const getDaysTagType = (daysLeft) => {
-  if (daysLeft <= 0) return 'error';
+  if (daysLeft < 0) return 'error';
   if (daysLeft <= 2) return 'warning';
   return 'success';
+};
+
+// 事件提醒：获取天数文本
+const getDaysText = (daysLeft) => {
+  if (daysLeft < 0) return '天前';
+  if (daysLeft === 0) return '今天';
+  return '天后';
+};
+
+// 事件提醒：获取天数绝对值
+const getDaysDisplay = (daysLeft) => {
+  if (daysLeft < 0) return Math.abs(daysLeft);
+  return daysLeft;
 };
 
 const createColumns = ({ handleShowDetail, handleEditPet, isMobile }) => {
@@ -252,7 +266,7 @@ const pagination = computed(() => ({
       <template #header>
         <n-space align="center">
           <n-icon :component="CalendarOutline" size="20" color="#FF9BA8" />
-          <span class="event-title">📅 即将到期的事件</span>
+          <span class="event-title">📅 事件提醒</span>
         </n-space>
       </template>
       <n-spin :show="petStore.loadingUpcoming">
@@ -261,11 +275,12 @@ const pagination = computed(() => ({
             v-for="event in petStore.upcomingEvents"
             :key="event.id"
             class="event-item"
+            :class="{ 'event-overdue': event.isOverdue }"
             @click="handleShowDetail(event.petId)"
           >
             <div class="event-days-badge" :class="getDaysBadgeClass(event.daysLeft)">
-              <span class="event-days-number">{{ event.daysLeft }}</span>
-              <span class="event-days-text">{{ event.daysLeft === 0 ? '今天' : '天后' }}</span>
+              <span class="event-days-number">{{ getDaysDisplay(event.daysLeft) }}</span>
+              <span class="event-days-text">{{ getDaysText(event.daysLeft) }}</span>
             </div>
             <div class="event-info">
               <div class="event-info-top">
@@ -282,7 +297,7 @@ const pagination = computed(() => ({
             <span class="event-arrow">›</span>
           </div>
         </div>
-        <n-empty v-else-if="!petStore.loadingUpcoming" description="太棒了！7天内没有需要提醒的事件～" size="small">
+        <n-empty v-else-if="!petStore.loadingUpcoming" description="太棒了！没有需要提醒的事件～" size="small">
           <template #icon>
             <span style="font-size: 40px;">🎉</span>
           </template>
@@ -368,6 +383,15 @@ const pagination = computed(() => ({
   color: #555;
 }
 
+:global(.dark-mode) .event-overdue {
+  border-left-color: #EF4444;
+}
+
+:global(.dark-mode) .event-overdue:hover {
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+  border-color: #EF4444;
+}
+
 :global(.dark-mode) .event-title {
   color: #E8E8E8;
 }
@@ -419,7 +443,12 @@ const pagination = computed(() => ({
   margin-top: 2px;
 }
 
-.days-urgent {
+.days-overdue {
+  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+  color: #DC2626;
+}
+
+.days-today {
   background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
   color: #DC2626;
 }
@@ -432,6 +461,15 @@ const pagination = computed(() => ({
 .days-normal {
   background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
   color: #059669;
+}
+
+.event-overdue {
+  border-left: 3px solid #DC2626;
+}
+
+.event-overdue:hover {
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.15);
+  border-color: #DC2626;
 }
 
 .event-info {
