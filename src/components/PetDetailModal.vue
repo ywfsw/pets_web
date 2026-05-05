@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
@@ -20,9 +20,12 @@ import {
   NGi,
   NIcon,
   NTag,
-  NPopconfirm
+  NPopconfirm,
+  NSpin,
+  NEmpty
 } from 'naive-ui';
-import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline } from '@vicons/ionicons5';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline } from '@vicons/ionicons5';
+import { getPetGalleryByPetId } from '@/api.js';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
 import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
@@ -31,7 +34,47 @@ import WeightTrendChart from '@/components/WeightTrendChart.vue';
 const petStore = usePetStore();
 const authStore = useAuthStore();
 const message = useMessage();
-const { getAvatarUrl } = useCloudinaryImage();
+const { getAvatarUrl, getGalleryThumbnailUrl, getFullResolutionUrl } = useCloudinaryImage();
+
+// 最近照片状态
+const recentPhotos = ref([]);
+const loadingPhotos = ref(false);
+
+// 全屏查看照片状态
+const showPhotoLightbox = ref(false);
+const lightboxPhotoUrl = ref('');
+
+// 监听宠物详情变化，加载最近照片
+watch(
+  () => petStore.detailModal.data?.id,
+  async (petId) => {
+    if (!petId) {
+      recentPhotos.value = [];
+      return;
+    }
+    loadingPhotos.value = true;
+    try {
+      const response = await getPetGalleryByPetId(petId);
+      // 只取最近 6 张
+      recentPhotos.value = (response.data || []).slice(0, 6);
+    } catch (err) {
+      console.error('加载最近照片失败:', err);
+      recentPhotos.value = [];
+    } finally {
+      loadingPhotos.value = false;
+    }
+  }
+);
+
+const openPhotoLightbox = (imageUrl) => {
+  lightboxPhotoUrl.value = getFullResolutionUrl(imageUrl);
+  showPhotoLightbox.value = true;
+};
+
+const closePhotoLightbox = () => {
+  showPhotoLightbox.value = false;
+  lightboxPhotoUrl.value = '';
+};
 
 // 计算宠物年龄
 const petAge = computed(() => {
@@ -243,6 +286,39 @@ const getSpeciesTagType = (species) => {
         </n-grid>
       </n-card>
 
+      <!-- 最近照片 -->
+      <div class="section">
+        <n-space align="center" :size="8" class="section-header">
+          <n-icon :component="ImagesOutline" size="18" color="#C084FC" />
+          <n-h4 prefix-bar style="margin: 0;">最近照片</n-h4>
+        </n-space>
+        <n-spin :show="loadingPhotos">
+          <n-card v-if="recentPhotos.length" class="section-card" :bordered="false" size="small">
+            <div class="photo-grid">
+              <div
+                v-for="photo in recentPhotos"
+                :key="photo.id"
+                class="photo-grid-item"
+                @click="openPhotoLightbox(photo.imageUrl)"
+              >
+                <img
+                  :src="getGalleryThumbnailUrl(photo.imageUrl)"
+                  :alt="photo.description || '宠物照片'"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+          </n-card>
+          <n-card v-else-if="!loadingPhotos" class="section-card" :bordered="false" size="small">
+            <n-empty description="还没有照片哦～" size="small">
+              <template #icon>
+                <span style="font-size: 32px;">📷</span>
+              </template>
+            </n-empty>
+          </n-card>
+        </n-spin>
+      </div>
+
       <!-- 体重记录 -->
       <div class="section">
         <n-space align="center" :size="8" class="section-header">
@@ -426,6 +502,29 @@ const getSpeciesTagType = (species) => {
   </n-modal>
   <HealthEventFormModal />
   <WeightLogFormModal />
+
+  <!-- 照片全屏查看弹窗 -->
+  <n-modal
+    v-model:show="showPhotoLightbox"
+    preset="card"
+    style="width: 95vw; max-width: 1200px; height: 90vh; background: rgba(20, 20, 20, 0.95);"
+    content-style="display: flex; align-items: center; justify-content: center; height: 100%; padding: 0; position: relative;"
+    :bordered="false"
+    :closable="false"
+    @after-leave="closePhotoLightbox"
+  >
+    <n-button
+      circle
+      size="large"
+      class="photo-lightbox-close"
+      @click="closePhotoLightbox"
+    >
+      <template #icon>
+        <n-icon size="24"><CloseOutline /></n-icon>
+      </template>
+    </n-button>
+    <img :src="lightboxPhotoUrl" class="photo-lightbox-img" alt="照片全屏查看" />
+  </n-modal>
 </template>
 
 <style scoped>
@@ -500,5 +599,62 @@ const getSpeciesTagType = (species) => {
 
 .pet-detail-modal :deep(.n-list-item.completed-event .n-text) {
   text-decoration: line-through;
+}
+
+/* 照片网格 */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.photo-grid-item {
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.photo-grid-item:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px rgba(192, 132, 252, 0.3);
+}
+
+.photo-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.photo-grid-item:hover img {
+  transform: scale(1.08);
+}
+
+/* 照片 lightbox */
+.photo-lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: none;
+  color: white !important;
+}
+
+.photo-lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* 响应式：照片网格 */
+@media (max-width: 576px) {
+  .photo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 </style>
