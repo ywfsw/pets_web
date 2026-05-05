@@ -20,12 +20,13 @@ import {
   NAvatar,
   NDropdown
 } from 'naive-ui';
-import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline } from '@vicons/ionicons5';
+import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline } from '@vicons/ionicons5';
 
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 
+import DashboardView from '@/views/DashboardView.vue';
 import PetManagement from '@/views/PetManagement.vue';
 import PetAlbum from '@/views/PetAlbum.vue';
 import AdminPage from '@/views/AdminPage.vue';
@@ -176,6 +177,11 @@ watch(isDarkTheme, (dark) => {
 const menuOptions = computed(() => {
   const options = [
     {
+      label: '首页',
+      key: 'dashboard',
+      icon: () => h(NIcon, null, { default: () => h(HomeOutline) })
+    },
+    {
       label: '宠物管理',
       key: 'pets',
       icon: () => h(NIcon, null, { default: () => h(PawOutline) })
@@ -230,9 +236,9 @@ const handleMenuUpdate = (key) => {
     if (authStore.isAuthenticated && authStore.isAdmin) {
       petStore.activePage = 'admin';
     } else if (authStore.isAuthenticated && !authStore.isAdmin) {
-      // 普通用户尝试访问后台，跳转到宠物管理
+      // 普通用户尝试访问后台，跳转到首页
       window.$message.warning('只有管理员才能访问后台管理');
-      petStore.activePage = 'pets';
+      petStore.activePage = 'dashboard';
     } else {
       authStore.error = null;
       isAuthModalVisible.value = true;
@@ -245,7 +251,7 @@ const handleMenuUpdate = (key) => {
 const handleLogout = async () => {
   await authStore.logout();
   if (petStore.activePage === 'admin') {
-    petStore.activePage = 'pets';
+    petStore.activePage = 'dashboard';
   }
 };
 
@@ -262,7 +268,7 @@ watch(
       isAuthModalVisible.value = false;
       // 登录后如果当前是admin但不是管理员，跳转到pets
       if (petStore.activePage === 'admin' && !authStore.isAdmin) {
-        petStore.activePage = 'pets';
+        petStore.activePage = 'dashboard';
         window.$message.warning('只有管理员才能访问后台管理');
       }
     }
@@ -273,9 +279,9 @@ watch(
 watch(
   () => authStore.isAdmin,
   (isAdmin) => {
-    // 如果不再是管理员但当前在admin页面，跳转到pets
+    // 如果不再是管理员但当前在admin页面，跳转到首页
     if (!isAdmin && petStore.activePage === 'admin') {
-      petStore.activePage = 'pets';
+      petStore.activePage = 'dashboard';
     }
   }
 );
@@ -357,6 +363,7 @@ onMounted(async () => {
               </n-layout-header>
               <n-layout-content content-style="padding: 24px; max-width: 1400px; margin: 0 auto; width: 100%;">
                 <div class="pet-content">
+                  <DashboardView v-if="activeKey === 'dashboard'" />
                   <PetManagement v-if="activeKey === 'pets'" />
                   <PetAlbum v-if="activeKey === 'pet-album'" />
                   <AdminPage v-if="activeKey === 'admin'" />

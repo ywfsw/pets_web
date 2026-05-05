@@ -82,7 +82,7 @@ import {
     const authStore = useAuthStore();
   
     // --- 1. State ---
-    const activePage = ref('pets');
+    const activePage = ref('dashboard');
     const albumFilterPetId = ref(null);
     const albumFilterPetName = ref('');
     const upcomingEvents = ref([]);

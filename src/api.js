@@ -95,6 +95,11 @@ export const fetchUploadSignature = (params) => {
 };
 
 
+// --- 仪表盘 API ---
+export const fetchDashboardSummary = () => {
+  return apiClient.get('/api/dashboard/summary');
+};
+
 // --- 宠物 API ---
 export const fetchPetPage = (params = { pageNum: 1, pageSize: 10 }) => {
   // Apply the manual timeout wrapper here as a safeguard.
