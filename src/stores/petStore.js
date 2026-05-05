@@ -128,37 +128,29 @@ import {
       loadingUpcoming.value = true;
       try {
         const response = await fetchUpcomingEvents();
-        const eventsWithPetNames = await Promise.all(
-          response.data.map(async (event) => {
-            const petDetail = await fetchPetDetail(event.petId);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const dueDate = new Date(event.nextDueDate);
-            dueDate.setHours(0, 0, 0, 0);
-            const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-            const isOverdue = daysLeft < 0;
-            // 从字典中查找事件类型名称
-            const eventType = dictStore.healthEvents.find(t => t.id === event.eventTypeId);
-            return {
-              ...event,
-              petName: petDetail.data.name,
-              daysLeft,
-              isOverdue,
-              eventTypeLabel: eventType ? eventType.itemLabel : '未知事件'
-            };
-          })
-        );
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const processedEvents = response.data.map((event) => {
+          const dueDate = new Date(event.nextDueDate);
+          dueDate.setHours(0, 0, 0, 0);
+          const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+          const isOverdue = daysLeft < 0;
+          return {
+            ...event,
+            daysLeft,
+            isOverdue
+          };
+        });
         // 按紧急度排序：今日到期 > 即将到期（天数升序） > 已过期（最近过期优先）
-        eventsWithPetNames.sort((a, b) => {
+        processedEvents.sort((a, b) => {
           const priority = (e) => e.daysLeft === 0 ? 0 : e.daysLeft > 0 ? 1 : 2;
           const pa = priority(a);
           const pb = priority(b);
           if (pa !== pb) return pa - pb;
-          // 同优先级内：今日和即将到期按 daysLeft 升序，已过期按 daysLeft 降序（-1 > -5）
           if (pa === 2) return b.daysLeft - a.daysLeft;
           return a.daysLeft - b.daysLeft;
         });
-        upcomingEvents.value = eventsWithPetNames;
+        upcomingEvents.value = processedEvents;
       } catch (err) { console.error("加载提醒事件失败:", err); }
       finally { loadingUpcoming.value = false; }
     }
