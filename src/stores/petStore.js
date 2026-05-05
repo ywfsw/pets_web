@@ -76,6 +76,8 @@ import {
     const upcomingEvents = ref([]);
     const loadingUpcoming = ref(false);
     const searchKeyword = ref('');
+    const speciesFilter = ref(null);
+    const genderFilter = ref(null);
 
     // (❗) 分页状态
     const pagination = ref(defaultPagination());
@@ -171,6 +173,12 @@ import {
         };
         if (searchKeyword.value && searchKeyword.value.trim()) {
           params.name = searchKeyword.value.trim();
+        }
+        if (speciesFilter.value) {
+          params.speciesId = speciesFilter.value;
+        }
+        if (genderFilter.value) {
+          params.gender = genderFilter.value;
         }
         const response = await fetchPetPage(params);
         const enrichedRecords = response.data.records.map(pet => {
@@ -542,6 +550,26 @@ import {
       loadPetList(1);
     }
 
+    function setSpeciesFilter(value) {
+      speciesFilter.value = value;
+      loadPetList(1);
+    }
+
+    function clearSpeciesFilter() {
+      speciesFilter.value = null;
+      loadPetList(1);
+    }
+
+    function setGenderFilter(value) {
+      genderFilter.value = value;
+      loadPetList(1);
+    }
+
+    function clearGenderFilter() {
+      genderFilter.value = null;
+      loadPetList(1);
+    }
+
     function navigateToAlbum(petId = null, petName = '') {
       albumFilterPetId.value = petId;
       albumFilterPetName.value = petName;
@@ -614,6 +642,8 @@ import {
       albumFilterPetId,
       albumFilterPetName,
       searchKeyword,
+      speciesFilter,
+      genderFilter,
       upcomingEvents, loadingUpcoming,
       loadingList,
       detailModal,
@@ -658,6 +688,10 @@ import {
       handleUncompleteHealthEvent,
       setSearchKeyword,
       clearSearchKeyword,
+      setSpeciesFilter,
+      clearSpeciesFilter,
+      setGenderFilter,
+      clearGenderFilter,
       switchToEditMode,
       handleDeletePet, // (❗)
       navigateToAlbum,

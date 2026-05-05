@@ -2,6 +2,7 @@
 import { h, computed, ref, onMounted, onUnmounted } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
+import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 import { useMessage } from 'naive-ui';
 import PetLeaderboard from '@/components/PetLeaderboard.vue';
@@ -20,14 +21,27 @@ import {
   NTag,
   NPopconfirm,
   NIcon,
-  NInput
+  NInput,
+  NSelect
 } from 'naive-ui';
 import { PawOutline, CalendarOutline, CreateOutline, CheckmarkCircleOutline, SearchOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
+const dictStore = useDictionaryStore();
 const message = useMessage();
 const { getAvatarUrl } = useCloudinaryImage();
+
+// 性别选项
+const genderOptions = [
+  { label: '♂ 公', value: 'male' },
+  { label: '♀ 母', value: 'female' }
+];
+
+// 物种选项（从字典中获取）
+const speciesFilterOptions = computed(() => {
+  return dictStore.species.map(s => ({ label: s.itemLabel, value: s.id }));
+});
 
 // Responsive logic
 const isMobile = ref(false);
@@ -386,7 +400,7 @@ const pagination = computed(() => ({
         </n-space>
       </template>
 
-      <!-- 搜索栏 -->
+      <!-- 搜索和筛选栏 -->
       <div class="pet-search-bar">
         <n-input
           :value="petStore.searchKeyword"
@@ -401,8 +415,32 @@ const pagination = computed(() => ({
             <n-icon :component="SearchOutline" size="16" color="#9CA3AF" />
           </template>
         </n-input>
+        <n-select
+          :value="petStore.speciesFilter"
+          :options="speciesFilterOptions"
+          placeholder="物种"
+          clearable
+          size="small"
+          class="pet-filter-select"
+          @update:value="petStore.setSpeciesFilter"
+        />
+        <n-select
+          :value="petStore.genderFilter"
+          :options="genderOptions"
+          placeholder="性别"
+          clearable
+          size="small"
+          class="pet-filter-select"
+          @update:value="petStore.setGenderFilter"
+        />
         <n-tag v-if="petStore.searchKeyword" size="small" round closable @close="handleClearSearch" class="search-tag">
           搜索: {{ petStore.searchKeyword }}
+        </n-tag>
+        <n-tag v-if="petStore.speciesFilter" size="small" round type="info" closable @close="petStore.clearSpeciesFilter" class="search-tag">
+          物种: {{ dictStore.species.find(s => s.id === petStore.speciesFilter)?.itemLabel }}
+        </n-tag>
+        <n-tag v-if="petStore.genderFilter" size="small" round type="warning" closable @close="petStore.clearGenderFilter" class="search-tag">
+          {{ petStore.genderFilter === 'male' ? '♂ 公' : '♀ 母' }}
         </n-tag>
       </div>
 
@@ -654,10 +692,16 @@ const pagination = computed(() => ({
   align-items: center;
   gap: 10px;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 .pet-search-input {
   max-width: 280px;
+}
+
+.pet-filter-select {
+  min-width: 110px;
+  max-width: 140px;
 }
 
 .search-tag {
