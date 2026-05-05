@@ -159,6 +159,10 @@ export const completeHealthEvent = (id) => {
   return apiClient.patch(`/api/health-events/${id}/complete`);
 };
 
+export const uncompleteHealthEvent = (id) => {
+  return apiClient.patch(`/api/health-events/${id}/uncomplete`);
+};
+
 
 // --- 字典 API ---
 export const fetchDictTypeList = () => {

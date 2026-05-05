@@ -22,7 +22,7 @@ import {
   NTag,
   NPopconfirm
 } from 'naive-ui';
-import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline } from '@vicons/ionicons5';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline } from '@vicons/ionicons5';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
 import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
@@ -146,6 +146,22 @@ const handleCompleteHealthEvent = async (eventId) => {
     message.success('事件已标记为完成');
   } catch (error) {
     console.error('标记事件完成失败:', error);
+    message.error('操作失败，请重试');
+  }
+};
+
+// 撤销健康事件的已完成状态
+const handleUncompleteHealthEvent = async (eventId) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再操作');
+    return;
+  }
+
+  try {
+    await petStore.handleUncompleteHealthEvent(eventId);
+    message.success('事件已恢复为待处理');
+  } catch (error) {
+    console.error('撤销事件完成失败:', error);
     message.error('操作失败，请重试');
   }
 };
@@ -314,6 +330,21 @@ const getSpeciesTagType = (species) => {
                       </n-button>
                     </template>
                     标记此事件为已完成？
+                  </n-popconfirm>
+                  <n-popconfirm
+                    v-if="event.status === 1"
+                    @positive-click="handleUncompleteHealthEvent(event.id)"
+                    :positive-button-props="{ type: 'warning', size: 'tiny' }"
+                    :negative-button-props="{ size: 'tiny' }"
+                  >
+                    <template #trigger>
+                      <n-button text type="warning" size="tiny" :disabled="!authStore.isAuthenticated">
+                        <template #icon>
+                          <n-icon :component="ArrowUndoOutline" :size="14" />
+                        </template>
+                      </n-button>
+                    </template>
+                    撤销完成，恢复为待处理？
                   </n-popconfirm>
                   <n-popconfirm
                     @positive-click="handleEditHealthEvent(event)"

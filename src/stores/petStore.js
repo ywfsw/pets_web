@@ -25,7 +25,8 @@ import {
     getAllPetGallery, // New
     getPetGalleryByPetId,
     addPetGalleryImage,
-    deletePetGalleryImage
+    deletePetGalleryImage,
+    uncompleteHealthEvent
   } from '@/api.js';
   
   // (❗) 宠物表单的默认值
@@ -484,6 +485,21 @@ import {
       }
     }
 
+    // 撤销健康事件的已完成状态
+    async function handleUncompleteHealthEvent(eventId) {
+      try {
+        await uncompleteHealthEvent(eventId);
+        const petId = detailModal.value.data?.id;
+        if (petId) {
+          await loadPetDetail(petId);
+        }
+        await loadUpcomingEvents();
+      } catch (err) {
+        console.error("撤销事件完成失败:", err);
+        throw err;
+      }
+    }
+
     function closeAllPetModals() {
       detailModal.value.show = false;
       petFormModal.value.show = false;
@@ -588,6 +604,7 @@ import {
       handleDeleteWeightLog,
       handleDeleteHealthEvent,
       handleCompleteHealthEvent,
+      handleUncompleteHealthEvent,
       switchToEditMode,
       handleDeletePet // (❗)
     };
