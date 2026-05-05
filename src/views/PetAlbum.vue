@@ -5,7 +5,7 @@ import { usePetStore } from '@/stores/petStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage';
 import { useCloudinaryUpload } from '@/composables/useCloudinaryUpload';
-import { getPetGalleryDetail } from '@/api.js';
+import { getPetGalleryDetail, updatePetGalleryImage } from '@/api.js';
 import {
   NCard,
   NSpin,
@@ -20,7 +20,7 @@ import {
   NInput,
   NBadge
 } from 'naive-ui';
-import { Add, ImageOutline, CloseOutline, TrashOutline } from '@vicons/ionicons5';
+import { Add, ImageOutline, CloseOutline, TrashOutline, CreateOutline, CheckmarkOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -67,6 +67,46 @@ function closeLightbox() {
   fullImageUrl.value = '';
   fullImageDescription.value = '';
   currentImage.value = null;
+  isEditingDescription.value = false;
+  editingDescriptionText.value = '';
+}
+
+// --- Edit Description Logic ---
+const isEditingDescription = ref(false);
+const editingDescriptionText = ref('');
+const savingDescription = ref(false);
+
+function startEditDescription() {
+  editingDescriptionText.value = fullImageDescription.value || '';
+  isEditingDescription.value = true;
+}
+
+function cancelEditDescription() {
+  isEditingDescription.value = false;
+  editingDescriptionText.value = '';
+}
+
+async function saveDescription() {
+  if (!currentImage.value) return;
+  savingDescription.value = true;
+  try {
+    await updatePetGalleryImage(currentImage.value.id, {
+      id: currentImage.value.id,
+      petId: currentImage.value.petId,
+      imageUrl: currentImage.value.imageUrl,
+      publicId: currentImage.value.publicId,
+      description: editingDescriptionText.value
+    });
+    fullImageDescription.value = editingDescriptionText.value;
+    isEditingDescription.value = false;
+    message.success('描述已更新');
+    await petStore.loadAllPetGallery();
+  } catch (err) {
+    console.error('更新描述失败:', err);
+    message.error('更新失败，请重试');
+  } finally {
+    savingDescription.value = false;
+  }
 }
 
 // --- Delete Image Logic ---
@@ -315,10 +355,65 @@ async function handleConfirmDescription() {
         />
       </n-spin>
 
-      <div v-if="fullImageDescription" class="lightbox-description">
-        <n-text class="lightbox-description-text">
-          {{ fullImageDescription }}
-        </n-text>
+      <!-- 描述区域（查看/编辑模式） -->
+      <div class="lightbox-description">
+        <div v-if="isEditingDescription" class="description-edit-area">
+          <n-input
+            v-model:value="editingDescriptionText"
+            type="textarea"
+            placeholder="输入图片描述..."
+            :rows="2"
+            size="small"
+            class="description-input"
+            @keydown.enter.ctrl="saveDescription"
+            @keydown.escape="cancelEditDescription"
+          />
+          <n-space :size="8">
+            <n-button
+              size="tiny"
+              type="primary"
+              :loading="savingDescription"
+              @click="saveDescription"
+            >
+              <template #icon>
+                <n-icon :component="CheckmarkOutline" />
+              </template>
+              保存
+            </n-button>
+            <n-button size="tiny" @click="cancelEditDescription">
+              取消
+            </n-button>
+          </n-space>
+        </div>
+        <div v-else-if="fullImageDescription" class="description-view-area">
+          <n-text class="lightbox-description-text">
+            {{ fullImageDescription }}
+          </n-text>
+          <n-button
+            v-if="authStore.isAuthenticated"
+            text
+            size="tiny"
+            class="edit-desc-btn"
+            @click="startEditDescription"
+          >
+            <template #icon>
+              <n-icon :component="CreateOutline" size="14" />
+            </template>
+          </n-button>
+        </div>
+        <div v-else-if="authStore.isAuthenticated && currentImage" class="description-add-area">
+          <n-button
+            text
+            size="tiny"
+            class="add-desc-btn"
+            @click="startEditDescription"
+          >
+            <template #icon>
+              <n-icon :component="CreateOutline" size="14" />
+            </template>
+            添加描述
+          </n-button>
+        </div>
       </div>
     </n-modal>
   </div>
@@ -512,6 +607,54 @@ async function handleConfirmDescription() {
   border-radius: 20px;
   font-size: 16px;
   display: inline-block;
+}
+
+.description-view-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.edit-desc-btn {
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: color 0.2s ease;
+}
+
+.edit-desc-btn:hover {
+  color: white !important;
+}
+
+.description-edit-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.description-edit-area .description-input :deep(.n-input__textarea-el) {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.description-edit-area .description-input :deep(.n-input__textarea-el::placeholder) {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.description-add-area {
+  text-align: center;
+}
+
+.add-desc-btn {
+  color: rgba(255, 255, 255, 0.6) !important;
+  transition: color 0.2s ease;
+}
+
+.add-desc-btn:hover {
+  color: white !important;
 }
 
 /* 响应式 */
