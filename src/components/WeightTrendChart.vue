@@ -9,6 +9,13 @@ const props = defineProps({
 });
 
 const hoveredIndex = ref(-1);
+const timeRange = ref('all');
+
+const timeRangeOptions = [
+  { label: '30天', value: '30d' },
+  { label: '3个月', value: '3m' },
+  { label: '全部', value: 'all' }
+];
 
 function onPointEnter(index) {
   hoveredIndex.value = index;
@@ -21,9 +28,23 @@ function onPointLeave() {
 const chartData = computed(() => {
   if (!props.weightLogs?.length) return null;
 
-  const sorted = [...props.weightLogs]
-    .filter(l => l.logDate && l.weightKg != null)
-    .sort((a, b) => new Date(a.logDate) - new Date(b.logDate));
+  let filtered = [...props.weightLogs].filter(l => l.logDate && l.weightKg != null);
+
+  if (timeRange.value !== 'all') {
+    const now = new Date();
+    let cutoff;
+    if (timeRange.value === '30d') {
+      cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    } else if (timeRange.value === '3m') {
+      cutoff = new Date(now);
+      cutoff.setMonth(cutoff.getMonth() - 3);
+    }
+    if (cutoff) {
+      filtered = filtered.filter(l => new Date(l.logDate) >= cutoff);
+    }
+  }
+
+  const sorted = filtered.sort((a, b) => new Date(a.logDate) - new Date(b.logDate));
 
   if (sorted.length < 2) return null;
 
@@ -101,7 +122,8 @@ const chartData = computed(() => {
 <template>
   <div class="weight-trend-chart">
     <div v-if="chartData" class="chart-wrapper">
-      <div class="chart-summary">
+      <div class="chart-header">
+        <div class="chart-summary">
         <div class="summary-item">
           <span class="summary-label">最新</span>
           <span class="summary-value">{{ chartData.latest }} kg</span>
@@ -123,6 +145,16 @@ const chartData = computed(() => {
         <div class="summary-item">
           <span class="summary-label">记录</span>
           <span class="summary-value">{{ chartData.count }} 次</span>
+        </div>
+      </div>
+        <div class="chart-range-selector">
+          <button
+            v-for="opt in timeRangeOptions"
+            :key="opt.value"
+            class="range-btn"
+            :class="{ active: timeRange === opt.value }"
+            @click="timeRange = opt.value"
+          >{{ opt.label }}</button>
         </div>
       </div>
       <svg
@@ -264,7 +296,8 @@ const chartData = computed(() => {
     </div>
     <div v-else class="chart-empty">
       <span class="chart-empty-icon">📊</span>
-      <span class="chart-empty-text">记录 2 次以上体重后将显示趋势图</span>
+      <span class="chart-empty-text" v-if="timeRange !== 'all' && props.weightLogs?.length >= 2">该时间段内记录不足 2 次</span>
+      <span class="chart-empty-text" v-else>记录 2 次以上体重后将显示趋势图</span>
     </div>
   </div>
 </template>
@@ -289,7 +322,6 @@ const chartData = computed(() => {
 .chart-summary {
   display: flex;
   gap: 16px;
-  margin-bottom: 10px;
 }
 
 .summary-item {
@@ -348,5 +380,63 @@ const chartData = computed(() => {
 
 .chart-empty-icon {
   font-size: 20px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.chart-range-selector {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .chart-range-selector {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.range-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.range-btn:hover {
+  color: #334155;
+}
+
+.range-btn.active {
+  background: white;
+  color: #334155;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+}
+
+:global(.dark-mode) .range-btn {
+  color: #94A3B8;
+}
+
+:global(.dark-mode) .range-btn:hover {
+  color: #E2E8F0;
+}
+
+:global(.dark-mode) .range-btn.active {
+  background: #334155;
+  color: #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 </style>
