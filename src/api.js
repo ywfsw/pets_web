@@ -170,6 +170,14 @@ export const createDictItem = (payload) => {
   return apiClient.post('/api/dictItems', payload);
 };
 
+export const updateDictItem = (id, payload) => {
+  return apiClient.put(`/api/dictItems/${id}`, payload);
+};
+
+export const deleteDictItem = (id) => {
+  return apiClient.delete(`/api/dictItems/${id}`);
+};
+
 export const fetchDictItemsByCode = (dictCode) => {
   return apiClient.get(`/api/dictItems/code/${dictCode}`);
 };

@@ -7,7 +7,9 @@ import {
   fetchDictTypeList,
   fetchDictItemList,
   fetchDictItemsByCode,
-  createDictItem // (❗ 新增)
+  createDictItem,
+  updateDictItem,
+  deleteDictItem
 } from '@/api.js';
 
 // (❗ 新增)
@@ -141,22 +143,33 @@ export const useDictionaryStore = defineStore('dictionary', () => {
     itemFormModal.value.loading = true;
     try {
       if (itemFormModal.value.isEdit) {
-        // (TODO: 更新)
-        // await updateDictItem(payload.id, payload);
+        await updateDictItem(payload.id, payload);
       } else {
-        // (创建)
-        const response = await createDictItem(payload);
-        alert(response.data);
+        await createDictItem(payload);
       }
 
-      itemFormModal.value.show = false; // (关闭)
-      loadDictItems(payload.dictCode);  // (刷新右侧)
-      loadAllAppDictionaries(); // (刷新全局)
-
+      itemFormModal.value.show = false;
+      loadDictItems(payload.dictCode);
+      loadAllAppDictionaries();
     } catch (err) {
       console.error("保存字典项失败:", err);
+      throw err;
     } finally {
       itemFormModal.value.loading = false;
+    }
+  }
+
+  /**
+   * 删除字典项
+   */
+  async function handleDeleteDictItem(id, dictCode) {
+    try {
+      await deleteDictItem(id);
+      loadDictItems(dictCode);
+      loadAllAppDictionaries();
+    } catch (err) {
+      console.error("删除字典项失败:", err);
+      throw err;
     }
   }
 
@@ -179,6 +192,7 @@ export const useDictionaryStore = defineStore('dictionary', () => {
     loadDictItems,
     showDictItemModal, // (❗)
     handleSaveItem,    // (❗)
-    closeDictItemModal // (❗)
+    closeDictItemModal,
+    handleDeleteDictItem // (❗)
   };
 });

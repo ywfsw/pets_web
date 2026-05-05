@@ -80,6 +80,14 @@ const handleCreateItem = () => {
 const handleEditDictItem = (item) => {
   dictStore.showDictItemModal(selectedDictType.value, item);
 };
+const handleDeleteDictItem = async (item) => {
+  try {
+    await dictStore.handleDeleteDictItem(item.id, selectedDictType.value.dictCode);
+    message.success('字典项删除成功');
+  } catch (err) {
+    message.error('删除失败，请重试');
+  }
+};
 
 const dictItemColumns = [
   { title: 'ID', key: 'id', width: 80 },
@@ -97,7 +105,7 @@ const dictItemColumns = [
           onClick: () => handleEditDictItem(row)
         }, () => '编辑'),
         h(NPopconfirm, {
-          onPositiveClick: () => message.info('删除功能待开发')
+          onPositiveClick: () => handleDeleteDictItem(row)
         }, {
           trigger: () => h(NButton, { size: 'small', type: 'error' }, () => '删除'),
           default: () => `确定要删除 [${row.itemLabel}] 吗？`
