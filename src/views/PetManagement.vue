@@ -65,6 +65,24 @@ const handleEditPet = (pet) => {
   petStore.showPetFormModal(pet);
 };
 
+// 计算宠物年龄
+const computeAge = (birthday) => {
+  if (!birthday) return null;
+  const birth = new Date(birthday);
+  const now = new Date();
+  let years = now.getFullYear() - birth.getFullYear();
+  let months = now.getMonth() - birth.getMonth();
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  if (years < 0) return null;
+  if (years === 0 && months === 0) return '不到1个月';
+  if (years === 0) return `${months}个月`;
+  if (months === 0) return `${years}岁`;
+  return `${years}岁${months}个月`;
+};
+
 // 获取物种标签类型
 const getSpeciesTagType = (species) => {
   const typeMap = {
@@ -109,7 +127,14 @@ const createColumns = ({ handleShowDetail, handleEditPet, isMobile }) => {
     {
       title: '生日',
       key: 'birthday',
-      width: 120,
+      width: 180,
+      render(row) {
+        const age = computeAge(row.birthday);
+        return h(NSpace, { align: 'center', size: 4 }, () => [
+          h('span', null, row.birthday || '未知'),
+          age ? h(NTag, { type: 'success', size: 'small', round: true }, () => `🎂 ${age}`) : null
+        ]);
+      }
     },
     {
       title: '物种',

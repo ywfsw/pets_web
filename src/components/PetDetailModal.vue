@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
@@ -31,6 +31,25 @@ const petStore = usePetStore();
 const authStore = useAuthStore();
 const message = useMessage();
 const { getAvatarUrl } = useCloudinaryImage();
+
+// 计算宠物年龄
+const petAge = computed(() => {
+  const birthday = petStore.detailModal.data?.birthday;
+  if (!birthday) return null;
+  const birth = new Date(birthday);
+  const now = new Date();
+  let years = now.getFullYear() - birth.getFullYear();
+  let months = now.getMonth() - birth.getMonth();
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  if (years < 0) return null;
+  if (years === 0 && months === 0) return '不到1个月';
+  if (years === 0) return `${months}个月`;
+  if (months === 0) return `${years}岁`;
+  return `${years}岁${months}个月`;
+});
 
 const handleShowWeightForm = () => {
   if (petStore.detailModal.data?.id) {
@@ -178,6 +197,7 @@ const getSpeciesTagType = (species) => {
               <n-icon :component="CalendarOutline" color="#FF9BA8" />
               <n-text depth="3">生日:</n-text>
               <n-text>{{ petStore.detailModal.data.birthday || '未知' }}</n-text>
+              <n-tag v-if="petAge" type="success" size="small" round>🎂 {{ petAge }}</n-tag>
             </n-space>
           </n-gi>
           <n-gi>
