@@ -26,7 +26,10 @@ import {
     getPetGalleryByPetId,
     addPetGalleryImage,
     deletePetGalleryImage,
-    uncompleteHealthEvent
+    uncompleteHealthEvent,
+    createFeedingRecord,
+    updateFeedingRecord,
+    deleteFeedingRecord
   } from '@/api.js';
   
   // (❗) 宠物表单的默认值
@@ -63,6 +66,15 @@ import {
     petId: petId,
     weightKg: null,
     logDate: Date.now() // Default to today
+  });
+
+  // 喂养记录表单的默认值
+  const defaultFeedingRecordForm = (petId) => ({
+    petId: petId,
+    feedTime: Date.now(),
+    foodType: '',
+    amountGrams: null,
+    notes: ''
   });
   
   export const usePetStore = defineStore('pet', () => {
@@ -117,6 +129,13 @@ import {
       show: false,
       isEdit: false,
       data: defaultWeightLogForm(null),
+      loading: false
+    });
+
+    const feedingRecordFormModal = ref({
+      show: false,
+      isEdit: false,
+      data: defaultFeedingRecordForm(null),
       loading: false
     });
   
@@ -471,6 +490,64 @@ import {
       weightLogFormModal.value.show = false;
     }
 
+    // 喂养记录
+    function showFeedingRecordFormModal(petId, recordToEdit = null) {
+      if (recordToEdit) {
+        feedingRecordFormModal.value.data = {
+          id: recordToEdit.id,
+          petId: petId,
+          feedTime: recordToEdit.feedTime ? new Date(recordToEdit.feedTime).getTime() : Date.now(),
+          foodType: recordToEdit.foodType || '',
+          amountGrams: recordToEdit.amountGrams,
+          notes: recordToEdit.notes || ''
+        };
+        feedingRecordFormModal.value.isEdit = true;
+      } else {
+        feedingRecordFormModal.value.data = defaultFeedingRecordForm(petId);
+        feedingRecordFormModal.value.isEdit = false;
+      }
+      feedingRecordFormModal.value.show = true;
+    }
+
+    async function handleSaveFeedingRecord() {
+      feedingRecordFormModal.value.loading = true;
+      const payload = { ...feedingRecordFormModal.value.data };
+      if (typeof payload.feedTime === 'number') {
+        payload.feedTime = new Date(payload.feedTime).toISOString();
+      }
+      try {
+        if (feedingRecordFormModal.value.isEdit && payload.id) {
+          await updateFeedingRecord(payload.id, payload);
+        } else {
+          await createFeedingRecord(payload);
+        }
+        closeFeedingRecordFormModal();
+        loadPetDetail(payload.petId);
+      } catch (err) {
+        console.error("保存喂养记录失败:", err);
+        throw err;
+      } finally {
+        feedingRecordFormModal.value.loading = false;
+      }
+    }
+
+    async function handleDeleteFeedingRecord(recordId) {
+      const petId = detailModal.value.data?.id;
+      try {
+        await deleteFeedingRecord(recordId);
+        if (petId) {
+          await loadPetDetail(petId);
+        }
+      } catch (err) {
+        console.error("删除喂养记录失败:", err);
+        throw err;
+      }
+    }
+
+    function closeFeedingRecordFormModal() {
+      feedingRecordFormModal.value.show = false;
+    }
+
     // 删除体重记录
     async function handleDeleteWeightLog(logId) {
       const petId = detailModal.value.data?.id;
@@ -538,6 +615,7 @@ import {
       petFormModal.value.show = false;
       healthEventFormModal.value.show = false;
       weightLogFormModal.value.show = false;
+      feedingRecordFormModal.value.show = false;
     }
 
     function setSearchKeyword(keyword) {
@@ -650,6 +728,7 @@ import {
       petFormModal,
       healthEventFormModal, // (❗)
       weightLogFormModal, // (❗)
+      feedingRecordFormModal,
       pagination,
       petLeaderboard, // (❗)
       loadingLeaderboard, // (❗)
@@ -682,6 +761,10 @@ import {
       showWeightLogFormModal, // (❗)
       handleSaveWeightLog, // (❗)
       closeWeightLogFormModal, // (❗)
+      showFeedingRecordFormModal,
+      handleSaveFeedingRecord,
+      handleDeleteFeedingRecord,
+      closeFeedingRecordFormModal,
       handleDeleteWeightLog,
       handleDeleteHealthEvent,
       handleCompleteHealthEvent,

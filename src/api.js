@@ -228,6 +228,19 @@ export const updatePetGalleryImage = (id, payload) => {
   return apiClient.put(`/api/petGallery/${id}`, payload);
 };
 
+// --- 喂养记录 API ---
+export const createFeedingRecord = (payload) => {
+  return apiClient.post('/api/feeding-records', payload);
+};
+
+export const updateFeedingRecord = (id, payload) => {
+  return apiClient.put(`/api/feeding-records/${id}`, payload);
+};
+
+export const deleteFeedingRecord = (id) => {
+  return apiClient.delete(`/api/feeding-records/${id}`);
+};
+
 // --- Auth API ---
 export const login = (payload) => {
   return apiClient.post('/api/auth/login', payload);

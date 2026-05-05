@@ -24,12 +24,13 @@ import {
   NSpin,
   NEmpty
 } from 'naive-ui';
-import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline, ArrowForwardOutline } from '@vicons/ionicons5';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline, ArrowForwardOutline, RestaurantOutline } from '@vicons/ionicons5';
 import { getPetGalleryByPetId } from '@/api.js';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
 import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
 import WeightTrendChart from '@/components/WeightTrendChart.vue';
+import FeedingRecordFormModal from '@/components/FeedingRecordFormModal.vue';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -127,6 +128,33 @@ const handleEditWeightLog = (log) => {
 const handleEditHealthEvent = (event) => {
   if (petStore.detailModal.data?.id) {
     petStore.showHealthEventFormModal(petStore.detailModal.data.id, event);
+  }
+};
+
+// 喂养记录
+const handleShowFeedingForm = () => {
+  if (petStore.detailModal.data?.id) {
+    petStore.showFeedingRecordFormModal(petStore.detailModal.data.id);
+  }
+};
+
+const handleEditFeedingRecord = (record) => {
+  if (petStore.detailModal.data?.id) {
+    petStore.showFeedingRecordFormModal(petStore.detailModal.data.id, record);
+  }
+};
+
+const handleDeleteFeedingRecord = async (recordId) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再操作');
+    return;
+  }
+  try {
+    await petStore.handleDeleteFeedingRecord(recordId);
+    message.success('喂养记录已删除');
+  } catch (error) {
+    console.error('删除喂养记录失败:', error);
+    message.error('删除失败，请重试');
   }
 };
 
@@ -291,6 +319,26 @@ const timelineItems = computed(() => {
     }
   }
 
+  // 喂养记录
+  if (data.feedingRecords) {
+    for (const record of data.feedingRecords) {
+      const dateStr = record.feedTime
+        ? new Date(record.feedTime).toISOString().slice(0, 10)
+        : null;
+      const amountStr = record.amountGrams ? `${record.amountGrams}g` : '';
+      const title = [record.foodType, amountStr].filter(Boolean).join(' · ') || '喂食';
+      items.push({
+        id: `f-${record.id}`,
+        type: 'feeding',
+        date: dateStr,
+        icon: '🍽️',
+        title,
+        subtitle: record.notes || '',
+        color: '#FBBF24'
+      });
+    }
+  }
+
   // 照片上传记录
   if (recentPhotos.value && recentPhotos.value.length) {
     for (const photo of recentPhotos.value) {
@@ -420,7 +468,7 @@ const timelineItems = computed(() => {
                 <span class="timeline-month-label">{{ item.monthLabel }}</span>
               </div>
               <!-- 时间线条目 -->
-              <div class="timeline-item" :class="{ 'timeline-photo-item': item.type === 'photo' }">
+              <div class="timeline-item" :class="{ 'timeline-photo-item': item.type === 'photo', 'timeline-feeding-item': item.type === 'feeding' }">
                 <div class="timeline-dot" :style="{ background: item.color }">
                   <span class="timeline-dot-icon">{{ item.icon }}</span>
                 </div>
@@ -655,6 +703,64 @@ const timelineItems = computed(() => {
           <n-text v-else depth="3"><i>{{ healthEventFilter === 'all' ? '暂无健康事件' : '该分类下暂无事件' }}</i></n-text>
         </n-card>
       </div>
+
+      <!-- 喂养记录 -->
+      <div class="section">
+        <n-space align="center" :size="8" class="section-header">
+          <n-icon :component="RestaurantOutline" size="18" color="#FBBF24" />
+          <n-h4 prefix-bar style="margin: 0;">喂养记录</n-h4>
+          <n-tag v-if="petStore.detailModal.data.feedingRecords?.length" size="tiny" round>
+            {{ petStore.detailModal.data.feedingRecords.length }} 条
+          </n-tag>
+        </n-space>
+        <n-card class="section-card" :bordered="false" size="small">
+          <n-list v-if="petStore.detailModal.data.feedingRecords?.length" hoverable>
+            <n-list-item v-for="record in petStore.detailModal.data.feedingRecords" :key="record.id">
+              <n-space vertical :size="4">
+                <n-space align="center" justify="space-between">
+                  <n-space align="center">
+                    <n-text>{{ record.feedTime ? new Date(record.feedTime).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '' }}</n-text>
+                    <n-tag type="warning" size="small" round>🍽️ {{ record.foodType || '喂食' }}</n-tag>
+                    <n-tag v-if="record.amountGrams" size="small" round>{{ record.amountGrams }}g</n-tag>
+                  </n-space>
+                  <n-space :size="4">
+                    <n-popconfirm
+                      @positive-click="handleEditFeedingRecord(record)"
+                      :positive-button-props="{ type: 'info', size: 'tiny' }"
+                      :negative-button-props="{ size: 'tiny' }"
+                    >
+                      <template #trigger>
+                        <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
+                          <template #icon><n-icon :component="CreateOutline" :size="14" /></template>
+                        </n-button>
+                      </template>
+                      编辑这条喂养记录？
+                    </n-popconfirm>
+                    <n-popconfirm
+                      @positive-click="handleDeleteFeedingRecord(record.id)"
+                      :positive-button-props="{ type: 'error', size: 'tiny' }"
+                      :negative-button-props="{ size: 'tiny' }"
+                    >
+                      <template #trigger>
+                        <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
+                          <template #icon><n-icon :component="TrashOutline" :size="14" /></template>
+                        </n-button>
+                      </template>
+                      确定删除这条喂养记录？
+                    </n-popconfirm>
+                  </n-space>
+                </n-space>
+                <n-text v-if="record.notes" depth="3">{{ record.notes }}</n-text>
+              </n-space>
+            </n-list-item>
+          </n-list>
+          <n-empty v-else description="还没有喂养记录哦～" size="small">
+            <template #icon>
+              <span style="font-size: 32px;">🍽️</span>
+            </template>
+          </n-empty>
+        </n-card>
+      </div>
     </template>
 
     <template #footer>
@@ -687,6 +793,12 @@ const timelineItems = computed(() => {
             </template>
             添加事件
           </n-button>
+          <n-button @click="handleShowFeedingForm" class="action-btn">
+            <template #icon>
+              <n-icon><RestaurantOutline /></n-icon>
+            </template>
+            喂食
+          </n-button>
           <n-button type="primary" @click="petStore.switchToEditMode()" class="edit-btn">
             编辑信息
           </n-button>
@@ -696,6 +808,7 @@ const timelineItems = computed(() => {
   </n-modal>
   <HealthEventFormModal />
   <WeightLogFormModal />
+  <FeedingRecordFormModal />
 
   <!-- 照片全屏查看弹窗 -->
   <n-modal
@@ -1029,5 +1142,13 @@ const timelineItems = computed(() => {
 
 :global(.dark-mode) .timeline-photo-item .timeline-title {
   color: #D8B4FE;
+}
+
+.timeline-feeding-item .timeline-title {
+  color: #D97706;
+}
+
+:global(.dark-mode) .timeline-feeding-item .timeline-title {
+  color: #FBBF24;
 }
 </style>
