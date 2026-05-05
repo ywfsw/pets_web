@@ -36,6 +36,16 @@ const fullImageDescription = ref('');
 const lightboxLoading = ref(false);
 const currentImage = ref(null);
 
+// 下拉筛选器处理
+function handleFilterChange(petId) {
+  if (petId) {
+    const pet = petList.value.find(p => p.id === petId);
+    petStore.navigateToAlbum(petId, pet?.name || '');
+  } else {
+    petStore.clearAlbumFilter();
+  }
+}
+
 // 根据筛选加载相册
 function loadGalleryData() {
   if (albumFilterPetId.value) {
@@ -114,7 +124,7 @@ async function saveDescription() {
     fullImageDescription.value = editingDescriptionText.value;
     isEditingDescription.value = false;
     message.success('描述已更新');
-    await petStore.loadAllPetGallery();
+    loadGalleryData();
   } catch (err) {
     console.error('更新描述失败:', err);
     message.error('更新失败，请重试');
@@ -150,6 +160,22 @@ const petOptions = computed(() =>
     value: pet.id
   }))
 );
+
+// 筛选下拉选项：包含当前筛选的宠物（可能不在列表中）+ 全部宠物列表
+const filterPetOptions = computed(() => {
+  const options = petList.value.map(pet => ({
+    label: pet.name,
+    value: pet.id
+  }));
+  // 如果当前筛选的宠物不在列表中，添加它
+  if (albumFilterPetId.value && !options.find(o => o.value === albumFilterPetId.value)) {
+    options.unshift({
+      label: albumFilterPetName.value || '未知宠物',
+      value: albumFilterPetId.value
+    });
+  }
+  return options;
+});
 
 function handleAddClick() {
   if (!authStore.isAuthenticated) {
@@ -225,10 +251,21 @@ async function handleConfirmDescription() {
   <div class="pet-album-page">
     <!-- 页面标题 -->
     <div class="album-header">
-      <h2 class="album-title">
-        <n-icon :component="ImageOutline" size="28" color="#FF9BA8" />
-        萌宠相册
-      </h2>
+      <div class="album-header-top">
+        <h2 class="album-title">
+          <n-icon :component="ImageOutline" size="28" color="#FF9BA8" />
+          萌宠相册
+        </h2>
+        <n-select
+          :value="albumFilterPetId"
+          :options="filterPetOptions"
+          placeholder="按宠物筛选"
+          clearable
+          size="medium"
+          class="album-pet-filter"
+          @update:value="handleFilterChange"
+        />
+      </div>
       <p class="album-subtitle">记录萌宠的每一个可爱瞬间</p>
     </div>
 
@@ -478,20 +515,32 @@ async function handleConfirmDescription() {
   margin-bottom: 24px;
 }
 
+.album-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
 .album-title {
   font-size: 28px;
   font-weight: 700;
   color: #2D2D2D;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 12px;
-  margin-bottom: 8px;
+  margin: 0;
+}
+
+.album-pet-filter {
+  width: 200px;
 }
 
 .album-subtitle {
   color: #9CA3AF;
   font-size: 14px;
+  margin-top: 0;
 }
 
 /* 筛选栏 */
@@ -736,6 +785,16 @@ async function handleConfirmDescription() {
 
   .album-title {
     font-size: 22px;
+  }
+
+  .album-header-top {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .album-pet-filter {
+    width: 100%;
+    max-width: 280px;
   }
 }
 
