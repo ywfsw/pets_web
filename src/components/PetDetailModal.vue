@@ -251,7 +251,7 @@ const filteredHealthEvents = computed(() => {
   return events;
 });
 
-// 成长时间线：合并体重记录和健康事件
+// 成长时间线：合并体重记录、健康事件和照片
 const timelineItems = computed(() => {
   const data = petStore.detailModal.data;
   if (!data) return [];
@@ -287,6 +287,24 @@ const timelineItems = computed(() => {
         subtitle: event.notes || (isCompleted ? '已完成' : ''),
         color: isCompleted ? '#86EFAC' : '#FCA5A5',
         completed: isCompleted
+      });
+    }
+  }
+
+  // 照片上传记录
+  if (recentPhotos.value && recentPhotos.value.length) {
+    for (const photo of recentPhotos.value) {
+      const dateStr = photo.createdAt
+        ? new Date(photo.createdAt).toISOString().slice(0, 10)
+        : null;
+      items.push({
+        id: `p-${photo.id}`,
+        type: 'photo',
+        date: dateStr,
+        icon: '📷',
+        title: photo.description || '上传照片',
+        subtitle: photo.description ? '照片上传' : '',
+        color: '#C084FC'
       });
     }
   }
@@ -402,7 +420,7 @@ const timelineItems = computed(() => {
                 <span class="timeline-month-label">{{ item.monthLabel }}</span>
               </div>
               <!-- 时间线条目 -->
-              <div class="timeline-item">
+              <div class="timeline-item" :class="{ 'timeline-photo-item': item.type === 'photo' }">
                 <div class="timeline-dot" :style="{ background: item.color }">
                   <span class="timeline-dot-icon">{{ item.icon }}</span>
                 </div>
@@ -1003,5 +1021,13 @@ const timelineItems = computed(() => {
 
 .timeline-completed .timeline-subtitle {
   color: #86EFAC;
+}
+
+.timeline-photo-item .timeline-title {
+  color: #9333EA;
+}
+
+:global(.dark-mode) .timeline-photo-item .timeline-title {
+  color: #D8B4FE;
 }
 </style>
