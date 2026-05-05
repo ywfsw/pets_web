@@ -148,6 +148,16 @@ import {
             };
           })
         );
+        // 按紧急度排序：今日到期 > 即将到期（天数升序） > 已过期（最近过期优先）
+        eventsWithPetNames.sort((a, b) => {
+          const priority = (e) => e.daysLeft === 0 ? 0 : e.daysLeft > 0 ? 1 : 2;
+          const pa = priority(a);
+          const pb = priority(b);
+          if (pa !== pb) return pa - pb;
+          // 同优先级内：今日和即将到期按 daysLeft 升序，已过期按 daysLeft 降序（-1 > -5）
+          if (pa === 2) return b.daysLeft - a.daysLeft;
+          return a.daysLeft - b.daysLeft;
+        });
         upcomingEvents.value = eventsWithPetNames;
       } catch (err) { console.error("加载提醒事件失败:", err); }
       finally { loadingUpcoming.value = false; }
