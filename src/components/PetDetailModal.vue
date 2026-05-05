@@ -26,6 +26,7 @@ import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, 
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
 import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
+import WeightTrendChart from '@/components/WeightTrendChart.vue';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -216,6 +217,10 @@ const getSpeciesTagType = (species) => {
           <n-icon :component="ScaleOutline" size="18" color="#7DD3FC" />
           <n-h4 prefix-bar style="margin: 0;">近期体重</n-h4>
         </n-space>
+        <WeightTrendChart
+          :weight-logs="petStore.detailModal.data.weightLogs"
+          style="margin-bottom: 10px;"
+        />
         <n-card class="section-card" :bordered="false" size="small">
           <n-list v-if="petStore.detailModal.data.weightLogs?.length" hoverable>
             <n-list-item v-for="log in petStore.detailModal.data.weightLogs" :key="log.id">
