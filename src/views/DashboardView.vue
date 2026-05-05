@@ -95,6 +95,23 @@ const greeting = computed(() => {
   if (hour < 18) return '下午好';
   return '晚上好';
 });
+
+const computeAge = (birthday) => {
+  if (!birthday) return null;
+  const birth = new Date(birthday);
+  const now = new Date();
+  let years = now.getFullYear() - birth.getFullYear();
+  let months = now.getMonth() - birth.getMonth();
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  if (years < 0) return null;
+  if (years === 0 && months === 0) return '不到1个月';
+  if (years === 0) return `${months}个月`;
+  if (months === 0) return `${years}岁`;
+  return `${years}岁${months}个月`;
+};
 </script>
 
 <template>
@@ -126,6 +143,62 @@ const greeting = computed(() => {
             <div class="stat-value">{{ dashboardData.totalPhotos }}</div>
             <div class="stat-label">相册照片</div>
           </n-card>
+          <n-card class="stat-card stat-weight" :bordered="false">
+            <div class="stat-icon">⚖️</div>
+            <div class="stat-value">{{ dashboardData.totalWeightRecords }}</div>
+            <div class="stat-label">体重记录</div>
+          </n-card>
+          <n-card class="stat-card stat-health" :bordered="false">
+            <div class="stat-icon">🩺</div>
+            <div class="stat-value">{{ dashboardData.totalHealthEvents }}</div>
+            <div class="stat-label">健康事件</div>
+          </n-card>
+          <n-card class="stat-card stat-feeding" :bordered="false">
+            <div class="stat-icon">🍽️</div>
+            <div class="stat-value">{{ dashboardData.totalFeedings }}</div>
+            <div class="stat-label">喂养记录</div>
+          </n-card>
+        </div>
+
+        <!-- 宠物速览 -->
+        <div v-if="dashboardData.petOverviews?.length" class="pet-overviews-section">
+          <div class="section-header">
+            <span class="section-emoji">🐾</span>
+            <span class="section-title">我的宠物</span>
+          </div>
+          <div class="pet-overviews-row">
+            <div
+              v-for="pet in dashboardData.petOverviews"
+              :key="pet.id"
+              class="pet-overview-card"
+              @click="handleShowDetail(pet.id)"
+            >
+              <div class="pet-overview-header">
+                <span class="pet-overview-avatar">{{ pet.gender === 'male' ? '♂️' : pet.gender === 'female' ? '♀️' : '🐾' }}</span>
+                <div class="pet-overview-name-wrap">
+                  <span class="pet-overview-name">{{ pet.name }}</span>
+                  <span v-if="pet.speciesName || pet.breedName" class="pet-overview-breed">
+                    {{ pet.speciesName }}{{ pet.breedName ? ' · ' + pet.breedName : '' }}
+                  </span>
+                </div>
+              </div>
+              <div class="pet-overview-meta">
+                <div v-if="pet.birthday" class="pet-meta-item">
+                  <span class="pet-meta-icon">🎂</span>
+                  <span>{{ computeAge(pet.birthday) }}</span>
+                </div>
+                <div v-if="pet.latestWeight" class="pet-meta-item">
+                  <span class="pet-meta-icon">⚖️</span>
+                  <span>{{ pet.latestWeight }}</span>
+                </div>
+                <div v-if="pet.pendingEventsCount > 0" class="pet-meta-item pet-meta-pending">
+                  <span class="pet-meta-icon">📋</span>
+                  <span>{{ pet.pendingEventsCount }} 个待处理</span>
+                </div>
+              </div>
+              <div class="pet-overview-arrow">›</div>
+            </div>
+          </div>
         </div>
 
         <!-- 即将到期事件 -->
@@ -296,6 +369,12 @@ const greeting = computed(() => {
   margin-bottom: 20px;
 }
 
+@media (min-width: 769px) {
+  .stats-row {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
 .stat-card {
   text-align: center;
   border-radius: 20px;
@@ -319,6 +398,18 @@ const greeting = computed(() => {
   background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
 }
 
+.stat-weight {
+  background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+}
+
+.stat-health {
+  background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%);
+}
+
+.stat-feeding {
+  background: linear-gradient(135deg, #FEF9C3 0%, #FEF08A 100%);
+}
+
 :global(.dark-mode) .stat-pets {
   background: linear-gradient(135deg, #3D2025 0%, #4D2030 100%);
 }
@@ -329,6 +420,18 @@ const greeting = computed(() => {
 
 :global(.dark-mode) .stat-photos {
   background: linear-gradient(135deg, #2D2040 0%, #3D2050 100%);
+}
+
+:global(.dark-mode) .stat-weight {
+  background: linear-gradient(135deg, #1E2A3A 0%, #1E3A4A 100%);
+}
+
+:global(.dark-mode) .stat-health {
+  background: linear-gradient(135deg, #3A1D2E 0%, #4A1D3E 100%);
+}
+
+:global(.dark-mode) .stat-feeding {
+  background: linear-gradient(135deg, #3A3520 0%, #4A4020 100%);
 }
 
 .stat-icon {
@@ -356,6 +459,155 @@ const greeting = computed(() => {
 
 :global(.dark-mode) .stat-label {
   color: #B8B8CC;
+}
+
+/* 宠物速览 */
+.pet-overviews-section {
+  margin-bottom: 20px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.section-emoji {
+  font-size: 20px;
+}
+
+.pet-overviews-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.pet-overview-card {
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #F0E6E0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+}
+
+.pet-overview-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 155, 168, 0.18);
+  border-color: #FFD5DD;
+}
+
+:global(.dark-mode) .pet-overview-card {
+  background: #1F1F3A;
+  border-color: #3D3D5C;
+}
+
+:global(.dark-mode) .pet-overview-card:hover {
+  border-color: #5D5D7C;
+}
+
+.pet-overview-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pet-overview-avatar {
+  font-size: 28px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FFF5F7 0%, #FFE4E9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .pet-overview-avatar {
+  background: linear-gradient(135deg, #3D2025 0%, #4D2030 100%);
+}
+
+.pet-overview-name-wrap {
+  min-width: 0;
+}
+
+.pet-overview-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: #2D2D2D;
+  display: block;
+}
+
+:global(.dark-mode) .pet-overview-name {
+  color: #E8E8E8;
+}
+
+.pet-overview-breed {
+  font-size: 12px;
+  color: #9CA3AF;
+  display: block;
+  margin-top: 2px;
+}
+
+:global(.dark-mode) .pet-overview-breed {
+  color: #8888A0;
+}
+
+.pet-overview-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pet-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #6B6B6B;
+}
+
+:global(.dark-mode) .pet-meta-item {
+  color: #B8B8CC;
+}
+
+.pet-meta-icon {
+  font-size: 14px;
+}
+
+.pet-meta-pending {
+  color: #D97706;
+  font-weight: 600;
+}
+
+:global(.dark-mode) .pet-meta-pending {
+  color: #FCD34D;
+}
+
+.pet-overview-arrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #D1D5DB;
+  font-weight: 300;
+  transition: all 0.3s ease;
+}
+
+.pet-overview-card:hover .pet-overview-arrow {
+  transform: translateY(-50%) translateX(4px);
+  color: #FF9BA8;
+}
+
+:global(.dark-mode) .pet-overview-arrow {
+  color: #555;
 }
 
 /* 区块卡片 */
@@ -638,7 +890,7 @@ const greeting = computed(() => {
   }
 
   .stats-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
 
@@ -653,6 +905,10 @@ const greeting = computed(() => {
   .event-item {
     gap: 10px;
     padding: 10px 12px;
+  }
+
+  .pet-overviews-row {
+    grid-template-columns: 1fr;
   }
 }
 </style>
