@@ -1,6 +1,9 @@
 <script setup>
+import { ref } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
+import { useAuthStore } from '@/stores/authStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
+import { useMessage } from 'naive-ui';
 import {
   NModal,
   NSpace,
@@ -16,14 +19,17 @@ import {
   NGrid,
   NGi,
   NIcon,
-  NTag
+  NTag,
+  NPopconfirm
 } from 'naive-ui';
-import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline } from '@vicons/ionicons5';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline } from '@vicons/ionicons5';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
 import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
 
 const petStore = usePetStore();
+const authStore = useAuthStore();
+const message = useMessage();
 const { getAvatarUrl } = useCloudinaryImage();
 
 const handleShowWeightForm = () => {
@@ -39,6 +45,26 @@ const handleShowHealthEventForm = () => {
 
 const handleClose = () => {
   petStore.closeAllPetModals();
+};
+
+// 删除宠物
+const handleDeletePet = async () => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再删除宠物');
+    return;
+  }
+
+  const petId = petStore.detailModal.data?.id;
+  if (!petId) return;
+
+  try {
+    await petStore.handleDeletePet(petId);
+    message.success('删除成功');
+    petStore.closeAllPetModals();
+  } catch (error) {
+    console.error('删除宠物失败:', error);
+    message.error('删除失败，请重试');
+  }
 };
 
 // 获取物种标签类型
@@ -165,22 +191,39 @@ const getSpeciesTagType = (species) => {
     </template>
 
     <template #footer>
-      <n-space justify="end">
-        <n-button @click="handleShowWeightForm" class="action-btn">
-          <template #icon>
-            <n-icon><ScaleOutline /></n-icon>
+      <n-space justify="space-between">
+        <n-popconfirm
+          @positive-click="handleDeletePet"
+          :positive-button-props="{ type: 'error', size: 'small' }"
+          :negative-button-props="{ size: 'small' }"
+        >
+          <template #trigger>
+            <n-button type="error" secondary size="small">
+              <template #icon>
+                <n-icon><TrashOutline /></n-icon>
+              </template>
+              删除
+            </n-button>
           </template>
-          体重记录
-        </n-button>
-        <n-button @click="handleShowHealthEventForm" class="action-btn">
-          <template #icon>
-            <n-icon><HeartOutline /></n-icon>
-          </template>
-          添加事件
-        </n-button>
-        <n-button type="primary" @click="petStore.switchToEditMode()" class="edit-btn">
-          编辑信息
-        </n-button>
+          确定要删除这只宠物吗？此操作不可恢复。
+        </n-popconfirm>
+        <n-space justify="end">
+          <n-button @click="handleShowWeightForm" class="action-btn">
+            <template #icon>
+              <n-icon><ScaleOutline /></n-icon>
+            </template>
+            体重记录
+          </n-button>
+          <n-button @click="handleShowHealthEventForm" class="action-btn">
+            <template #icon>
+              <n-icon><HeartOutline /></n-icon>
+            </template>
+            添加事件
+          </n-button>
+          <n-button type="primary" @click="petStore.switchToEditMode()" class="edit-btn">
+            编辑信息
+          </n-button>
+        </n-space>
       </n-space>
     </template>
   </n-modal>
@@ -234,6 +277,11 @@ const getSpeciesTagType = (species) => {
 .section-card {
   background: var(--pet-bg-secondary);
   border-radius: 16px;
+}
+
+/* 删除按钮 */
+.delete-btn {
+  border-radius: 12px;
 }
 
 /* 按钮 */
