@@ -357,6 +357,8 @@ const timelineItems = computed(() => {
           <n-tag v-if="petStore.detailModal.data.breedLabel" type="default" round size="small">
             {{ petStore.detailModal.data.breedLabel }}
           </n-tag>
+          <n-tag v-if="petStore.detailModal.data.gender === 'male'" type="info" round size="small">♂ 公</n-tag>
+          <n-tag v-if="petStore.detailModal.data.gender === 'female'" type="error" round size="small">♀ 母</n-tag>
         </n-space>
       </div>
 

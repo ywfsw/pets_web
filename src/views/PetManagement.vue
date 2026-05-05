@@ -146,10 +146,17 @@ const createColumns = ({ handleShowDetail, handleEditPet, isMobile }) => {
       title: '萌宠',
       key: 'name',
       render(row) {
+        const genderIcon = row.gender === 'male' ? '♂' : row.gender === 'female' ? '♀' : '';
+        const genderColor = row.gender === 'male' ? '#7DD3FC' : row.gender === 'female' ? '#FCA5A5' : '';
         return h(
           NThing,
           {
-            title: row.name,
+            title: () => h('span', null, [
+              h('span', null, row.name),
+              genderIcon ? h('span', {
+                style: `margin-left: 4px; font-size: 14px; color: ${genderColor}; font-weight: 700;`
+              }, genderIcon) : null
+            ]),
             description: row.breedLabel || '未知品种',
             style: 'cursor: pointer;',
             onClick: () => handleShowDetail(row.id)

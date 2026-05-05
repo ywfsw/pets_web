@@ -34,6 +34,11 @@ const speciesOptions = computed(() =>
   dictStore.species.map(s => ({ label: s.itemLabel, value: s.id }))
 );
 
+const genderOptions = [
+  { label: '♂ 公', value: 'male' },
+  { label: '♀ 母', value: 'female' }
+];
+
 const breedOptions = computed(() => {
   if (!petStore.petFormModal.data?.speciesId) return [];
   return dictStore.breeds
@@ -142,6 +147,18 @@ const handleClose = () => {
             value-format="yyyy-MM-dd"
             style="width: 100%;"
             size="large"
+            :disabled="petStore.petFormModal.loading"
+          />
+        </n-form-item>
+
+        <!-- 性别 -->
+        <n-form-item label="性别" label-style="font-weight: 600;">
+          <n-select
+            v-model:value="petStore.petFormModal.data.gender"
+            :options="genderOptions"
+            placeholder="请选择性别（可不填）"
+            size="large"
+            clearable
             :disabled="petStore.petFormModal.loading"
           />
         </n-form-item>

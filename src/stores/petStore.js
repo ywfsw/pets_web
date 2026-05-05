@@ -35,7 +35,8 @@ import {
     name: '',
     birthday: null,
     speciesId: null,
-    breedId: null
+    breedId: null,
+    gender: null
   });
   
   // (❗) MP IPage 的默认状态
