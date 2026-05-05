@@ -16,7 +16,9 @@ import {
     deletePet,
     fetchPetLeaderboard,
     createHealthEvent,
+    deleteHealthEvent,
     createWeightLog,
+    deleteWeightLog,
     getAllPetGallery, // New
     getPetGalleryByPetId,
     addPetGalleryImage,
@@ -384,6 +386,36 @@ import {
       weightLogFormModal.value.show = false;
     }
 
+    // 删除体重记录
+    async function handleDeleteWeightLog(logId) {
+      const petId = detailModal.value.data?.id;
+      try {
+        await deleteWeightLog(logId);
+        // 刷新宠物详情
+        if (petId) {
+          await loadPetDetail(petId);
+        }
+      } catch (err) {
+        console.error("删除体重记录失败:", err);
+        throw err;
+      }
+    }
+
+    // 删除健康事件
+    async function handleDeleteHealthEvent(eventId) {
+      const petId = detailModal.value.data?.id;
+      try {
+        await deleteHealthEvent(eventId);
+        // 刷新宠物详情
+        if (petId) {
+          await loadPetDetail(petId);
+        }
+      } catch (err) {
+        console.error("删除健康事件失败:", err);
+        throw err;
+      }
+    }
+
     function closeAllPetModals() {
       detailModal.value.show = false;
       petFormModal.value.show = false;
@@ -485,6 +517,8 @@ import {
       showWeightLogFormModal, // (❗)
       handleSaveWeightLog, // (❗)
       closeWeightLogFormModal, // (❗)
+      handleDeleteWeightLog,
+      handleDeleteHealthEvent,
       switchToEditMode,
       handleDeletePet // (❗)
     };

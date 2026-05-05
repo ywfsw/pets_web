@@ -135,8 +135,16 @@ export const createWeightLog = (payload) => {
   return apiClient.post('/api/weight-logs', payload);
 };
 
+export const deleteWeightLog = (id) => {
+  return apiClient.delete(`/api/weight-logs/${id}`);
+};
+
 export const createHealthEvent = (payload) => {
   return apiClient.post('/api/health-events', payload);
+};
+
+export const deleteHealthEvent = (id) => {
+  return apiClient.delete(`/api/health-events/${id}`);
 };
 
 

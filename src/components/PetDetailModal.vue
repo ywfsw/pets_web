@@ -67,6 +67,38 @@ const handleDeletePet = async () => {
   }
 };
 
+// 删除体重记录
+const handleDeleteWeightLog = async (logId) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再操作');
+    return;
+  }
+
+  try {
+    await petStore.handleDeleteWeightLog(logId);
+    message.success('体重记录已删除');
+  } catch (error) {
+    console.error('删除体重记录失败:', error);
+    message.error('删除失败，请重试');
+  }
+};
+
+// 删除健康事件
+const handleDeleteHealthEvent = async (eventId) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再操作');
+    return;
+  }
+
+  try {
+    await petStore.handleDeleteHealthEvent(eventId);
+    message.success('健康事件已删除');
+  } catch (error) {
+    console.error('删除健康事件失败:', error);
+    message.error('删除失败，请重试');
+  }
+};
+
 // 获取物种标签类型
 const getSpeciesTagType = (species) => {
   const typeMap = {
@@ -152,9 +184,25 @@ const getSpeciesTagType = (species) => {
         <n-card class="section-card" :bordered="false" size="small">
           <n-list v-if="petStore.detailModal.data.weightLogs?.length" hoverable>
             <n-list-item v-for="log in petStore.detailModal.data.weightLogs" :key="log.id">
-              <n-space justify="space-between">
+              <n-space justify="space-between" align="center">
                 <n-text>{{ log.logDate }}</n-text>
-                <n-text strong>{{ log.weightKg }} kg</n-text>
+                <n-space align="center">
+                  <n-text strong>{{ log.weightKg }} kg</n-text>
+                  <n-popconfirm
+                    @positive-click="handleDeleteWeightLog(log.id)"
+                    :positive-button-props="{ type: 'error', size: 'tiny' }"
+                    :negative-button-props="{ size: 'tiny' }"
+                  >
+                    <template #trigger>
+                      <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
+                        <template #icon>
+                          <n-icon :component="TrashOutline" :size="14" />
+                        </template>
+                      </n-button>
+                    </template>
+                    确定删除这条体重记录？
+                  </n-popconfirm>
+                </n-space>
               </n-space>
             </n-list-item>
           </n-list>
@@ -172,11 +220,27 @@ const getSpeciesTagType = (species) => {
           <n-list v-if="petStore.detailModal.data.healthEvents?.length" hoverable>
             <n-list-item v-for="event in petStore.detailModal.data.healthEvents" :key="event.id">
               <n-space vertical :size="4">
-                <n-space align="center">
-                  <n-text>{{ event.eventDate }}</n-text>
-                  <n-tag :type="event.nextDueDate ? 'warning' : 'success'" size="small" round>
-                    {{ event.eventTypeLabel || '未知事件' }}
-                  </n-tag>
+                <n-space align="center" justify="space-between">
+                  <n-space align="center">
+                    <n-text>{{ event.eventDate }}</n-text>
+                    <n-tag :type="event.nextDueDate ? 'warning' : 'success'" size="small" round>
+                      {{ event.eventTypeLabel || '未知事件' }}
+                    </n-tag>
+                  </n-space>
+                  <n-popconfirm
+                    @positive-click="handleDeleteHealthEvent(event.id)"
+                    :positive-button-props="{ type: 'error', size: 'tiny' }"
+                    :negative-button-props="{ size: 'tiny' }"
+                  >
+                    <template #trigger>
+                      <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
+                        <template #icon>
+                          <n-icon :component="TrashOutline" :size="14" />
+                        </template>
+                      </n-button>
+                    </template>
+                    确定删除这条健康事件？
+                  </n-popconfirm>
                 </n-space>
                 <n-text v-if="event.notes" depth="3">{{ event.notes }}</n-text>
                 <n-text v-if="event.nextDueDate" depth="2" style="color: #F59E0B;">
