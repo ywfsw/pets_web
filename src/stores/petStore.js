@@ -75,6 +75,7 @@ import {
     const albumFilterPetName = ref('');
     const upcomingEvents = ref([]);
     const loadingUpcoming = ref(false);
+    const searchKeyword = ref('');
 
     // (❗) 分页状态
     const pagination = ref(defaultPagination());
@@ -164,10 +165,14 @@ import {
       if (loadingList.value) return;
       loadingList.value = true;
       try {
-        const response = await fetchPetPage({
+        const params = {
           pageNum: pageNum,
           pageSize: pagination.value.size
-        });
+        };
+        if (searchKeyword.value && searchKeyword.value.trim()) {
+          params.name = searchKeyword.value.trim();
+        }
+        const response = await fetchPetPage(params);
         const enrichedRecords = response.data.records.map(pet => {
           const species = dictStore.species.find(s => s.id === pet.speciesId);
           const breed = dictStore.breeds.find(b => b.id === pet.breedId);
@@ -351,9 +356,9 @@ import {
               if (isEdit) {
                 await updatePet(payload.id, payload);
               } else {
-                const response = await createPet(payload);
-                alert(response.data);
-              }        closeAllPetModals();
+                await createPet(payload);
+              }
+              closeAllPetModals();
         loadPetList(currentPage.value); // (❗) 刷新当前页
       } catch (err) {
         console.error("保存宠物失败:", err);
@@ -527,6 +532,16 @@ import {
       weightLogFormModal.value.show = false;
     }
 
+    function setSearchKeyword(keyword) {
+      searchKeyword.value = keyword;
+      loadPetList(1);
+    }
+
+    function clearSearchKeyword() {
+      searchKeyword.value = '';
+      loadPetList(1);
+    }
+
     function navigateToAlbum(petId = null, petName = '') {
       albumFilterPetId.value = petId;
       albumFilterPetName.value = petName;
@@ -598,6 +613,7 @@ import {
       activePage,
       albumFilterPetId,
       albumFilterPetName,
+      searchKeyword,
       upcomingEvents, loadingUpcoming,
       loadingList,
       detailModal,
@@ -640,6 +656,8 @@ import {
       handleDeleteHealthEvent,
       handleCompleteHealthEvent,
       handleUncompleteHealthEvent,
+      setSearchKeyword,
+      clearSearchKeyword,
       switchToEditMode,
       handleDeletePet, // (❗)
       navigateToAlbum,

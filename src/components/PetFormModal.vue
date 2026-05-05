@@ -64,6 +64,7 @@ const handleSubmit = () => {
     }
     try {
       await petStore.handleSavePet();
+      message.success(petStore.petFormModal.isEdit ? '宠物信息已更新' : '萌宠添加成功');
     } catch {
       message.error('保存宠物信息失败，请重试');
     }

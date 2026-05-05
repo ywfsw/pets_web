@@ -19,9 +19,10 @@ import {
   NSpin,
   NTag,
   NPopconfirm,
-  NIcon
+  NIcon,
+  NInput
 } from 'naive-ui';
-import { PawOutline, CalendarOutline, CreateOutline, CheckmarkCircleOutline } from '@vicons/ionicons5';
+import { PawOutline, CalendarOutline, CreateOutline, CheckmarkCircleOutline, SearchOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -63,6 +64,20 @@ const handleEditPet = (pet) => {
     return;
   }
   petStore.showPetFormModal(pet);
+};
+
+// 搜索防抖
+let searchTimer = null;
+const handleSearchInput = (value) => {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    petStore.setSearchKeyword(value);
+  }, 400);
+};
+
+const handleClearSearch = () => {
+  if (searchTimer) clearTimeout(searchTimer);
+  petStore.clearSearchKeyword();
 };
 
 // 计算宠物年龄
@@ -371,6 +386,26 @@ const pagination = computed(() => ({
         </n-space>
       </template>
 
+      <!-- 搜索栏 -->
+      <div class="pet-search-bar">
+        <n-input
+          :value="petStore.searchKeyword"
+          @update:value="handleSearchInput"
+          placeholder="搜索宠物名称..."
+          clearable
+          size="small"
+          @clear="handleClearSearch"
+          class="pet-search-input"
+        >
+          <template #prefix>
+            <n-icon :component="SearchOutline" size="16" color="#9CA3AF" />
+          </template>
+        </n-input>
+        <n-tag v-if="petStore.searchKeyword" size="small" round closable @close="handleClearSearch" class="search-tag">
+          搜索: {{ petStore.searchKeyword }}
+        </n-tag>
+      </div>
+
       <n-spin :show="petStore.loadingList">
         <n-data-table
           :columns="responsiveColumns"
@@ -611,6 +646,22 @@ const pagination = computed(() => ({
 .add-pet-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 155, 168, 0.4);
+}
+
+/* 搜索栏 */
+.pet-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pet-search-input {
+  max-width: 280px;
+}
+
+.search-tag {
+  flex-shrink: 0;
 }
 
 /* 表格样式 */
