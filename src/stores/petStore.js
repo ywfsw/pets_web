@@ -16,8 +16,10 @@ import {
     deletePet,
     fetchPetLeaderboard,
     createHealthEvent,
+    updateHealthEvent,
     deleteHealthEvent,
     createWeightLog,
+    updateWeightLog,
     deleteWeightLog,
     getAllPetGallery, // New
     getPetGalleryByPetId,
@@ -96,12 +98,14 @@ import {
 
     const healthEventFormModal = ref({
       show: false,
+      isEdit: false,
       data: defaultHealthEventForm(null),
       loading: false
     });
 
     const weightLogFormModal = ref({
       show: false,
+      isEdit: false,
       data: defaultWeightLogForm(null),
       loading: false
     });
@@ -325,8 +329,21 @@ import {
       }
     }
   
-    function showHealthEventFormModal(petId) {
-      healthEventFormModal.value.data = defaultHealthEventForm(petId);
+    function showHealthEventFormModal(petId, eventToEdit = null) {
+      if (eventToEdit) {
+        healthEventFormModal.value.data = {
+          id: eventToEdit.id,
+          petId: petId,
+          eventTypeId: eventToEdit.eventTypeId,
+          eventDate: eventToEdit.eventDate ? new Date(eventToEdit.eventDate).getTime() : Date.now(),
+          notes: eventToEdit.notes || '',
+          nextDueDate: eventToEdit.nextDueDate ? new Date(eventToEdit.nextDueDate).getTime() : null
+        };
+        healthEventFormModal.value.isEdit = true;
+      } else {
+        healthEventFormModal.value.data = defaultHealthEventForm(petId);
+        healthEventFormModal.value.isEdit = false;
+      }
       healthEventFormModal.value.show = true;
     }
 
@@ -343,7 +360,11 @@ import {
       }
 
       try {
-        await createHealthEvent(payload);
+        if (healthEventFormModal.value.isEdit && payload.id) {
+          await updateHealthEvent(payload.id, payload);
+        } else {
+          await createHealthEvent(payload);
+        }
         closeHealthEventFormModal();
         loadPetDetail(payload.petId); // Refresh pet details to show new event
       } catch (err) {
@@ -357,8 +378,19 @@ import {
       healthEventFormModal.value.show = false;
     }
 
-    function showWeightLogFormModal(petId) {
-      weightLogFormModal.value.data = defaultWeightLogForm(petId);
+    function showWeightLogFormModal(petId, logToEdit = null) {
+      if (logToEdit) {
+        weightLogFormModal.value.data = {
+          id: logToEdit.id,
+          petId: petId,
+          weightKg: logToEdit.weightKg,
+          logDate: logToEdit.logDate ? new Date(logToEdit.logDate).getTime() : Date.now()
+        };
+        weightLogFormModal.value.isEdit = true;
+      } else {
+        weightLogFormModal.value.data = defaultWeightLogForm(petId);
+        weightLogFormModal.value.isEdit = false;
+      }
       weightLogFormModal.value.show = true;
     }
 
@@ -372,7 +404,11 @@ import {
       }
 
       try {
-        await createWeightLog(payload);
+        if (weightLogFormModal.value.isEdit && payload.id) {
+          await updateWeightLog(payload.id, payload);
+        } else {
+          await createWeightLog(payload);
+        }
         closeWeightLogFormModal();
         loadPetDetail(payload.petId); // Refresh pet details to show new log
       } catch (err) {

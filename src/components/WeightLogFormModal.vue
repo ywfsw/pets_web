@@ -45,7 +45,7 @@ const handleClose = () => {
     @update:show="handleClose"
     preset="card"
     style="width: 600px;"
-    title="添加体重记录"
+    :title="petStore.weightLogFormModal.isEdit ? '编辑体重记录' : '添加体重记录'"
     :bordered="false"
     :loading="petStore.weightLogFormModal.loading"
   >

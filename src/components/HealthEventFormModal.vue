@@ -51,7 +51,7 @@ const handleClose = () => {
     @update:show="handleClose"
     preset="card"
     style="width: 600px;"
-    title="添加健康事件"
+    :title="petStore.healthEventFormModal.isEdit ? '编辑健康事件' : '添加健康事件'"
     :bordered="false"
     :loading="petStore.healthEventFormModal.loading"
   >

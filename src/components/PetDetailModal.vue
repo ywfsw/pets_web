@@ -22,7 +22,7 @@ import {
   NTag,
   NPopconfirm
 } from 'naive-ui';
-import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline } from '@vicons/ionicons5';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline } from '@vicons/ionicons5';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
 import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
@@ -37,9 +37,24 @@ const handleShowWeightForm = () => {
     petStore.showWeightLogFormModal(petStore.detailModal.data.id);
   }
 };
+
 const handleShowHealthEventForm = () => {
   if (petStore.detailModal.data?.id) {
     petStore.showHealthEventFormModal(petStore.detailModal.data.id);
+  }
+};
+
+// 编辑体重记录
+const handleEditWeightLog = (log) => {
+  if (petStore.detailModal.data?.id) {
+    petStore.showWeightLogFormModal(petStore.detailModal.data.id, log);
+  }
+};
+
+// 编辑健康事件
+const handleEditHealthEvent = (event) => {
+  if (petStore.detailModal.data?.id) {
+    petStore.showHealthEventFormModal(petStore.detailModal.data.id, event);
   }
 };
 
@@ -189,6 +204,20 @@ const getSpeciesTagType = (species) => {
                 <n-space align="center">
                   <n-text strong>{{ log.weightKg }} kg</n-text>
                   <n-popconfirm
+                    @positive-click="handleEditWeightLog(log)"
+                    :positive-button-props="{ type: 'info', size: 'tiny' }"
+                    :negative-button-props="{ size: 'tiny' }"
+                  >
+                    <template #trigger>
+                      <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
+                        <template #icon>
+                          <n-icon :component="CreateOutline" :size="14" />
+                        </template>
+                      </n-button>
+                    </template>
+                    编辑这条体重记录？
+                  </n-popconfirm>
+                  <n-popconfirm
                     @positive-click="handleDeleteWeightLog(log.id)"
                     :positive-button-props="{ type: 'error', size: 'tiny' }"
                     :negative-button-props="{ size: 'tiny' }"
@@ -227,6 +256,20 @@ const getSpeciesTagType = (species) => {
                       {{ event.eventTypeLabel || '未知事件' }}
                     </n-tag>
                   </n-space>
+                  <n-popconfirm
+                    @positive-click="handleEditHealthEvent(event)"
+                    :positive-button-props="{ type: 'info', size: 'tiny' }"
+                    :negative-button-props="{ size: 'tiny' }"
+                  >
+                    <template #trigger>
+                      <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
+                        <template #icon>
+                          <n-icon :component="CreateOutline" :size="14" />
+                        </template>
+                      </n-button>
+                    </template>
+                    编辑这条健康事件？
+                  </n-popconfirm>
                   <n-popconfirm
                     @positive-click="handleDeleteHealthEvent(event.id)"
                     :positive-button-props="{ type: 'error', size: 'tiny' }"
