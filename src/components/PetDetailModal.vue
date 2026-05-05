@@ -22,7 +22,7 @@ import {
   NTag,
   NPopconfirm
 } from 'naive-ui';
-import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline } from '@vicons/ionicons5';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline } from '@vicons/ionicons5';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
 import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
@@ -131,6 +131,22 @@ const handleDeleteHealthEvent = async (eventId) => {
   } catch (error) {
     console.error('删除健康事件失败:', error);
     message.error('删除失败，请重试');
+  }
+};
+
+// 标记健康事件为已完成
+const handleCompleteHealthEvent = async (eventId) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再操作');
+    return;
+  }
+
+  try {
+    await petStore.handleCompleteHealthEvent(eventId);
+    message.success('事件已标记为完成');
+  } catch (error) {
+    console.error('标记事件完成失败:', error);
+    message.error('操作失败，请重试');
   }
 };
 
@@ -272,7 +288,7 @@ const getSpeciesTagType = (species) => {
         </n-space>
         <n-card class="section-card" :bordered="false" size="small">
           <n-list v-if="petStore.detailModal.data.healthEvents?.length" hoverable>
-            <n-list-item v-for="event in petStore.detailModal.data.healthEvents" :key="event.id">
+            <n-list-item v-for="event in petStore.detailModal.data.healthEvents" :key="event.id" :class="{ 'completed-event': event.status === 1 }">
               <n-space vertical :size="4">
                 <n-space align="center" justify="space-between">
                   <n-space align="center">
@@ -280,7 +296,25 @@ const getSpeciesTagType = (species) => {
                     <n-tag :type="event.nextDueDate ? 'warning' : 'success'" size="small" round>
                       {{ event.eventTypeLabel || '未知事件' }}
                     </n-tag>
+                    <n-tag v-if="event.status === 1" type="success" size="small" round>
+                      ✓ 已完成
+                    </n-tag>
                   </n-space>
+                  <n-popconfirm
+                    v-if="event.status !== 1"
+                    @positive-click="handleCompleteHealthEvent(event.id)"
+                    :positive-button-props="{ type: 'success', size: 'tiny' }"
+                    :negative-button-props="{ size: 'tiny' }"
+                  >
+                    <template #trigger>
+                      <n-button text type="success" size="tiny" :disabled="!authStore.isAuthenticated">
+                        <template #icon>
+                          <n-icon :component="CheckmarkCircleOutline" :size="14" />
+                        </template>
+                      </n-button>
+                    </template>
+                    标记此事件为已完成？
+                  </n-popconfirm>
                   <n-popconfirm
                     @positive-click="handleEditHealthEvent(event)"
                     :positive-button-props="{ type: 'info', size: 'tiny' }"
@@ -426,5 +460,14 @@ const getSpeciesTagType = (species) => {
   border: none !important;
   border-radius: 12px !important;
   font-weight: 600;
+}
+
+/* 已完成事件样式 */
+.pet-detail-modal :deep(.n-list-item.completed-event) {
+  opacity: 0.65;
+}
+
+.pet-detail-modal :deep(.n-list-item.completed-event .n-text) {
+  text-decoration: line-through;
 }
 </style>

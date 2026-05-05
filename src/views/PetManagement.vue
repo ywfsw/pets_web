@@ -21,7 +21,7 @@ import {
   NPopconfirm,
   NIcon
 } from 'naive-ui';
-import { PawOutline, CalendarOutline, CreateOutline } from '@vicons/ionicons5';
+import { PawOutline, CalendarOutline, CreateOutline, CheckmarkCircleOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -122,6 +122,20 @@ const getDaysText = (daysLeft) => {
 const getDaysDisplay = (daysLeft) => {
   if (daysLeft < 0) return Math.abs(daysLeft);
   return daysLeft;
+};
+
+// 标记事件为已完成
+const handleCompleteEvent = async (eventId) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再操作');
+    return;
+  }
+  try {
+    await petStore.handleCompleteHealthEvent(eventId);
+    message.success('事件已标记为完成');
+  } catch (error) {
+    message.error('操作失败，请重试');
+  }
 };
 
 const createColumns = ({ handleShowDetail, handleEditPet, isMobile }) => {
@@ -294,6 +308,27 @@ const pagination = computed(() => ({
                 <span class="event-date">{{ event.nextDueDate }}</span>
               </div>
             </div>
+            <n-popconfirm
+              @positive-click="handleCompleteEvent(event.id)"
+              :positive-button-props="{ type: 'success', size: 'tiny' }"
+              :negative-button-props="{ size: 'tiny' }"
+            >
+              <template #trigger>
+                <n-button
+                  text
+                  type="success"
+                  size="tiny"
+                  class="event-complete-btn"
+                  :disabled="!authStore.isAuthenticated"
+                  @click.stop
+                >
+                  <template #icon>
+                    <n-icon :component="CheckmarkCircleOutline" :size="18" />
+                  </template>
+                </n-button>
+              </template>
+              标记此事件为已完成？
+            </n-popconfirm>
             <span class="event-arrow">›</span>
           </div>
         </div>
@@ -522,6 +557,19 @@ const pagination = computed(() => ({
 .event-item:hover .event-arrow {
   transform: translateX(4px);
   color: #FF9BA8;
+}
+
+.event-complete-btn {
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.event-item:hover .event-complete-btn {
+  opacity: 1;
+}
+
+:global(.dark-mode) .event-complete-btn {
+  color: #86EFAC !important;
 }
 
 /* 宠物列表卡片 */

@@ -18,6 +18,7 @@ import {
     createHealthEvent,
     updateHealthEvent,
     deleteHealthEvent,
+    completeHealthEvent,
     createWeightLog,
     updateWeightLog,
     deleteWeightLog,
@@ -466,6 +467,23 @@ import {
       }
     }
 
+    // 标记健康事件为已完成
+    async function handleCompleteHealthEvent(eventId) {
+      try {
+        await completeHealthEvent(eventId);
+        // 刷新宠物详情
+        const petId = detailModal.value.data?.id;
+        if (petId) {
+          await loadPetDetail(petId);
+        }
+        // 刷新提醒列表
+        await loadUpcomingEvents();
+      } catch (err) {
+        console.error("标记事件完成失败:", err);
+        throw err;
+      }
+    }
+
     function closeAllPetModals() {
       detailModal.value.show = false;
       petFormModal.value.show = false;
@@ -569,6 +587,7 @@ import {
       closeWeightLogFormModal, // (❗)
       handleDeleteWeightLog,
       handleDeleteHealthEvent,
+      handleCompleteHealthEvent,
       switchToEditMode,
       handleDeletePet // (❗)
     };

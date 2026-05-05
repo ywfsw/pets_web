@@ -155,6 +155,10 @@ export const deleteHealthEvent = (id) => {
   return apiClient.delete(`/api/health-events/${id}`);
 };
 
+export const completeHealthEvent = (id) => {
+  return apiClient.patch(`/api/health-events/${id}/complete`);
+};
+
 
 // --- 字典 API ---
 export const fetchDictTypeList = () => {
