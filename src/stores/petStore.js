@@ -126,7 +126,19 @@ import {
         const eventsWithPetNames = await Promise.all(
           response.data.map(async (event) => {
             const petDetail = await fetchPetDetail(event.petId);
-            return { ...event, petName: petDetail.data.name };
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const dueDate = new Date(event.nextDueDate);
+            dueDate.setHours(0, 0, 0, 0);
+            const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+            // 从字典中查找事件类型名称
+            const eventType = dictStore.healthEvents.find(t => t.id === event.eventTypeId);
+            return {
+              ...event,
+              petName: petDetail.data.name,
+              daysLeft,
+              eventTypeLabel: eventType ? eventType.itemLabel : '未知事件'
+            };
           })
         );
         upcomingEvents.value = eventsWithPetNames;

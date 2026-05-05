@@ -18,8 +18,8 @@ import {
   NEmpty,
   NSpin,
   NTag,
-  NBadge,
-  NPopconfirm
+  NPopconfirm,
+  NIcon
 } from 'naive-ui';
 import { PawOutline, CalendarOutline, CreateOutline } from '@vicons/ionicons5';
 
@@ -94,6 +94,20 @@ const getSpeciesTagType = (species) => {
     'hamster': 'warning'
   };
   return typeMap[species?.toLowerCase()] || 'default';
+};
+
+// 事件提醒：获取剩余天数徽章样式
+const getDaysBadgeClass = (daysLeft) => {
+  if (daysLeft <= 0) return 'days-urgent';
+  if (daysLeft <= 2) return 'days-warning';
+  return 'days-normal';
+};
+
+// 事件提醒：获取天数标签类型
+const getDaysTagType = (daysLeft) => {
+  if (daysLeft <= 0) return 'error';
+  if (daysLeft <= 2) return 'warning';
+  return 'success';
 };
 
 const createColumns = ({ handleShowDetail, handleEditPet, isMobile }) => {
@@ -241,22 +255,39 @@ const pagination = computed(() => ({
           <span class="event-title">📅 即将到期的事件</span>
         </n-space>
       </template>
-      <div v-if="petStore.upcomingEvents.length" class="event-list">
-        <div
-          v-for="event in petStore.upcomingEvents"
-          :key="event.id"
-          class="event-item"
-        >
-          <n-badge :value="event.nextDueDate" :type="event.daysLeft <= 1 ? 'error' : 'warning'" />
-          <span class="event-pet-name">{{ event.petName }}</span>
-          <span class="event-notes">{{ event.notes || '执行事件' }}</span>
+      <n-spin :show="petStore.loadingUpcoming">
+        <div v-if="petStore.upcomingEvents.length" class="event-list">
+          <div
+            v-for="event in petStore.upcomingEvents"
+            :key="event.id"
+            class="event-item"
+            @click="handleShowDetail(event.petId)"
+          >
+            <div class="event-days-badge" :class="getDaysBadgeClass(event.daysLeft)">
+              <span class="event-days-number">{{ event.daysLeft }}</span>
+              <span class="event-days-text">{{ event.daysLeft === 0 ? '今天' : '天后' }}</span>
+            </div>
+            <div class="event-info">
+              <div class="event-info-top">
+                <span class="event-pet-name">{{ event.petName }}</span>
+                <n-tag :type="getDaysTagType(event.daysLeft)" size="small" round>
+                  {{ event.eventTypeLabel }}
+                </n-tag>
+              </div>
+              <div class="event-info-bottom">
+                <span class="event-notes">{{ event.notes || '待处理' }}</span>
+                <span class="event-date">{{ event.nextDueDate }}</span>
+              </div>
+            </div>
+            <span class="event-arrow">›</span>
+          </div>
         </div>
-      </div>
-      <n-empty v-else description="太棒了！7天内没有需要提醒的事件～" size="small">
-        <template #icon>
-          <span style="font-size: 40px;">🎉</span>
-        </template>
-      </n-empty>
+        <n-empty v-else-if="!petStore.loadingUpcoming" description="太棒了！7天内没有需要提醒的事件～" size="small">
+          <template #icon>
+            <span style="font-size: 40px;">🎉</span>
+          </template>
+        </n-empty>
+      </n-spin>
     </n-card>
 
     <!-- 宠物列表卡片 -->
@@ -313,34 +344,146 @@ const pagination = computed(() => ({
   color: #4A4A4A;
 }
 
+:global(.dark-mode) .event-item {
+  background: var(--pet-bg-secondary, #1F1F3A);
+}
+
+:global(.dark-mode) .event-item:hover {
+  border-color: #3D3D5C;
+}
+
+:global(.dark-mode) .event-pet-name {
+  color: #E8E8E8;
+}
+
+:global(.dark-mode) .event-notes {
+  color: #B8B8CC;
+}
+
+:global(.dark-mode) .event-date {
+  color: #8888A0;
+}
+
+:global(.dark-mode) .event-arrow {
+  color: #555;
+}
+
+:global(.dark-mode) .event-title {
+  color: #E8E8E8;
+}
+
 .event-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .event-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
+  gap: 14px;
+  padding: 12px 16px;
   background: white;
-  border-radius: 12px;
+  border-radius: 14px;
+  cursor: pointer;
   transition: all 0.3s ease;
+  border: 1px solid transparent;
 }
 
 .event-item:hover {
   transform: translateX(4px);
-  box-shadow: 0 2px 10px rgba(255, 155, 168, 0.1);
+  box-shadow: 0 4px 15px rgba(255, 155, 168, 0.15);
+  border-color: #FFE4E9;
+}
+
+.event-days-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.event-days-number {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.event-days-text {
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.days-urgent {
+  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+  color: #DC2626;
+}
+
+.days-warning {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  color: #D97706;
+}
+
+.days-normal {
+  background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+  color: #059669;
+}
+
+.event-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-info-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .event-pet-name {
-  font-weight: 600;
-  color: #FF9BA8;
+  font-weight: 700;
+  color: #2D2D2D;
+  font-size: 15px;
+}
+
+.event-info-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .event-notes {
   color: #6B6B6B;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.event-date {
+  color: #9CA3AF;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.event-arrow {
+  font-size: 20px;
+  color: #D1D5DB;
+  font-weight: 300;
+  transition: transform 0.3s ease;
+}
+
+.event-item:hover .event-arrow {
+  transform: translateX(4px);
+  color: #FF9BA8;
 }
 
 /* 宠物列表卡片 */
