@@ -24,7 +24,7 @@ import {
   NSpin,
   NEmpty
 } from 'naive-ui';
-import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline } from '@vicons/ionicons5';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline, ArrowForwardOutline } from '@vicons/ionicons5';
 import { getPetGalleryByPetId } from '@/api.js';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
@@ -74,6 +74,14 @@ const openPhotoLightbox = (imageUrl) => {
 const closePhotoLightbox = () => {
   showPhotoLightbox.value = false;
   lightboxPhotoUrl.value = '';
+};
+
+const handleViewAllPhotos = () => {
+  const pet = petStore.detailModal.data;
+  if (pet) {
+    petStore.closeAllPetModals();
+    petStore.navigateToAlbum(pet.id, pet.name);
+  }
 };
 
 // 计算宠物年龄
@@ -307,6 +315,14 @@ const getSpeciesTagType = (species) => {
                   loading="lazy"
                 />
               </div>
+            </div>
+            <div class="view-all-photos">
+              <n-button text type="primary" @click="handleViewAllPhotos" size="small">
+                <template #icon>
+                  <n-icon :component="ArrowForwardOutline" />
+                </template>
+                查看全部照片
+              </n-button>
             </div>
           </n-card>
           <n-card v-else-if="!loadingPhotos" class="section-card" :bordered="false" size="small">
@@ -599,6 +615,14 @@ const getSpeciesTagType = (species) => {
 
 .pet-detail-modal :deep(.n-list-item.completed-event .n-text) {
   text-decoration: line-through;
+}
+
+/* 查看全部照片 */
+.view-all-photos {
+  text-align: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--pet-border, #F0E6E0);
 }
 
 /* 照片网格 */

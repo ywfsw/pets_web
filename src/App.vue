@@ -214,8 +214,11 @@ const openAuthModal = () => {
   isAuthModalVisible.value = true;
 };
 
-// App State
-const activeKey = ref('pets');
+// App State - 使用 petStore 的 activePage 实现跨组件页面切换
+const activeKey = computed({
+  get: () => petStore.activePage,
+  set: (val) => { petStore.activePage = val; }
+});
 
 const dictStore = useDictionaryStore();
 const petStore = usePetStore();
@@ -225,24 +228,24 @@ const isAuthModalVisible = ref(false);
 const handleMenuUpdate = (key) => {
   if (key === 'admin') {
     if (authStore.isAuthenticated && authStore.isAdmin) {
-      activeKey.value = 'admin';
+      petStore.activePage = 'admin';
     } else if (authStore.isAuthenticated && !authStore.isAdmin) {
       // 普通用户尝试访问后台，跳转到宠物管理
       window.$message.warning('只有管理员才能访问后台管理');
-      activeKey.value = 'pets';
+      petStore.activePage = 'pets';
     } else {
       authStore.error = null;
       isAuthModalVisible.value = true;
     }
   } else {
-    activeKey.value = key;
+    petStore.activePage = key;
   }
 };
 
 const handleLogout = async () => {
   await authStore.logout();
-  if (activeKey.value === 'admin') {
-    activeKey.value = 'pets';
+  if (petStore.activePage === 'admin') {
+    petStore.activePage = 'pets';
   }
 };
 
@@ -258,8 +261,8 @@ watch(
     if (isNowAuthenticated) {
       isAuthModalVisible.value = false;
       // 登录后如果当前是admin但不是管理员，跳转到pets
-      if (activeKey.value === 'admin' && !authStore.isAdmin) {
-        activeKey.value = 'pets';
+      if (petStore.activePage === 'admin' && !authStore.isAdmin) {
+        petStore.activePage = 'pets';
         window.$message.warning('只有管理员才能访问后台管理');
       }
     }
@@ -271,8 +274,8 @@ watch(
   () => authStore.isAdmin,
   (isAdmin) => {
     // 如果不再是管理员但当前在admin页面，跳转到pets
-    if (!isAdmin && activeKey.value === 'admin') {
-      activeKey.value = 'pets';
+    if (!isAdmin && petStore.activePage === 'admin') {
+      petStore.activePage = 'pets';
     }
   }
 );

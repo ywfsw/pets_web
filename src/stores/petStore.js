@@ -68,6 +68,9 @@ import {
     const authStore = useAuthStore();
   
     // --- 1. State ---
+    const activePage = ref('pets');
+    const albumFilterPetId = ref(null);
+    const albumFilterPetName = ref('');
     const upcomingEvents = ref([]);
     const loadingUpcoming = ref(false);
 
@@ -229,7 +232,12 @@ import {
     async function addPetGallery(imageData) {
       try {
         await addPetGalleryImage(imageData);
-        await loadAllPetGallery(); // 刷新
+        // 根据当前筛选状态刷新
+        if (albumFilterPetId.value) {
+          await loadPetGalleryByPetId(albumFilterPetId.value);
+        } else {
+          await loadAllPetGallery();
+        }
       } catch (err) {
         console.error("添加宠物图片失败:", err);
       }
@@ -238,7 +246,12 @@ import {
     async function deletePetGallery(imageId) {
       try {
         await deletePetGalleryImage(imageId);
-        await loadAllPetGallery(); // 刷新
+        // 根据当前筛选状态刷新
+        if (albumFilterPetId.value) {
+          await loadPetGalleryByPetId(albumFilterPetId.value);
+        } else {
+          await loadAllPetGallery();
+        }
       } catch (err) {
         console.error("删除宠物图片失败:", err);
       }
@@ -506,6 +519,18 @@ import {
       healthEventFormModal.value.show = false;
       weightLogFormModal.value.show = false;
     }
+
+    function navigateToAlbum(petId = null, petName = '') {
+      albumFilterPetId.value = petId;
+      albumFilterPetName.value = petName;
+      activePage.value = 'pet-album';
+    }
+
+    function clearAlbumFilter() {
+      albumFilterPetId.value = null;
+      albumFilterPetName.value = '';
+      loadAllPetGallery();
+    }
   
     function switchToEditMode() {
       const petId = detailModal.value.petId;
@@ -563,6 +588,9 @@ import {
     // --- 3. Return ---
     return {
       // State
+      activePage,
+      albumFilterPetId,
+      albumFilterPetName,
       upcomingEvents, loadingUpcoming,
       loadingList,
       detailModal,
@@ -574,12 +602,12 @@ import {
       loadingLeaderboard, // (❗)
       petGallery,
       loadingGallery,
-  
+
       // Computed
       petList,
       totalPages,
       currentPage,
-  
+
       // Actions
       loadUpcomingEvents,
       loadPetList,
@@ -606,6 +634,8 @@ import {
       handleCompleteHealthEvent,
       handleUncompleteHealthEvent,
       switchToEditMode,
-      handleDeletePet // (❗)
+      handleDeletePet, // (❗)
+      navigateToAlbum,
+      clearAlbumFilter
     };
   });

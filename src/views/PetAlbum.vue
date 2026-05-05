@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { usePetStore } from '@/stores/petStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -18,13 +18,13 @@ import {
   NSpace,
   useMessage,
   NInput,
-  NBadge
+  NTag
 } from 'naive-ui';
-import { Add, ImageOutline, CloseOutline, TrashOutline, CreateOutline, CheckmarkOutline } from '@vicons/ionicons5';
+import { Add, ImageOutline, CloseOutline, TrashOutline, CreateOutline, CheckmarkOutline, PawOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
-const { petGallery, loadingGallery, petList, loadingList } = storeToRefs(petStore);
+const { petGallery, loadingGallery, petList, loadingList, albumFilterPetId, albumFilterPetName } = storeToRefs(petStore);
 const { getFullResolutionUrl, getGalleryThumbnailUrl } = useCloudinaryImage();
 const { openUploadWidget, isUploading } = useCloudinaryUpload();
 const message = useMessage();
@@ -36,11 +36,25 @@ const fullImageDescription = ref('');
 const lightboxLoading = ref(false);
 const currentImage = ref(null);
 
+// 根据筛选加载相册
+function loadGalleryData() {
+  if (albumFilterPetId.value) {
+    petStore.loadPetGalleryByPetId(albumFilterPetId.value);
+  } else {
+    petStore.loadAllPetGallery();
+  }
+}
+
 onMounted(() => {
-  petStore.loadAllPetGallery();
+  loadGalleryData();
   if (petList.value.length === 0) {
     petStore.loadPetList();
   }
+});
+
+// 监听筛选变化
+watch(albumFilterPetId, () => {
+  loadGalleryData();
 });
 
 // --- Lightbox Logic ---
@@ -142,6 +156,26 @@ function handleAddClick() {
     message.warning('请先登录后再添加照片');
     return;
   }
+  // 如果已筛选宠物，直接使用该宠物
+  if (albumFilterPetId.value) {
+    uploadTargetPetId.value = albumFilterPetId.value;
+    openUploadWidget(
+      {
+        folder: 'pet-gallery',
+        tags: ['gallery', `pet-${albumFilterPetId.value}`]
+      },
+      ({ url, publicId }) => {
+        newImageData.value = {
+          petId: albumFilterPetId.value,
+          imageUrl: url,
+          publicId: publicId,
+          description: ''
+        };
+        showDescriptionModal.value = true;
+      }
+    );
+    return;
+  }
   uploadTargetPetId.value = null;
   showSelectPetModal.value = true;
 }
@@ -198,6 +232,19 @@ async function handleConfirmDescription() {
       <p class="album-subtitle">记录萌宠的每一个可爱瞬间</p>
     </div>
 
+    <!-- 宠物筛选标签 -->
+    <div v-if="albumFilterPetId" class="filter-bar">
+      <n-tag closable type="primary" round size="medium" @close="petStore.clearAlbumFilter()">
+        <template #icon>
+          <n-icon :component="PawOutline" size="14" />
+        </template>
+        正在查看: {{ albumFilterPetName || '未知宠物' }}
+      </n-tag>
+      <n-button text type="default" size="small" @click="petStore.clearAlbumFilter()">
+        查看全部
+      </n-button>
+    </div>
+
     <n-card class="album-card">
       <!-- 添加图片按钮 -->
       <n-button
@@ -237,7 +284,7 @@ async function handleConfirmDescription() {
             </div>
           </div>
         </div>
-        <n-empty v-else description="相册里还没有照片，快去添加吧～" class="empty-state">
+        <n-empty v-else :description="albumFilterPetId ? `${albumFilterPetName || '这只宠物'}还没有照片哦～` : '相册里还没有照片，快去添加吧～'" class="empty-state">
           <template #icon>
             <span style="font-size: 64px;">📷</span>
           </template>
@@ -445,6 +492,18 @@ async function handleConfirmDescription() {
 .album-subtitle {
   color: #9CA3AF;
   font-size: 14px;
+}
+
+/* 筛选栏 */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  background: var(--pet-bg-secondary, #FFF5F7);
+  border-radius: 12px;
+  border: 1px solid var(--pet-border, #F0E6E0);
 }
 
 /* 相册卡片 */
