@@ -229,6 +229,30 @@ const getSpeciesTagType = (species) => {
   };
   return typeMap[species?.toLowerCase()] || 'default';
 };
+
+// 事件类型图标映射
+const eventTypeIconMap = [
+  { keywords: ['疫苗', '接种', '免疫'], icon: '💉' },
+  { keywords: ['驱虫', '体内驱虫', '体外驱虫', '除虫'], icon: '🐛' },
+  { keywords: ['体检', '检查', '年度检查'], icon: '🩺' },
+  { keywords: ['洗澡', '美容', '清洁'], icon: '🛁' },
+  { keywords: ['绝育', '手术', '节育'], icon: '✂️' },
+  { keywords: ['洗牙', '牙齿', '口腔'], icon: '🦷' },
+  { keywords: ['眼', '眼睛'], icon: '👁️' },
+  { keywords: ['皮肤', '皮毛'], icon: '🐾' },
+  { keywords: ['血', '血液', '化验', '检验'], icon: '🧪' },
+  { keywords: ['喂', '喂养', '饮食', '粮'], icon: '🍖' },
+];
+
+const getEventTypeIcon = (label) => {
+  if (!label) return '📋';
+  for (const mapping of eventTypeIconMap) {
+    if (mapping.keywords.some(kw => label.includes(kw))) {
+      return mapping.icon;
+    }
+  }
+  return '📋';
+};
 </script>
 
 <template>
@@ -401,6 +425,7 @@ const getSpeciesTagType = (species) => {
                 <n-space align="center" justify="space-between">
                   <n-space align="center">
                     <n-text>{{ event.eventDate }}</n-text>
+                    <span class="event-type-icon">{{ getEventTypeIcon(event.eventTypeLabel) }}</span>
                     <n-tag :type="event.nextDueDate ? 'warning' : 'success'" size="small" round>
                       {{ event.eventTypeLabel || '未知事件' }}
                     </n-tag>
@@ -673,6 +698,13 @@ const getSpeciesTagType = (species) => {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+}
+
+/* 事件类型图标 */
+.event-type-icon {
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 /* 响应式：照片网格 */

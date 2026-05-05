@@ -124,6 +124,30 @@ const getDaysDisplay = (daysLeft) => {
   return daysLeft;
 };
 
+// 事件类型图标映射
+const eventTypeIconMap = [
+  { keywords: ['疫苗', '接种', '免疫'], icon: '💉' },
+  { keywords: ['驱虫', '体内驱虫', '体外驱虫', '除虫'], icon: '🐛' },
+  { keywords: ['体检', '检查', '年度检查'], icon: '🩺' },
+  { keywords: ['洗澡', '美容', '清洁'], icon: '🛁' },
+  { keywords: ['绝育', '手术', '节育'], icon: '✂️' },
+  { keywords: ['洗牙', '牙齿', '口腔'], icon: '🦷' },
+  { keywords: ['眼', '眼睛'], icon: '👁️' },
+  { keywords: ['皮肤', '皮毛'], icon: '🐾' },
+  { keywords: ['血', '血液', '化验', '检验'], icon: '🧪' },
+  { keywords: ['喂', '喂养', '饮食', '粮'], icon: '🍖' },
+];
+
+const getEventTypeIcon = (label) => {
+  if (!label) return '📋';
+  for (const mapping of eventTypeIconMap) {
+    if (mapping.keywords.some(kw => label.includes(kw))) {
+      return mapping.icon;
+    }
+  }
+  return '📋';
+};
+
 // 标记事件为已完成
 const handleCompleteEvent = async (eventId) => {
   if (!authStore.isAuthenticated) {
@@ -299,6 +323,7 @@ const pagination = computed(() => ({
             <div class="event-info">
               <div class="event-info-top">
                 <span class="event-pet-name">{{ event.petName }}</span>
+                <span class="event-type-icon">{{ getEventTypeIcon(event.eventTypeLabel) }}</span>
                 <n-tag :type="getDaysTagType(event.daysLeft)" size="small" round>
                   {{ event.eventTypeLabel }}
                 </n-tag>
@@ -557,6 +582,12 @@ const pagination = computed(() => ({
 .event-item:hover .event-arrow {
   transform: translateX(4px);
   color: #FF9BA8;
+}
+
+.event-type-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .event-complete-btn {
