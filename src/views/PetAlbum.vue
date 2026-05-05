@@ -29,6 +29,12 @@ const { getFullResolutionUrl, getGalleryThumbnailUrl } = useCloudinaryImage();
 const { openUploadWidget, isUploading } = useCloudinaryUpload();
 const message = useMessage();
 
+// 根据 petId 获取宠物名称
+function getPetName(petId) {
+  const pet = petList.value.find(p => p.id === petId);
+  return pet ? pet.name : '';
+}
+
 // --- Lightbox Modal State ---
 const showFullImageModal = ref(false);
 const fullImageUrl = ref('');
@@ -316,6 +322,10 @@ async function handleConfirmDescription() {
               />
               <div class="image-overlay">
                 <n-icon v-if="image.description" :component="ImageOutline" size="20" />
+              </div>
+              <div v-if="!albumFilterPetId && getPetName(image.petId)" class="pet-name-tag">
+                <n-icon :component="PawOutline" size="12" />
+                {{ getPetName(image.petId) }}
               </div>
               <n-text v-if="image.description" class="description">{{ image.description }}</n-text>
             </div>
@@ -633,6 +643,36 @@ async function handleConfirmDescription() {
 
 .masonry-item:hover .image-overlay {
   opacity: 1;
+}
+
+/* 宠物名称标签 */
+.pet-name-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  color: #2D2D2D;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.masonry-item:hover .pet-name-tag {
+  opacity: 1;
+}
+
+:global(.dark-mode) .pet-name-tag {
+  background: rgba(40, 40, 70, 0.92);
+  color: #E8E8E8;
 }
 
 /* 描述文字 */
