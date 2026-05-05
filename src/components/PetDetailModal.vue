@@ -10,8 +10,6 @@ import {
   NAvatar,
   NList,
   NListItem,
-  NThing,
-  NH4,
   NText,
   NSkeleton,
   NButton,
@@ -22,7 +20,9 @@ import {
   NTag,
   NPopconfirm,
   NSpin,
-  NEmpty
+  NEmpty,
+  NCollapse,
+  NCollapseItem
 } from 'naive-ui';
 import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline, ArrowForwardOutline, RestaurantOutline } from '@vicons/ionicons5';
 import { getPetGalleryByPetId } from '@/api.js';
@@ -279,6 +279,9 @@ const filteredHealthEvents = computed(() => {
   return events;
 });
 
+// 折叠面板展开状态
+const expandedSections = ref(['timeline', 'photos', 'weight', 'health', 'feeding']);
+
 // 成长时间线：合并体重记录、健康事件和照片
 const timelineItems = computed(() => {
   const data = petStore.detailModal.data;
@@ -453,314 +456,332 @@ const timelineItems = computed(() => {
         </div>
       </n-card>
 
-      <!-- 成长时间线 -->
-      <div class="section" v-if="timelineItems.length">
-        <n-space align="center" :size="8" class="section-header">
-          <span style="font-size: 18px;">📖</span>
-          <n-h4 prefix-bar style="margin: 0;">成长时间线</n-h4>
-          <n-tag size="tiny" round>{{ timelineItems.length }} 条记录</n-tag>
-        </n-space>
-        <n-card class="section-card timeline-card" :bordered="false" size="small">
-          <div class="timeline">
-            <template v-for="item in timelineItems" :key="item.id">
-              <!-- 月份分组 -->
-              <div v-if="item.showMonth" class="timeline-month">
-                <span class="timeline-month-label">{{ item.monthLabel }}</span>
-              </div>
-              <!-- 时间线条目 -->
-              <div class="timeline-item" :class="{ 'timeline-photo-item': item.type === 'photo', 'timeline-feeding-item': item.type === 'feeding' }">
-                <div class="timeline-dot" :style="{ background: item.color }">
-                  <span class="timeline-dot-icon">{{ item.icon }}</span>
+      <!-- 可折叠内容区块 -->
+      <n-collapse
+        v-model:expanded-names="expandedSections"
+        class="detail-collapse"
+      >
+        <!-- 成长时间线 -->
+        <n-collapse-item v-if="timelineItems.length" name="timeline">
+          <template #header>
+            <n-space align="center" :size="8">
+              <span style="font-size: 18px;">📖</span>
+              <span class="collapse-header-title">成长时间线</span>
+              <n-tag size="tiny" round>{{ timelineItems.length }} 条记录</n-tag>
+            </n-space>
+          </template>
+          <n-card class="section-card timeline-card" :bordered="false" size="small">
+            <div class="timeline">
+              <template v-for="item in timelineItems" :key="item.id">
+                <div v-if="item.showMonth" class="timeline-month">
+                  <span class="timeline-month-label">{{ item.monthLabel }}</span>
                 </div>
-                <div class="timeline-line" />
-                <div class="timeline-content" :class="{ 'timeline-completed': item.completed }">
-                  <div class="timeline-content-header">
-                    <span class="timeline-title">{{ item.title }}</span>
-                    <span class="timeline-date">{{ item.date }}</span>
+                <div class="timeline-item" :class="{ 'timeline-photo-item': item.type === 'photo', 'timeline-feeding-item': item.type === 'feeding' }">
+                  <div class="timeline-dot" :style="{ background: item.color }">
+                    <span class="timeline-dot-icon">{{ item.icon }}</span>
                   </div>
-                  <span v-if="item.subtitle" class="timeline-subtitle">{{ item.subtitle }}</span>
+                  <div class="timeline-line" />
+                  <div class="timeline-content" :class="{ 'timeline-completed': item.completed }">
+                    <div class="timeline-content-header">
+                      <span class="timeline-title">{{ item.title }}</span>
+                      <span class="timeline-date">{{ item.date }}</span>
+                    </div>
+                    <span v-if="item.subtitle" class="timeline-subtitle">{{ item.subtitle }}</span>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </n-card>
+        </n-collapse-item>
+
+        <!-- 最近照片 -->
+        <n-collapse-item name="photos">
+          <template #header>
+            <n-space align="center" :size="8">
+              <n-icon :component="ImagesOutline" size="18" color="#C084FC" />
+              <span class="collapse-header-title">最近照片</span>
+              <n-tag v-if="recentPhotos.length" size="tiny" round>{{ recentPhotos.length }} 张</n-tag>
+            </n-space>
+          </template>
+          <n-spin :show="loadingPhotos">
+            <n-card v-if="recentPhotos.length" class="section-card" :bordered="false" size="small">
+              <div class="photo-grid">
+                <div
+                  v-for="photo in recentPhotos"
+                  :key="photo.id"
+                  class="photo-grid-item"
+                  @click="openPhotoLightbox(photo.imageUrl)"
+                >
+                  <img
+                    :src="getGalleryThumbnailUrl(photo.imageUrl)"
+                    :alt="photo.description || '宠物照片'"
+                    loading="lazy"
+                  />
                 </div>
               </div>
-            </template>
-          </div>
-        </n-card>
-      </div>
-
-      <!-- 最近照片 -->
-      <div class="section">
-        <n-space align="center" :size="8" class="section-header">
-          <n-icon :component="ImagesOutline" size="18" color="#C084FC" />
-          <n-h4 prefix-bar style="margin: 0;">最近照片</n-h4>
-        </n-space>
-        <n-spin :show="loadingPhotos">
-          <n-card v-if="recentPhotos.length" class="section-card" :bordered="false" size="small">
-            <div class="photo-grid">
-              <div
-                v-for="photo in recentPhotos"
-                :key="photo.id"
-                class="photo-grid-item"
-                @click="openPhotoLightbox(photo.imageUrl)"
-              >
-                <img
-                  :src="getGalleryThumbnailUrl(photo.imageUrl)"
-                  :alt="photo.description || '宠物照片'"
-                  loading="lazy"
-                />
+              <div class="view-all-photos">
+                <n-button text type="primary" @click="handleViewAllPhotos" size="small">
+                  <template #icon>
+                    <n-icon :component="ArrowForwardOutline" />
+                  </template>
+                  查看全部照片
+                </n-button>
               </div>
-            </div>
-            <div class="view-all-photos">
-              <n-button text type="primary" @click="handleViewAllPhotos" size="small">
+            </n-card>
+            <n-card v-else-if="!loadingPhotos" class="section-card" :bordered="false" size="small">
+              <n-empty description="还没有照片哦～" size="small">
                 <template #icon>
-                  <n-icon :component="ArrowForwardOutline" />
+                  <span style="font-size: 32px;">📷</span>
                 </template>
-                查看全部照片
-              </n-button>
-            </div>
-          </n-card>
-          <n-card v-else-if="!loadingPhotos" class="section-card" :bordered="false" size="small">
-            <n-empty description="还没有照片哦～" size="small">
-              <template #icon>
-                <span style="font-size: 32px;">📷</span>
-              </template>
-            </n-empty>
-          </n-card>
-        </n-spin>
-      </div>
+              </n-empty>
+            </n-card>
+          </n-spin>
+        </n-collapse-item>
 
-      <!-- 体重记录 -->
-      <div class="section">
-        <n-space align="center" :size="8" class="section-header">
-          <n-icon :component="ScaleOutline" size="18" color="#7DD3FC" />
-          <n-h4 prefix-bar style="margin: 0;">近期体重</n-h4>
-        </n-space>
-        <WeightTrendChart
-          :weight-logs="petStore.detailModal.data.weightLogs"
-          style="margin-bottom: 10px;"
-        />
-        <n-card class="section-card" :bordered="false" size="small">
-          <n-list v-if="petStore.detailModal.data.weightLogs?.length" hoverable>
-            <n-list-item v-for="log in petStore.detailModal.data.weightLogs" :key="log.id">
-              <n-space justify="space-between" align="center">
-                <n-text>{{ log.logDate }}</n-text>
-                <n-space align="center">
-                  <n-text strong>{{ log.weightKg }} kg</n-text>
-                  <n-popconfirm
-                    @positive-click="handleEditWeightLog(log)"
-                    :positive-button-props="{ type: 'info', size: 'tiny' }"
-                    :negative-button-props="{ size: 'tiny' }"
-                  >
-                    <template #trigger>
-                      <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
-                        <template #icon>
-                          <n-icon :component="CreateOutline" :size="14" />
-                        </template>
-                      </n-button>
-                    </template>
-                    编辑这条体重记录？
-                  </n-popconfirm>
-                  <n-popconfirm
-                    @positive-click="handleDeleteWeightLog(log.id)"
-                    :positive-button-props="{ type: 'error', size: 'tiny' }"
-                    :negative-button-props="{ size: 'tiny' }"
-                  >
-                    <template #trigger>
-                      <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
-                        <template #icon>
-                          <n-icon :component="TrashOutline" :size="14" />
-                        </template>
-                      </n-button>
-                    </template>
-                    确定删除这条体重记录？
-                  </n-popconfirm>
-                </n-space>
-              </n-space>
-            </n-list-item>
-          </n-list>
-          <n-text v-else depth="3"><i>暂无体重记录</i></n-text>
-        </n-card>
-      </div>
-
-      <!-- 健康事件 -->
-      <div class="section">
-        <n-space align="center" :size="8" class="section-header">
-          <n-icon :component="HeartOutline" size="18" color="#86EFAC" />
-          <n-h4 prefix-bar style="margin: 0;">健康事件</n-h4>
-          <n-tag v-if="petStore.detailModal.data.healthEvents?.length" size="tiny" round>
-            {{ petStore.detailModal.data.healthEvents.length }} 条
-          </n-tag>
-        </n-space>
-        <!-- 状态筛选标签 -->
-        <div v-if="petStore.detailModal.data.healthEvents?.length" class="health-event-filter">
-          <n-button
-            :type="healthEventFilter === 'all' ? 'primary' : 'default'"
-            size="tiny"
-            round
-            :secondary="healthEventFilter !== 'all'"
-            @click="healthEventFilter = 'all'"
-          >
-            全部 ({{ petStore.detailModal.data.healthEvents.length }})
-          </n-button>
-          <n-button
-            :type="healthEventFilter === 'pending' ? 'warning' : 'default'"
-            size="tiny"
-            round
-            :secondary="healthEventFilter !== 'pending'"
-            @click="healthEventFilter = 'pending'"
-          >
-            待处理 ({{ pendingCount }})
-          </n-button>
-          <n-button
-            :type="healthEventFilter === 'completed' ? 'success' : 'default'"
-            size="tiny"
-            round
-            :secondary="healthEventFilter !== 'completed'"
-            @click="healthEventFilter = 'completed'"
-          >
-            已完成 ({{ completedCount }})
-          </n-button>
-        </div>
-        <n-card class="section-card" :bordered="false" size="small">
-          <n-list v-if="filteredHealthEvents.length" hoverable>
-            <n-list-item v-for="event in filteredHealthEvents" :key="event.id" :class="{ 'completed-event': event.status === 1 }">
-              <n-space vertical :size="4">
-                <n-space align="center" justify="space-between">
+        <!-- 体重记录 -->
+        <n-collapse-item name="weight">
+          <template #header>
+            <n-space align="center" :size="8">
+              <n-icon :component="ScaleOutline" size="18" color="#7DD3FC" />
+              <span class="collapse-header-title">近期体重</span>
+              <n-tag v-if="petStore.detailModal.data.weightLogs?.length" size="tiny" round>
+                {{ petStore.detailModal.data.weightLogs.length }} 条
+              </n-tag>
+            </n-space>
+          </template>
+          <WeightTrendChart
+            :weight-logs="petStore.detailModal.data.weightLogs"
+            style="margin-bottom: 10px;"
+          />
+          <n-card class="section-card" :bordered="false" size="small">
+            <n-list v-if="petStore.detailModal.data.weightLogs?.length" hoverable>
+              <n-list-item v-for="log in petStore.detailModal.data.weightLogs" :key="log.id">
+                <n-space justify="space-between" align="center">
+                  <n-text>{{ log.logDate }}</n-text>
                   <n-space align="center">
-                    <n-text>{{ event.eventDate }}</n-text>
-                    <span class="event-type-icon">{{ getEventTypeIcon(event.eventTypeLabel) }}</span>
-                    <n-tag :type="event.nextDueDate ? 'warning' : 'success'" size="small" round>
-                      {{ event.eventTypeLabel || '未知事件' }}
-                    </n-tag>
-                    <n-tag v-if="event.status === 1" type="success" size="small" round>
-                      ✓ 已完成
-                    </n-tag>
-                  </n-space>
-                  <n-popconfirm
-                    v-if="event.status !== 1"
-                    @positive-click="handleCompleteHealthEvent(event.id)"
-                    :positive-button-props="{ type: 'success', size: 'tiny' }"
-                    :negative-button-props="{ size: 'tiny' }"
-                  >
-                    <template #trigger>
-                      <n-button text type="success" size="tiny" :disabled="!authStore.isAuthenticated">
-                        <template #icon>
-                          <n-icon :component="CheckmarkCircleOutline" :size="14" />
-                        </template>
-                      </n-button>
-                    </template>
-                    标记此事件为已完成？
-                  </n-popconfirm>
-                  <n-popconfirm
-                    v-if="event.status === 1"
-                    @positive-click="handleUncompleteHealthEvent(event.id)"
-                    :positive-button-props="{ type: 'warning', size: 'tiny' }"
-                    :negative-button-props="{ size: 'tiny' }"
-                  >
-                    <template #trigger>
-                      <n-button text type="warning" size="tiny" :disabled="!authStore.isAuthenticated">
-                        <template #icon>
-                          <n-icon :component="ArrowUndoOutline" :size="14" />
-                        </template>
-                      </n-button>
-                    </template>
-                    撤销完成，恢复为待处理？
-                  </n-popconfirm>
-                  <n-popconfirm
-                    @positive-click="handleEditHealthEvent(event)"
-                    :positive-button-props="{ type: 'info', size: 'tiny' }"
-                    :negative-button-props="{ size: 'tiny' }"
-                  >
-                    <template #trigger>
-                      <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
-                        <template #icon>
-                          <n-icon :component="CreateOutline" :size="14" />
-                        </template>
-                      </n-button>
-                    </template>
-                    编辑这条健康事件？
-                  </n-popconfirm>
-                  <n-popconfirm
-                    @positive-click="handleDeleteHealthEvent(event.id)"
-                    :positive-button-props="{ type: 'error', size: 'tiny' }"
-                    :negative-button-props="{ size: 'tiny' }"
-                  >
-                    <template #trigger>
-                      <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
-                        <template #icon>
-                          <n-icon :component="TrashOutline" :size="14" />
-                        </template>
-                      </n-button>
-                    </template>
-                    确定删除这条健康事件？
-                  </n-popconfirm>
-                </n-space>
-                <n-text v-if="event.notes" depth="3">{{ event.notes }}</n-text>
-                <n-text v-if="event.nextDueDate" depth="2" style="color: #F59E0B;">
-                  下次: {{ event.nextDueDate }}
-                </n-text>
-              </n-space>
-            </n-list-item>
-          </n-list>
-          <n-text v-else depth="3"><i>{{ healthEventFilter === 'all' ? '暂无健康事件' : '该分类下暂无事件' }}</i></n-text>
-        </n-card>
-      </div>
-
-      <!-- 喂养记录 -->
-      <div class="section">
-        <n-space align="center" :size="8" class="section-header">
-          <n-icon :component="RestaurantOutline" size="18" color="#FBBF24" />
-          <n-h4 prefix-bar style="margin: 0;">喂养记录</n-h4>
-          <n-tag v-if="petStore.detailModal.data.feedingRecords?.length" size="tiny" round>
-            {{ petStore.detailModal.data.feedingRecords.length }} 条
-          </n-tag>
-        </n-space>
-        <n-card class="section-card" :bordered="false" size="small">
-          <n-list v-if="petStore.detailModal.data.feedingRecords?.length" hoverable>
-            <n-list-item v-for="record in petStore.detailModal.data.feedingRecords" :key="record.id">
-              <n-space vertical :size="4">
-                <n-space align="center" justify="space-between">
-                  <n-space align="center">
-                    <n-text>{{ record.feedTime ? new Date(record.feedTime).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '' }}</n-text>
-                    <n-tag type="warning" size="small" round>🍽️ {{ record.foodType || '喂食' }}</n-tag>
-                    <n-tag v-if="record.amountGrams" size="small" round>{{ record.amountGrams }}g</n-tag>
-                  </n-space>
-                  <n-space :size="4">
+                    <n-text strong>{{ log.weightKg }} kg</n-text>
                     <n-popconfirm
-                      @positive-click="handleEditFeedingRecord(record)"
+                      @positive-click="handleEditWeightLog(log)"
                       :positive-button-props="{ type: 'info', size: 'tiny' }"
                       :negative-button-props="{ size: 'tiny' }"
                     >
                       <template #trigger>
                         <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
-                          <template #icon><n-icon :component="CreateOutline" :size="14" /></template>
+                          <template #icon>
+                            <n-icon :component="CreateOutline" :size="14" />
+                          </template>
                         </n-button>
                       </template>
-                      编辑这条喂养记录？
+                      编辑这条体重记录？
                     </n-popconfirm>
                     <n-popconfirm
-                      @positive-click="handleDeleteFeedingRecord(record.id)"
+                      @positive-click="handleDeleteWeightLog(log.id)"
                       :positive-button-props="{ type: 'error', size: 'tiny' }"
                       :negative-button-props="{ size: 'tiny' }"
                     >
                       <template #trigger>
                         <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
-                          <template #icon><n-icon :component="TrashOutline" :size="14" /></template>
+                          <template #icon>
+                            <n-icon :component="TrashOutline" :size="14" />
+                          </template>
                         </n-button>
                       </template>
-                      确定删除这条喂养记录？
+                      确定删除这条体重记录？
                     </n-popconfirm>
                   </n-space>
                 </n-space>
-                <n-text v-if="record.notes" depth="3">{{ record.notes }}</n-text>
-              </n-space>
-            </n-list-item>
-          </n-list>
-          <n-empty v-else description="还没有喂养记录哦～" size="small">
-            <template #icon>
-              <span style="font-size: 32px;">🍽️</span>
-            </template>
-          </n-empty>
-        </n-card>
-      </div>
+              </n-list-item>
+            </n-list>
+            <n-text v-else depth="3"><i>暂无体重记录</i></n-text>
+          </n-card>
+        </n-collapse-item>
+
+        <!-- 健康事件 -->
+        <n-collapse-item name="health">
+          <template #header>
+            <n-space align="center" :size="8">
+              <n-icon :component="HeartOutline" size="18" color="#86EFAC" />
+              <span class="collapse-header-title">健康事件</span>
+              <n-tag v-if="petStore.detailModal.data.healthEvents?.length" size="tiny" round>
+                {{ petStore.detailModal.data.healthEvents.length }} 条
+              </n-tag>
+            </n-space>
+          </template>
+          <!-- 状态筛选标签 -->
+          <div v-if="petStore.detailModal.data.healthEvents?.length" class="health-event-filter">
+            <n-button
+              :type="healthEventFilter === 'all' ? 'primary' : 'default'"
+              size="tiny"
+              round
+              :secondary="healthEventFilter !== 'all'"
+              @click.stop="healthEventFilter = 'all'"
+            >
+              全部 ({{ petStore.detailModal.data.healthEvents.length }})
+            </n-button>
+            <n-button
+              :type="healthEventFilter === 'pending' ? 'warning' : 'default'"
+              size="tiny"
+              round
+              :secondary="healthEventFilter !== 'pending'"
+              @click.stop="healthEventFilter = 'pending'"
+            >
+              待处理 ({{ pendingCount }})
+            </n-button>
+            <n-button
+              :type="healthEventFilter === 'completed' ? 'success' : 'default'"
+              size="tiny"
+              round
+              :secondary="healthEventFilter !== 'completed'"
+              @click.stop="healthEventFilter = 'completed'"
+            >
+              已完成 ({{ completedCount }})
+            </n-button>
+          </div>
+          <n-card class="section-card" :bordered="false" size="small">
+            <n-list v-if="filteredHealthEvents.length" hoverable>
+              <n-list-item v-for="event in filteredHealthEvents" :key="event.id" :class="{ 'completed-event': event.status === 1 }">
+                <n-space vertical :size="4">
+                  <n-space align="center" justify="space-between">
+                    <n-space align="center">
+                      <n-text>{{ event.eventDate }}</n-text>
+                      <span class="event-type-icon">{{ getEventTypeIcon(event.eventTypeLabel) }}</span>
+                      <n-tag :type="event.nextDueDate ? 'warning' : 'success'" size="small" round>
+                        {{ event.eventTypeLabel || '未知事件' }}
+                      </n-tag>
+                      <n-tag v-if="event.status === 1" type="success" size="small" round>
+                        ✓ 已完成
+                      </n-tag>
+                    </n-space>
+                    <n-popconfirm
+                      v-if="event.status !== 1"
+                      @positive-click="handleCompleteHealthEvent(event.id)"
+                      :positive-button-props="{ type: 'success', size: 'tiny' }"
+                      :negative-button-props="{ size: 'tiny' }"
+                    >
+                      <template #trigger>
+                        <n-button text type="success" size="tiny" :disabled="!authStore.isAuthenticated">
+                          <template #icon>
+                            <n-icon :component="CheckmarkCircleOutline" :size="14" />
+                          </template>
+                        </n-button>
+                      </template>
+                      标记此事件为已完成？
+                    </n-popconfirm>
+                    <n-popconfirm
+                      v-if="event.status === 1"
+                      @positive-click="handleUncompleteHealthEvent(event.id)"
+                      :positive-button-props="{ type: 'warning', size: 'tiny' }"
+                      :negative-button-props="{ size: 'tiny' }"
+                    >
+                      <template #trigger>
+                        <n-button text type="warning" size="tiny" :disabled="!authStore.isAuthenticated">
+                          <template #icon>
+                            <n-icon :component="ArrowUndoOutline" :size="14" />
+                          </template>
+                        </n-button>
+                      </template>
+                      撤销完成，恢复为待处理？
+                    </n-popconfirm>
+                    <n-popconfirm
+                      @positive-click="handleEditHealthEvent(event)"
+                      :positive-button-props="{ type: 'info', size: 'tiny' }"
+                      :negative-button-props="{ size: 'tiny' }"
+                    >
+                      <template #trigger>
+                        <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
+                          <template #icon>
+                            <n-icon :component="CreateOutline" :size="14" />
+                          </template>
+                        </n-button>
+                      </template>
+                      编辑这条健康事件？
+                    </n-popconfirm>
+                    <n-popconfirm
+                      @positive-click="handleDeleteHealthEvent(event.id)"
+                      :positive-button-props="{ type: 'error', size: 'tiny' }"
+                      :negative-button-props="{ size: 'tiny' }"
+                    >
+                      <template #trigger>
+                        <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
+                          <template #icon>
+                            <n-icon :component="TrashOutline" :size="14" />
+                          </template>
+                        </n-button>
+                      </template>
+                      确定删除这条健康事件？
+                    </n-popconfirm>
+                  </n-space>
+                  <n-text v-if="event.notes" depth="3">{{ event.notes }}</n-text>
+                  <n-text v-if="event.nextDueDate" depth="2" style="color: #F59E0B;">
+                    下次: {{ event.nextDueDate }}
+                  </n-text>
+                </n-space>
+              </n-list-item>
+            </n-list>
+            <n-text v-else depth="3"><i>{{ healthEventFilter === 'all' ? '暂无健康事件' : '该分类下暂无事件' }}</i></n-text>
+          </n-card>
+        </n-collapse-item>
+
+        <!-- 喂养记录 -->
+        <n-collapse-item name="feeding">
+          <template #header>
+            <n-space align="center" :size="8">
+              <n-icon :component="RestaurantOutline" size="18" color="#FBBF24" />
+              <span class="collapse-header-title">喂养记录</span>
+              <n-tag v-if="petStore.detailModal.data.feedingRecords?.length" size="tiny" round>
+                {{ petStore.detailModal.data.feedingRecords.length }} 条
+              </n-tag>
+            </n-space>
+          </template>
+          <n-card class="section-card" :bordered="false" size="small">
+            <n-list v-if="petStore.detailModal.data.feedingRecords?.length" hoverable>
+              <n-list-item v-for="record in petStore.detailModal.data.feedingRecords" :key="record.id">
+                <n-space vertical :size="4">
+                  <n-space align="center" justify="space-between">
+                    <n-space align="center">
+                      <n-text>{{ record.feedTime ? new Date(record.feedTime).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '' }}</n-text>
+                      <n-tag type="warning" size="small" round>🍽️ {{ record.foodType || '喂食' }}</n-tag>
+                      <n-tag v-if="record.amountGrams" size="small" round>{{ record.amountGrams }}g</n-tag>
+                    </n-space>
+                    <n-space :size="4">
+                      <n-popconfirm
+                        @positive-click="handleEditFeedingRecord(record)"
+                        :positive-button-props="{ type: 'info', size: 'tiny' }"
+                        :negative-button-props="{ size: 'tiny' }"
+                      >
+                        <template #trigger>
+                          <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
+                            <template #icon><n-icon :component="CreateOutline" :size="14" /></template>
+                          </n-button>
+                        </template>
+                        编辑这条喂养记录？
+                      </n-popconfirm>
+                      <n-popconfirm
+                        @positive-click="handleDeleteFeedingRecord(record.id)"
+                        :positive-button-props="{ type: 'error', size: 'tiny' }"
+                        :negative-button-props="{ size: 'tiny' }"
+                      >
+                        <template #trigger>
+                          <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
+                            <template #icon><n-icon :component="TrashOutline" :size="14" /></template>
+                          </n-button>
+                        </template>
+                        确定删除这条喂养记录？
+                      </n-popconfirm>
+                    </n-space>
+                  </n-space>
+                  <n-text v-if="record.notes" depth="3">{{ record.notes }}</n-text>
+                </n-space>
+              </n-list-item>
+            </n-list>
+            <n-empty v-else description="还没有喂养记录哦～" size="small">
+              <template #icon>
+                <span style="font-size: 32px;">🍽️</span>
+              </template>
+            </n-empty>
+          </n-card>
+        </n-collapse-item>
+      </n-collapse>
     </template>
 
     <template #footer>
@@ -872,6 +893,45 @@ const timelineItems = computed(() => {
   word-break: break-word;
 }
 
+/* 折叠面板 */
+.detail-collapse {
+  margin-top: 16px;
+}
+
+.detail-collapse :deep(.n-collapse-item) {
+  margin-bottom: 8px;
+  border-radius: 16px;
+  background: var(--pet-bg-secondary, #FAFAFA);
+  padding: 4px 12px;
+}
+
+:global(.dark-mode) .detail-collapse :deep(.n-collapse-item) {
+  background: #2A2A45;
+}
+
+.detail-collapse :deep(.n-collapse-item__header) {
+  padding: 12px 4px;
+  font-size: 15px;
+}
+
+.detail-collapse :deep(.n-collapse-item__content-wrapper) {
+  padding-bottom: 8px;
+}
+
+.detail-collapse :deep(.n-collapse-item__arrow) {
+  margin-right: 4px;
+}
+
+.collapse-header-title {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--pet-text, #2D2D2D);
+}
+
+:global(.dark-mode) .collapse-header-title {
+  color: #E8E8E8;
+}
+
 /* 区块 */
 .section {
   margin-top: 16px;
@@ -887,7 +947,7 @@ const timelineItems = computed(() => {
 }
 
 .section-card {
-  background: var(--pet-bg-secondary);
+  background: transparent;
   border-radius: 16px;
 }
 
