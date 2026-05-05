@@ -231,6 +231,72 @@ const getSpeciesTagType = (species) => {
 };
 
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
+
+// 成长时间线：合并体重记录和健康事件
+const timelineItems = computed(() => {
+  const data = petStore.detailModal.data;
+  if (!data) return [];
+
+  const items = [];
+
+  // 体重记录
+  if (data.weightLogs) {
+    for (const log of data.weightLogs) {
+      items.push({
+        id: `w-${log.id}`,
+        type: 'weight',
+        date: log.logDate,
+        icon: '⚖️',
+        title: `${log.weightKg} kg`,
+        subtitle: '体重记录',
+        color: '#7DD3FC'
+      });
+    }
+  }
+
+  // 健康事件
+  if (data.healthEvents) {
+    for (const event of data.healthEvents) {
+      const icon = getEventTypeIcon(event.eventTypeLabel) || '🩺';
+      const isCompleted = event.status === 1;
+      items.push({
+        id: `h-${event.id}`,
+        type: 'health',
+        date: event.eventDate,
+        icon,
+        title: event.eventTypeLabel || '健康事件',
+        subtitle: event.notes || (isCompleted ? '已完成' : ''),
+        color: isCompleted ? '#86EFAC' : '#FCA5A5',
+        completed: isCompleted
+      });
+    }
+  }
+
+  // 按日期降序排列
+  items.sort((a, b) => {
+    if (!a.date && !b.date) return 0;
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return new Date(b.date) - new Date(a.date);
+  });
+
+  // 标记是否显示月份分组头部
+  let lastMonth = '';
+  for (const item of items) {
+    if (item.date) {
+      const d = new Date(item.date);
+      const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      item.showMonth = month !== lastMonth;
+      item.monthLabel = `${d.getFullYear()}年${d.getMonth() + 1}月`;
+      lastMonth = month;
+    } else {
+      item.showMonth = false;
+      item.monthLabel = '';
+    }
+  }
+
+  return items;
+});
 </script>
 
 <template>
@@ -295,6 +361,39 @@ import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
           </n-gi>
         </n-grid>
       </n-card>
+
+      <!-- 成长时间线 -->
+      <div class="section" v-if="timelineItems.length">
+        <n-space align="center" :size="8" class="section-header">
+          <span style="font-size: 18px;">📖</span>
+          <n-h4 prefix-bar style="margin: 0;">成长时间线</n-h4>
+          <n-tag size="tiny" round>{{ timelineItems.length }} 条记录</n-tag>
+        </n-space>
+        <n-card class="section-card timeline-card" :bordered="false" size="small">
+          <div class="timeline">
+            <template v-for="item in timelineItems" :key="item.id">
+              <!-- 月份分组 -->
+              <div v-if="item.showMonth" class="timeline-month">
+                <span class="timeline-month-label">{{ item.monthLabel }}</span>
+              </div>
+              <!-- 时间线条目 -->
+              <div class="timeline-item">
+                <div class="timeline-dot" :style="{ background: item.color }">
+                  <span class="timeline-dot-icon">{{ item.icon }}</span>
+                </div>
+                <div class="timeline-line" />
+                <div class="timeline-content" :class="{ 'timeline-completed': item.completed }">
+                  <div class="timeline-content-header">
+                    <span class="timeline-title">{{ item.title }}</span>
+                    <span class="timeline-date">{{ item.date }}</span>
+                  </div>
+                  <span v-if="item.subtitle" class="timeline-subtitle">{{ item.subtitle }}</span>
+                </div>
+              </div>
+            </template>
+          </div>
+        </n-card>
+      </div>
 
       <!-- 最近照片 -->
       <div class="section">
@@ -690,5 +789,144 @@ import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
   .photo-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* 成长时间线 */
+.timeline-card {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.timeline {
+  position: relative;
+  padding-left: 28px;
+}
+
+.timeline-month {
+  position: relative;
+  margin: 16px 0 10px -28px;
+  padding-left: 28px;
+}
+
+.timeline-month:first-child {
+  margin-top: 0;
+}
+
+.timeline-month-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pet-primary, #FF9BA8);
+  background: var(--pet-bg-secondary, #FFF5F7);
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
+:global(.dark-mode) .timeline-month-label {
+  color: #FFB4C2;
+  background: rgba(255, 155, 168, 0.15);
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  padding-bottom: 14px;
+  min-height: 48px;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -28px;
+  top: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-dot-icon {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.timeline-line {
+  position: absolute;
+  left: -18px;
+  top: 24px;
+  width: 2px;
+  bottom: 0;
+  background: var(--pet-border, #F0E6E0);
+}
+
+.timeline-item:last-child .timeline-line {
+  display: none;
+}
+
+:global(.dark-mode) .timeline-line {
+  background: #3D3D5C;
+}
+
+.timeline-content {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+}
+
+.timeline-content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.timeline-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pet-text, #2D2D2D);
+}
+
+:global(.dark-mode) .timeline-title {
+  color: #E8E8E8;
+}
+
+.timeline-date {
+  font-size: 12px;
+  color: var(--pet-text3, #9CA3AF);
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .timeline-date {
+  color: #8888A0;
+}
+
+.timeline-subtitle {
+  font-size: 12px;
+  color: var(--pet-text2, #6B6B6B);
+  margin-top: 2px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:global(.dark-mode) .timeline-subtitle {
+  color: #B8B8CC;
+}
+
+.timeline-completed .timeline-title {
+  opacity: 0.6;
+}
+
+.timeline-completed .timeline-subtitle {
+  color: #86EFAC;
 }
 </style>
