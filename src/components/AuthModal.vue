@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, reactive } from 'vue';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useMessage } from 'naive-ui';
 import {
@@ -30,6 +30,16 @@ const localUsername = ref('');
 const localPassword = ref('');
 const isRegisterMode = ref(false);
 const formRef = ref(null);
+
+// n-form 需要 :model 绑定才能正确校验
+const formData = reactive({
+  username: '',
+  password: ''
+});
+
+// 同步 ref 到 formData
+watch(localUsername, (v) => { formData.username = v; });
+watch(localPassword, (v) => { formData.password = v; });
 
 // --- 4. 表单校验规则 ---
 const rules = computed(() => ({
@@ -93,6 +103,8 @@ watch(() => props.show, (isShown) => {
     authStore.error = null;
     localUsername.value = '';
     localPassword.value = '';
+    formData.username = '';
+    formData.password = '';
     isRegisterMode.value = false;
   }
 });
@@ -117,7 +129,7 @@ watch(() => props.show, (isShown) => {
       <p class="auth-subtitle">{{ isRegisterMode ? '创建账号，开始萌宠之旅' : '登录您的萌宠管理系统' }}</p>
     </div>
 
-    <n-form ref="formRef" @submit.prevent="handleSubmit" :rules="rules" class="auth-form">
+    <n-form ref="formRef" :model="formData" @submit.prevent="handleSubmit" :rules="rules" class="auth-form">
       <n-form-item label="用户名" path="username" label-style="font-weight: 600;">
         <n-input
           v-model:value="localUsername"
