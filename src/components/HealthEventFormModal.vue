@@ -1,10 +1,9 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import {
   NModal,
-
   NForm,
   NFormItem,
   NInput,
@@ -12,18 +11,33 @@ import {
   NDatePicker,
   NButton,
   NSpace,
-
 } from 'naive-ui';
 
 const petStore = usePetStore();
 const dictStore = useDictionaryStore();
+const formRef = ref(null);
 
 const eventTypeOptions = computed(() =>
   dictStore.healthEvents.map(type => ({ label: type.itemLabel, value: type.id }))
 );
 
+// 表单校验规则
+const rules = {
+  eventTypeId: [
+    { required: true, type: 'number', message: '请选择事件类型', trigger: 'change' }
+  ],
+  eventDate: [
+    { required: true, message: '请选择事件日期', trigger: 'change' }
+  ]
+};
+
 const handleSubmit = () => {
-  petStore.handleSaveHealthEvent();
+  formRef.value?.validate((errors) => {
+    if (errors) {
+      return;
+    }
+    petStore.handleSaveHealthEvent();
+  });
 };
 
 const handleClose = () => {
@@ -42,21 +56,23 @@ const handleClose = () => {
     :loading="petStore.healthEventFormModal.loading"
   >
     <div v-if="petStore.healthEventFormModal.data">
-      <n-form @submit.prevent="handleSubmit">
-        <n-form-item label="事件类型" required>
+      <n-form ref="formRef" @submit.prevent="handleSubmit" label-placement="top" :rules="rules">
+        <n-form-item label="事件类型" path="eventTypeId" required>
           <n-select
             v-model:value="petStore.healthEventFormModal.data.eventTypeId"
             :options="eventTypeOptions"
             placeholder="请选择事件类型"
+            :disabled="petStore.healthEventFormModal.loading"
           />
         </n-form-item>
 
-        <n-form-item label="事件日期" required>
+        <n-form-item label="事件日期" path="eventDate" required>
           <n-date-picker
             v-model:value="petStore.healthEventFormModal.data.eventDate"
             type="date"
             value-format="yyyy-MM-dd"
             style="width: 100%;"
+            :disabled="petStore.healthEventFormModal.loading"
           />
         </n-form-item>
 
@@ -66,6 +82,7 @@ const handleClose = () => {
             type="date"
             value-format="yyyy-MM-dd"
             style="width: 100%;"
+            :disabled="petStore.healthEventFormModal.loading"
           />
         </n-form-item>
 
@@ -74,6 +91,7 @@ const handleClose = () => {
             v-model:value="petStore.healthEventFormModal.data.notes"
             type="textarea"
             placeholder="输入备注信息"
+            :disabled="petStore.healthEventFormModal.loading"
           />
         </n-form-item>
       </n-form>

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
@@ -28,6 +28,7 @@ const dictStore = useDictionaryStore();
 const message = useMessage();
 const { isUploading, uploadError, openUploadWidget } = useCloudinaryUpload();
 const { getAvatarUrl } = useCloudinaryImage();
+const formRef = ref(null);
 
 const speciesOptions = computed(() =>
   dictStore.species.map(s => ({ label: s.itemLabel, value: s.id }))
@@ -40,8 +41,24 @@ const breedOptions = computed(() => {
     .map(b => ({ label: b.itemLabel, value: b.id }));
 });
 
+// 表单校验规则
+const rules = {
+  name: [
+    { required: true, message: '请输入宠物名字', trigger: 'blur' },
+    { min: 1, max: 20, message: '名字长度应为 1-20 个字符', trigger: 'blur' }
+  ],
+  speciesId: [
+    { required: true, type: 'number', message: '请选择宠物物种', trigger: 'change' }
+  ]
+};
+
 const handleSubmit = () => {
-  petStore.handleSavePet();
+  formRef.value?.validate((errors) => {
+    if (errors) {
+      return;
+    }
+    petStore.handleSavePet();
+  });
 };
 
 const handleImageUpload = () => {
@@ -77,7 +94,7 @@ const handleClose = () => {
     :mask-closable="false"
   >
     <div v-if="petStore.petFormModal.data">
-      <n-form @submit.prevent="handleSubmit" label-placement="top">
+      <n-form ref="formRef" @submit.prevent="handleSubmit" label-placement="top" :rules="rules">
         <!-- 头像上传 -->
         <n-form-item label="宠物头像" label-style="font-weight: 600;">
           <n-space align="center" justify="center" vertical>
@@ -105,6 +122,7 @@ const handleClose = () => {
             v-model:value="petStore.petFormModal.data.name"
             placeholder="输入宠物的名字"
             size="large"
+            :disabled="petStore.petFormModal.loading"
           >
             <template #prefix>
               <n-icon :component="PawOutline" color="#9CA3AF" />
@@ -120,16 +138,18 @@ const handleClose = () => {
             value-format="yyyy-MM-dd"
             style="width: 100%;"
             size="large"
+            :disabled="petStore.petFormModal.loading"
           />
         </n-form-item>
 
         <!-- 物种 -->
-        <n-form-item label="物种" required label-style="font-weight: 600;">
+        <n-form-item label="物种" path="speciesId" required label-style="font-weight: 600;">
           <n-select
             v-model:value="petStore.petFormModal.data.speciesId"
             :options="speciesOptions"
             placeholder="请选择物种"
             size="large"
+            :disabled="petStore.petFormModal.loading"
           />
         </n-form-item>
 
@@ -138,7 +158,7 @@ const handleClose = () => {
           <n-select
             v-model:value="petStore.petFormModal.data.breedId"
             :options="breedOptions"
-            :disabled="!petStore.petFormModal.data.speciesId"
+            :disabled="!petStore.petFormModal.data.speciesId || petStore.petFormModal.loading"
             placeholder="请先选择物种"
             clearable
             size="large"

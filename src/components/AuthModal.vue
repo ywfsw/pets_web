@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useMessage } from 'naive-ui';
 import {
@@ -29,11 +29,32 @@ const message = useMessage();
 const localUsername = ref('');
 const localPassword = ref('');
 const isRegisterMode = ref(false);
+const formRef = ref(null);
 
-// --- 4. Logic ---
-const handleSubmit = async () => {
-  if (!localUsername.value || !localPassword.value) return;
+// --- 4. 表单校验规则 ---
+const rules = computed(() => ({
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 20, message: '用户名长度应为 3-20 个字符', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, max: 50, message: '密码长度应不少于 6 个字符', trigger: 'blur' }
+  ]
+}));
 
+// --- 5. Logic ---
+const handleSubmit = () => {
+  formRef.value?.validate((errors) => {
+    if (errors) {
+      return;
+    }
+
+    doSubmit();
+  });
+};
+
+const doSubmit = async () => {
   let success = false;
   if (isRegisterMode.value) {
     success = await authStore.register(localUsername.value, localPassword.value);
@@ -96,14 +117,15 @@ watch(() => props.show, (isShown) => {
       <p class="auth-subtitle">{{ isRegisterMode ? '创建账号，开始萌宠之旅' : '登录您的萌宠管理系统' }}</p>
     </div>
 
-    <n-form @submit.prevent="handleSubmit" class="auth-form">
-      <n-form-item label="用户名" label-style="font-weight: 600;">
+    <n-form ref="formRef" @submit.prevent="handleSubmit" :rules="rules" class="auth-form">
+      <n-form-item label="用户名" path="username" label-style="font-weight: 600;">
         <n-input
           v-model:value="localUsername"
           placeholder="请输入用户名"
           size="large"
           autofocus
           @input="authStore.error = null"
+          :disabled="authStore.loading"
         >
           <template #prefix>
             <n-icon :component="PersonOutline" color="#9CA3AF" />
@@ -111,7 +133,7 @@ watch(() => props.show, (isShown) => {
         </n-input>
       </n-form-item>
 
-      <n-form-item label="密码" label-style="font-weight: 600;">
+      <n-form-item label="密码" path="password" label-style="font-weight: 600;">
         <n-input
           type="password"
           show-password-on="mousedown"
@@ -119,6 +141,7 @@ watch(() => props.show, (isShown) => {
           placeholder="请输入密码"
           size="large"
           @input="authStore.error = null"
+          :disabled="authStore.loading"
         >
           <template #prefix>
             <n-icon :component="LockClosedOutline" color="#9CA3AF" />

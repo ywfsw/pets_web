@@ -1,8 +1,8 @@
 <script setup>
+import { ref } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import {
   NModal,
-
   NForm,
   NFormItem,
   NInputNumber,
@@ -12,9 +12,26 @@ import {
 } from 'naive-ui';
 
 const petStore = usePetStore();
+const formRef = ref(null);
+
+// 表单校验规则
+const rules = {
+  weightKg: [
+    { required: true, type: 'number', message: '请输入体重', trigger: 'blur' },
+    { type: 'number', min: 0.1, max: 200, message: '体重应在 0.1-200 kg 之间', trigger: 'blur' }
+  ],
+  logDate: [
+    { required: true, message: '请选择记录日期', trigger: 'change' }
+  ]
+};
 
 const handleSubmit = () => {
-  petStore.handleSaveWeightLog();
+  formRef.value?.validate((errors) => {
+    if (errors) {
+      return;
+    }
+    petStore.handleSaveWeightLog();
+  });
 };
 
 const handleClose = () => {
@@ -33,8 +50,8 @@ const handleClose = () => {
     :loading="petStore.weightLogFormModal.loading"
   >
     <div v-if="petStore.weightLogFormModal.data">
-      <n-form @submit.prevent="handleSubmit">
-        <n-form-item label="体重 (kg)" required>
+      <n-form ref="formRef" @submit.prevent="handleSubmit" label-placement="top" :rules="rules">
+        <n-form-item label="体重 (kg)" path="weightKg" required>
           <n-input-number
             v-model:value="petStore.weightLogFormModal.data.weightKg"
             :min="0.1"
@@ -42,15 +59,17 @@ const handleClose = () => {
             :step="0.1"
             placeholder="输入体重"
             style="width: 100%;"
+            :disabled="petStore.weightLogFormModal.loading"
           />
         </n-form-item>
 
-        <n-form-item label="记录日期" required>
+        <n-form-item label="记录日期" path="logDate" required>
           <n-date-picker
             v-model:value="petStore.weightLogFormModal.data.logDate"
             type="date"
             value-format="yyyy-MM-dd"
             style="width: 100%;"
+            :disabled="petStore.weightLogFormModal.loading"
           />
         </n-form-item>
       </n-form>
