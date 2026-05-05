@@ -355,6 +355,7 @@ import {
         loadPetList(currentPage.value); // (❗) 刷新当前页
       } catch (err) {
         console.error("保存宠物失败:", err);
+        throw err;
       } finally {
         petFormModal.value.loading = false;
       }
@@ -400,6 +401,7 @@ import {
         loadPetDetail(payload.petId); // Refresh pet details to show new event
       } catch (err) {
         console.error("保存健康事件失败:", err);
+        throw err;
       } finally {
         healthEventFormModal.value.loading = false;
       }
@@ -444,6 +446,7 @@ import {
         loadPetDetail(payload.petId); // Refresh pet details to show new log
       } catch (err) {
         console.error("保存体重记录失败:", err);
+        throw err;
       } finally {
         weightLogFormModal.value.loading = false;
       }

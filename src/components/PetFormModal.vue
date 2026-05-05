@@ -53,11 +53,15 @@ const rules = {
 };
 
 const handleSubmit = () => {
-  formRef.value?.validate((errors) => {
+  formRef.value?.validate(async (errors) => {
     if (errors) {
       return;
     }
-    petStore.handleSavePet();
+    try {
+      await petStore.handleSavePet();
+    } catch {
+      message.error('保存宠物信息失败，请重试');
+    }
   });
 };
 

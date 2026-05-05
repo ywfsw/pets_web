@@ -9,9 +9,11 @@ import {
   NDatePicker,
   NButton,
   NSpace,
+  useMessage,
 } from 'naive-ui';
 
 const petStore = usePetStore();
+const message = useMessage();
 const formRef = ref(null);
 
 // 表单校验规则
@@ -26,11 +28,15 @@ const rules = {
 };
 
 const handleSubmit = () => {
-  formRef.value?.validate((errors) => {
+  formRef.value?.validate(async (errors) => {
     if (errors) {
       return;
     }
-    petStore.handleSaveWeightLog();
+    try {
+      await petStore.handleSaveWeightLog();
+    } catch {
+      message.error('保存体重记录失败，请重试');
+    }
   });
 };
 

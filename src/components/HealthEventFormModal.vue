@@ -11,10 +11,12 @@ import {
   NDatePicker,
   NButton,
   NSpace,
+  useMessage,
 } from 'naive-ui';
 
 const petStore = usePetStore();
 const dictStore = useDictionaryStore();
+const message = useMessage();
 const formRef = ref(null);
 
 const eventTypeOptions = computed(() =>
@@ -32,11 +34,15 @@ const rules = {
 };
 
 const handleSubmit = () => {
-  formRef.value?.validate((errors) => {
+  formRef.value?.validate(async (errors) => {
     if (errors) {
       return;
     }
-    petStore.handleSaveHealthEvent();
+    try {
+      await petStore.handleSaveHealthEvent();
+    } catch {
+      message.error('保存健康事件失败，请重试');
+    }
   });
 };
 
