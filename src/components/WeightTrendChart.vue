@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
   weightLogs: {
@@ -7,6 +7,16 @@ const props = defineProps({
     default: () => []
   }
 });
+
+const hoveredIndex = ref(-1);
+
+function onPointEnter(index) {
+  hoveredIndex.value = index;
+}
+
+function onPointLeave() {
+  hoveredIndex.value = -1;
+}
 
 const chartData = computed(() => {
   if (!props.weightLogs?.length) return null;
@@ -39,10 +49,15 @@ const chartData = computed(() => {
   const chartW = width - marginLeft - marginRight;
   const chartH = height - marginTop - marginBottom;
 
+  const fullDates = sorted.map(l => {
+    const d = new Date(l.logDate);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+
   const points = sorted.map((l, i) => {
     const x = marginLeft + (i / (sorted.length - 1)) * chartW;
     const y = marginTop + chartH - ((parseFloat(l.weightKg) - yMin) / (yMax - yMin)) * chartH;
-    return { x, y, weight: l.weightKg, date: dates[i] };
+    return { x, y, weight: l.weightKg, date: dates[i], fullDate: fullDates[i] };
   });
 
   const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
@@ -164,15 +179,38 @@ const chartData = computed(() => {
           stroke-linejoin="round"
         />
 
+        <!-- Vertical guide line on hover -->
+        <line
+          v-if="hoveredIndex >= 0 && hoveredIndex < chartData.points.length"
+          :x1="chartData.points[hoveredIndex].x"
+          :y1="chartData.marginTop"
+          :x2="chartData.points[hoveredIndex].x"
+          :y2="chartData.marginTop + chartData.chartH"
+          stroke="#7DD3FC"
+          stroke-opacity="0.5"
+          stroke-width="1"
+          stroke-dasharray="3 3"
+        />
+
         <!-- Data points -->
         <g v-for="(p, i) in chartData.points" :key="i">
           <circle
             :cx="p.x"
             :cy="p.y"
-            r="4"
             fill="white"
             stroke="#7DD3FC"
-            stroke-width="2"
+            :stroke-width="hoveredIndex === i ? 3 : 2"
+            :r="hoveredIndex === i ? 5 : 4"
+          />
+          <!-- Hover hit area (invisible larger circle) -->
+          <circle
+            :cx="p.x"
+            :cy="p.y"
+            r="16"
+            fill="transparent"
+            style="cursor: pointer"
+            @mouseenter="onPointEnter(i)"
+            @mouseleave="onPointLeave"
           />
           <!-- Date labels (show every other or first/last) -->
           <text
@@ -184,6 +222,43 @@ const chartData = computed(() => {
             fill-opacity="0.4"
             font-size="9"
           >{{ p.date }}</text>
+        </g>
+
+        <!-- Tooltip -->
+        <g
+          v-if="hoveredIndex >= 0 && hoveredIndex < chartData.points.length"
+          class="chart-tooltip"
+        >
+          <rect
+            :x="Math.max(2, Math.min(chartData.width - 94, chartData.points[hoveredIndex].x - 46))"
+            :y="Math.max(2, chartData.points[hoveredIndex].y - 36)"
+            width="92"
+            height="28"
+            rx="6"
+            ry="6"
+            fill="#1E293B"
+            fill-opacity="0.92"
+          />
+          <polygon
+            :points="`${chartData.points[hoveredIndex].x - 5},${chartData.points[hoveredIndex].y - 8} ${chartData.points[hoveredIndex].x + 5},${chartData.points[hoveredIndex].y - 8} ${chartData.points[hoveredIndex].x},${chartData.points[hoveredIndex].y - 2}`"
+            fill="#1E293B"
+            fill-opacity="0.92"
+          />
+          <text
+            :x="Math.max(48, Math.min(chartData.width - 48, chartData.points[hoveredIndex].x))"
+            :y="Math.max(20, chartData.points[hoveredIndex].y - 22)"
+            text-anchor="middle"
+            fill="white"
+            font-size="10"
+            font-weight="600"
+          >{{ chartData.points[hoveredIndex].weight }} kg</text>
+          <text
+            :x="Math.max(48, Math.min(chartData.width - 48, chartData.points[hoveredIndex].x))"
+            :y="Math.max(30, chartData.points[hoveredIndex].y - 12)"
+            text-anchor="middle"
+            fill="#94A3B8"
+            font-size="9"
+          >{{ chartData.points[hoveredIndex].fullDate }}</text>
         </g>
       </svg>
     </div>
