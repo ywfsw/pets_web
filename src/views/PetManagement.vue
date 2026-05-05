@@ -18,9 +18,10 @@ import {
   NEmpty,
   NSpin,
   NTag,
-  NBadge
+  NBadge,
+  NPopconfirm
 } from 'naive-ui';
-import { PawOutline, CalendarOutline } from '@vicons/ionicons5';
+import { PawOutline, CalendarOutline, CreateOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -55,6 +56,15 @@ const handleCreatePet = () => {
 const handleShowDetail = (petId) => { petStore.showDetailModal(petId); };
 const handlePageChange = (page) => { petStore.loadPetList(page); };
 
+// 编辑宠物
+const handleEditPet = (pet) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再编辑宠物');
+    return;
+  }
+  petStore.showPetFormModal(pet);
+};
+
 // 获取物种标签类型
 const getSpeciesTagType = (species) => {
   const typeMap = {
@@ -68,7 +78,7 @@ const getSpeciesTagType = (species) => {
   return typeMap[species?.toLowerCase()] || 'default';
 };
 
-const createColumns = ({ handleShowDetail, isMobile }) => {
+const createColumns = ({ handleShowDetail, handleEditPet, isMobile }) => {
   const baseColumns = [
     {
       title: '萌宠',
@@ -136,6 +146,37 @@ const createColumns = ({ handleShowDetail, isMobile }) => {
           ]
         );
       }
+    },
+    {
+      title: '操作',
+      key: 'actions',
+      width: 80,
+      render(row) {
+        return h(
+          NPopconfirm,
+          {
+            onPositiveClick: () => handleEditPet(row),
+            positiveButtonProps: { type: 'info', size: 'small' },
+            negativeButtonProps: { size: 'small' }
+          },
+          {
+            trigger: () => h(
+              NButton,
+              {
+                text: true,
+                type: 'info',
+                size: 'tiny',
+                disabled: !authStore.isAuthenticated,
+                style: { padding: '4px 8px' }
+              },
+              {
+                icon: () => h(NIcon, { component: CreateOutline, size: 16 })
+              }
+            ),
+            default: () => `编辑 ${row.name} 的信息？`
+          }
+        );
+      }
     }
   ];
 
@@ -148,6 +189,7 @@ const createColumns = ({ handleShowDetail, isMobile }) => {
 const responsiveColumns = computed(() => createColumns({
   handleLike: petStore.handleLike,
   handleShowDetail: handleShowDetail,
+  handleEditPet: handleEditPet,
   isMobile: isMobile.value
 }));
 
