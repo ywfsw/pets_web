@@ -381,6 +381,10 @@ const timelineItems = computed(() => {
             </n-space>
           </n-gi>
         </n-grid>
+        <!-- 备注信息 -->
+        <div v-if="petStore.detailModal.data.notes" class="pet-notes">
+          <n-text depth="3" style="font-size: 13px;">📝 {{ petStore.detailModal.data.notes }}</n-text>
+        </div>
       </n-card>
 
       <!-- 成长时间线 -->
@@ -726,6 +730,15 @@ const timelineItems = computed(() => {
   background: var(--pet-bg-secondary);
   border-radius: 16px;
   margin: 16px 0;
+}
+
+/* 宠物备注 */
+.pet-notes {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--pet-border, #F0E6E0);
+  line-height: 1.6;
+  word-break: break-word;
 }
 
 /* 区块 */

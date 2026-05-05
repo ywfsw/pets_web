@@ -185,6 +185,20 @@ const handleClose = () => {
             size="large"
           />
         </n-form-item>
+
+        <!-- 备注 -->
+        <n-form-item label="备注" label-style="font-weight: 600;">
+          <n-input
+            v-model:value="petStore.petFormModal.data.notes"
+            type="textarea"
+            placeholder="记录宠物的个性、饮食偏好、特殊注意事项等..."
+            :rows="3"
+            size="large"
+            :maxlength="500"
+            show-count
+            :disabled="petStore.petFormModal.loading"
+          />
+        </n-form-item>
       </n-form>
     </div>
 
