@@ -20,7 +20,7 @@ import {
   NInput,
   NBadge
 } from 'naive-ui';
-import { Add, ImageOutline, CloseOutline } from '@vicons/ionicons5';
+import { Add, ImageOutline, CloseOutline, TrashOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -34,6 +34,7 @@ const showFullImageModal = ref(false);
 const fullImageUrl = ref('');
 const fullImageDescription = ref('');
 const lightboxLoading = ref(false);
+const currentImage = ref(null);
 
 onMounted(() => {
   petStore.loadAllPetGallery();
@@ -44,6 +45,7 @@ onMounted(() => {
 
 // --- Lightbox Logic ---
 async function showFullImage(image) {
+  currentImage.value = image;
   fullImageUrl.value = getFullResolutionUrl(image.imageUrl);
   fullImageDescription.value = '';
   showFullImageModal.value = true;
@@ -64,6 +66,21 @@ function closeLightbox() {
   showFullImageModal.value = false;
   fullImageUrl.value = '';
   fullImageDescription.value = '';
+  currentImage.value = null;
+}
+
+// --- Delete Image Logic ---
+async function handleDeleteImage() {
+  if (!currentImage.value) return;
+
+  try {
+    await petStore.deletePetGallery(currentImage.value.id);
+    message.success('删除成功');
+    closeLightbox();
+  } catch (err) {
+    console.error('删除图片失败:', err);
+    message.error('删除失败，请重试');
+  }
 }
 
 // --- Upload Logic ---
@@ -269,6 +286,27 @@ async function handleConfirmDescription() {
         </template>
       </n-button>
 
+      <!-- 删除按钮 -->
+      <n-popconfirm
+        v-if="authStore.isAuthenticated && currentImage"
+        @positive-click="handleDeleteImage"
+        :positive-button-props="{ type: 'error', size: 'small' }"
+        :negative-button-props="{ size: 'small' }"
+      >
+        <template #trigger>
+          <n-button
+            circle
+            size="large"
+            class="lightbox-delete-btn"
+          >
+            <template #icon>
+              <n-icon size="24"><TrashOutline /></n-icon>
+            </template>
+          </n-button>
+        </template>
+        确定要删除这张照片吗？此操作不可恢复。
+      </n-popconfirm>
+
       <n-spin :show="lightboxLoading" size="large">
         <img
           :src="fullImageUrl"
@@ -435,6 +473,20 @@ async function handleConfirmDescription() {
   background: rgba(255, 255, 255, 0.2) !important;
   border: none;
   color: white !important;
+}
+
+.lightbox-delete-btn {
+  position: absolute;
+  top: 20px;
+  right: 80px;
+  z-index: 100;
+  background: rgba(239, 68, 68, 0.6) !important;
+  border: none;
+  color: white !important;
+}
+
+.lightbox-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.8) !important;
 }
 
 .lightbox-image {
