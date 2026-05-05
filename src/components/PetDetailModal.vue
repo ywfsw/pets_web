@@ -48,6 +48,7 @@ const lightboxPhotoUrl = ref('');
 watch(
   () => petStore.detailModal.data?.id,
   async (petId) => {
+    healthEventFilter.value = 'all';
     if (!petId) {
       recentPhotos.value = [];
       return;
@@ -231,6 +232,24 @@ const getSpeciesTagType = (species) => {
 };
 
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
+
+// 健康事件筛选状态
+const healthEventFilter = ref('all');
+
+const pendingCount = computed(() => {
+  return (petStore.detailModal.data?.healthEvents || []).filter(e => e.status !== 1).length;
+});
+
+const completedCount = computed(() => {
+  return (petStore.detailModal.data?.healthEvents || []).filter(e => e.status === 1).length;
+});
+
+const filteredHealthEvents = computed(() => {
+  const events = petStore.detailModal.data?.healthEvents || [];
+  if (healthEventFilter.value === 'pending') return events.filter(e => e.status !== 1);
+  if (healthEventFilter.value === 'completed') return events.filter(e => e.status === 1);
+  return events;
+});
 
 // 成长时间线：合并体重记录和健康事件
 const timelineItems = computed(() => {
@@ -494,10 +513,43 @@ const timelineItems = computed(() => {
         <n-space align="center" :size="8" class="section-header">
           <n-icon :component="HeartOutline" size="18" color="#86EFAC" />
           <n-h4 prefix-bar style="margin: 0;">健康事件</n-h4>
+          <n-tag v-if="petStore.detailModal.data.healthEvents?.length" size="tiny" round>
+            {{ petStore.detailModal.data.healthEvents.length }} 条
+          </n-tag>
         </n-space>
+        <!-- 状态筛选标签 -->
+        <div v-if="petStore.detailModal.data.healthEvents?.length" class="health-event-filter">
+          <n-button
+            :type="healthEventFilter === 'all' ? 'primary' : 'default'"
+            size="tiny"
+            round
+            :secondary="healthEventFilter !== 'all'"
+            @click="healthEventFilter = 'all'"
+          >
+            全部 ({{ petStore.detailModal.data.healthEvents.length }})
+          </n-button>
+          <n-button
+            :type="healthEventFilter === 'pending' ? 'warning' : 'default'"
+            size="tiny"
+            round
+            :secondary="healthEventFilter !== 'pending'"
+            @click="healthEventFilter = 'pending'"
+          >
+            待处理 ({{ pendingCount }})
+          </n-button>
+          <n-button
+            :type="healthEventFilter === 'completed' ? 'success' : 'default'"
+            size="tiny"
+            round
+            :secondary="healthEventFilter !== 'completed'"
+            @click="healthEventFilter = 'completed'"
+          >
+            已完成 ({{ completedCount }})
+          </n-button>
+        </div>
         <n-card class="section-card" :bordered="false" size="small">
-          <n-list v-if="petStore.detailModal.data.healthEvents?.length" hoverable>
-            <n-list-item v-for="event in petStore.detailModal.data.healthEvents" :key="event.id" :class="{ 'completed-event': event.status === 1 }">
+          <n-list v-if="filteredHealthEvents.length" hoverable>
+            <n-list-item v-for="event in filteredHealthEvents" :key="event.id" :class="{ 'completed-event': event.status === 1 }">
               <n-space vertical :size="4">
                 <n-space align="center" justify="space-between">
                   <n-space align="center">
@@ -576,7 +628,7 @@ const timelineItems = computed(() => {
               </n-space>
             </n-list-item>
           </n-list>
-          <n-text v-else depth="3"><i>暂无健康事件</i></n-text>
+          <n-text v-else depth="3"><i>{{ healthEventFilter === 'all' ? '暂无健康事件' : '该分类下暂无事件' }}</i></n-text>
         </n-card>
       </div>
     </template>
@@ -775,6 +827,14 @@ const timelineItems = computed(() => {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+}
+
+/* 健康事件筛选 */
+.health-event-filter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 /* 事件类型图标 */
