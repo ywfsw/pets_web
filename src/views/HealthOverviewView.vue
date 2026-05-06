@@ -197,6 +197,106 @@ onMounted(async () => {
 const navigateTo = (page) => {
   petStore.activePage = page;
 };
+
+// ---- Pet Health Comparison ----
+const comparisonData = ref([]);
+const loadingComparison = ref(false);
+
+function computePetHealthScore(detail) {
+  if (!detail) return 0;
+  const wLogs = detail.weightLogs || [];
+  const hEvents = detail.healthEvents || [];
+  const mRecords = detail.medicationRecords || [];
+  const overdue = hEvents.filter(e => {
+    if (e.status === 1) return false;
+    const today = new Date().toISOString().slice(0, 10);
+    return e.nextDueDate && e.nextDueDate < today;
+  });
+  const pending = hEvents.filter(e => !e.status || e.status === 0);
+  const activeMeds = mRecords.filter(m => {
+    const today = new Date().toISOString().slice(0, 10);
+    return !m.endDate || m.endDate >= today;
+  });
+  let score = 100;
+  if (overdue.length > 0) score -= overdue.length * 15;
+  if (pending.length > 3) score -= (pending.length - 3) * 5;
+  if (!wLogs.length) score -= 10;
+  if (activeMeds.length > 2) score -= 5;
+  return Math.max(0, Math.min(100, score));
+}
+
+async function loadComparisonData() {
+  if (petStore.petList.length < 2) {
+    comparisonData.value = [];
+    return;
+  }
+  loadingComparison.value = true;
+  try {
+    const results = await Promise.all(
+      petStore.petList.map(async (pet) => {
+        try {
+          const res = await fetchPetDetail(pet.id);
+          const detail = res.data;
+          const wLogs = detail.weightLogs || [];
+          const hEvents = detail.healthEvents || [];
+          const mRecords = detail.medicationRecords || [];
+          const pending = hEvents.filter(e => !e.status || e.status === 0);
+          const activeMeds = mRecords.filter(m => {
+            const today = new Date().toISOString().slice(0, 10);
+            return !m.endDate || m.endDate >= today;
+          });
+          const latestW = wLogs.length
+            ? [...wLogs].sort((a, b) => new Date(b.logDate) - new Date(a.logDate))[0]
+            : null;
+          return {
+            id: pet.id,
+            name: pet.name,
+            avatarUrl: pet.avatarUrl,
+            gender: pet.gender,
+            score: computePetHealthScore(detail),
+            latestWeight: latestW ? latestW.weightKg : null,
+            pendingCount: pending.length,
+            activeMedsCount: activeMeds.length,
+            totalEvents: hEvents.length,
+          };
+        } catch {
+          return {
+            id: pet.id, name: pet.name, avatarUrl: pet.avatarUrl, gender: pet.gender,
+            score: 0, latestWeight: null, pendingCount: 0, activeMedsCount: 0, totalEvents: 0,
+          };
+        }
+      })
+    );
+    comparisonData.value = results.sort((a, b) => b.score - a.score);
+  } finally {
+    loadingComparison.value = false;
+  }
+}
+
+function compScoreColor(score) {
+  if (score >= 80) return '#10b981';
+  if (score >= 60) return '#f59e0b';
+  return '#ef4444';
+}
+
+function compScoreLabel(score) {
+  if (score >= 80) return '优秀';
+  if (score >= 60) return '良好';
+  if (score >= 40) return '一般';
+  return '需关注';
+}
+
+const showComparison = computed(() => petStore.petList.length >= 2);
+
+watch(() => petStore.petList.length, (len) => {
+  if (len >= 2) loadComparisonData();
+});
+
+onMounted(() => {
+  if (petStore.petList.length >= 2) {
+    loadComparisonData();
+  }
+});
 </script>
 
 <template>
@@ -506,6 +606,100 @@ const navigateTo = (page) => {
           <div class="qa-icon-wrap"><span class="qa-icon">🛁</span></div>
           <span class="qa-label">洗澡美容</span>
         </button>
+      </div>
+    </template>
+
+    <!-- Pet Health Comparison -->
+    <template v-if="showComparison">
+      <div v-if="loadingComparison" class="skeleton-card comp-skeleton section-entrance" style="--entrance-delay: 0.4s;">
+        <div class="skel-header-row">
+          <div class="skel-line skel-shimmer" style="width:16px;height:16px;" />
+          <div class="skel-line skel-shimmer" style="width:100px;height:16px;" />
+          <div class="skel-line skel-shimmer" style="width:36px;height:20px;border-radius:10px;" />
+        </div>
+        <div class="comp-skel-grid">
+          <div v-for="i in 3" :key="'csk'+i" class="comp-skel-card">
+            <div class="skel-circle skel-shimmer" style="width:48px;height:48px;" />
+            <div class="skel-line skel-shimmer" style="width:56px;height:14px;margin-top:8px;" />
+            <div class="skel-line skel-shimmer" style="width:40px;height:18px;margin-top:6px;" />
+            <div class="skel-line skel-shimmer" style="width:100%;height:10px;border-radius:5px;margin-top:10px;" />
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="comparisonData.length > 0" class="comparison-section section-entrance" style="--entrance-delay: 0.4s;">
+        <div class="section-header">
+          <span class="section-icon">📊</span>
+          <h3 class="section-title">宠物健康对比</h3>
+          <span class="section-count">{{ comparisonData.length }} 只</span>
+        </div>
+
+        <!-- Score comparison bar chart -->
+        <div class="comp-score-chart">
+          <div v-for="(p, idx) in comparisonData" :key="'bar'+p.id" class="comp-bar-row" :style="{ '--bar-delay': idx * 0.08 + 's' }">
+            <div class="comp-bar-info">
+              <div class="comp-bar-avatar" v-if="p.avatarUrl">
+                <img :src="p.avatarUrl" :alt="p.name" />
+              </div>
+              <div class="comp-bar-avatar comp-bar-avatar-fb" v-else>
+                {{ p.gender === 'female' ? '♀' : '♂' }}
+              </div>
+              <span class="comp-bar-name">{{ p.name }}</span>
+            </div>
+            <div class="comp-bar-track">
+              <div class="comp-bar-fill" :style="{
+                width: (p.score / 100 * 100) + '%',
+                background: `linear-gradient(90deg, ${compScoreColor(p.score)}88, ${compScoreColor(p.score)})`
+              }" />
+            </div>
+            <span class="comp-bar-score" :style="{ color: compScoreColor(p.score) }">{{ p.score }}</span>
+          </div>
+        </div>
+
+        <!-- Detail cards grid -->
+        <div class="comp-cards-grid">
+          <div v-for="(p, idx) in comparisonData" :key="'card'+p.id"
+               class="comp-pet-card"
+               :class="{ 'comp-top': idx === 0 && comparisonData.length > 1 }"
+               :style="{ '--card-delay': idx * 0.06 + 's' }"
+               @click="selectedPetId = p.id">
+            <div class="comp-card-rank" v-if="comparisonData.length > 1">
+              <span v-if="idx === 0" class="rank-badge rank-gold">👑</span>
+              <span v-else class="rank-num">{{ idx + 1 }}</span>
+            </div>
+            <div class="comp-card-avatar" v-if="p.avatarUrl">
+              <img :src="p.avatarUrl" :alt="p.name" />
+            </div>
+            <div class="comp-card-avatar comp-card-avatar-fb" v-else>
+              <span>{{ p.gender === 'female' ? '♀' : '♂' }}</span>
+            </div>
+            <div class="comp-card-name">{{ p.name }}</div>
+            <div class="comp-card-score-ring" :style="{ '--score-color': compScoreColor(p.score) }">
+              <svg viewBox="0 0 60 60" class="comp-ring-svg">
+                <circle cx="30" cy="30" r="24" class="comp-ring-bg" />
+                <circle cx="30" cy="30" r="24" class="comp-ring-fg"
+                  :style="{ strokeDashoffset: 150.8 - (150.8 * p.score / 100) }" />
+              </svg>
+              <span class="comp-ring-val">{{ p.score }}</span>
+            </div>
+            <div class="comp-card-score-label" :style="{ color: compScoreColor(p.score) }">{{ compScoreLabel(p.score) }}</div>
+            <div class="comp-card-metrics">
+              <div class="comp-metric">
+                <span class="comp-metric-icon">⚖️</span>
+                <span class="comp-metric-val">{{ p.latestWeight ? p.latestWeight + ' kg' : '--' }}</span>
+              </div>
+              <div class="comp-metric">
+                <span class="comp-metric-icon">📋</span>
+                <span class="comp-metric-val" :class="{ 'metric-warn': p.pendingCount > 3 }">{{ p.pendingCount }} 待办</span>
+              </div>
+              <div class="comp-metric">
+                <span class="comp-metric-icon">💊</span>
+                <span class="comp-metric-val">{{ p.activeMedsCount }} 用药</span>
+              </div>
+            </div>
+            <div class="comp-card-hint">点击查看详情 →</div>
+          </div>
+        </div>
       </div>
     </template>
   </div>
@@ -1400,6 +1594,300 @@ const navigateTo = (page) => {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.08), rgba(59, 130, 246, 0.06));
 }
 
+/* ---- Comparison Section ---- */
+.comparison-section {
+  margin-top: 28px;
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.06);
+}
+
+.comp-skeleton {
+  margin-top: 28px;
+  padding: 24px;
+}
+
+.comp-skel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.comp-skel-card {
+  padding: 16px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(16, 185, 129, 0.03);
+}
+
+/* Score comparison bar chart */
+.comp-score-chart {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comp-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: compBarIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--bar-delay)) both;
+}
+
+.comp-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.comp-bar-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+}
+
+.comp-bar-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comp-bar-avatar-fb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.08);
+  font-size: 13px;
+}
+
+.comp-bar-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color-2, #374151);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+.comp-bar-track {
+  flex: 1;
+  height: 14px;
+  border-radius: 7px;
+  background: rgba(16, 185, 129, 0.08);
+  overflow: hidden;
+}
+
+.comp-bar-fill {
+  height: 100%;
+  border-radius: 7px;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: compBarFill 0.8s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--bar-delay)) both;
+}
+
+.comp-bar-score {
+  font-size: 15px;
+  font-weight: 700;
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes compBarIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes compBarFill {
+  from { transform: scaleX(0); transform-origin: left; }
+  to { transform: scaleX(1); transform-origin: left; }
+}
+
+/* Comparison cards grid */
+.comp-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.comp-pet-card {
+  position: relative;
+  padding: 20px 16px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: compCardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--card-delay)) both;
+}
+
+.comp-pet-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.comp-top {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+.comp-card-rank {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 12px;
+  color: var(--text-color-3, #9ca3af);
+}
+
+.rank-badge {
+  font-size: 16px;
+}
+
+.rank-gold {
+  filter: drop-shadow(0 0 4px rgba(234, 179, 8, 0.4));
+}
+
+.rank-num {
+  font-weight: 700;
+  opacity: 0.4;
+}
+
+.comp-card-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+}
+
+.comp-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comp-card-avatar-fb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.08);
+  font-size: 20px;
+}
+
+.comp-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-color-1, #111827);
+}
+
+.comp-card-score-ring {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.comp-ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.comp-ring-bg {
+  fill: none;
+  stroke: rgba(16, 185, 129, 0.12);
+  stroke-width: 5;
+}
+
+.comp-ring-fg {
+  fill: none;
+  stroke: var(--score-color);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 150.8;
+  transition: stroke-dashoffset 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.comp-ring-val {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-color-1, #111827);
+  font-variant-numeric: tabular-nums;
+}
+
+.comp-card-score-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.comp-card-metrics {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.comp-metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.comp-metric-icon {
+  font-size: 13px;
+}
+
+.comp-metric-val {
+  color: var(--text-color-3, #6b7280);
+}
+
+.metric-warn {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.comp-card-hint {
+  font-size: 11px;
+  color: var(--text-color-3, #9ca3af);
+  margin-top: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.comp-pet-card:hover .comp-card-hint {
+  opacity: 1;
+}
+
+@keyframes compCardIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 :global(.dark-mode) .hero-card::before {
   background: rgba(30, 30, 50, 0.7);
 }
@@ -1488,6 +1976,51 @@ const navigateTo = (page) => {
 
 :global(.dark-mode) .qa-btn:hover .qa-icon-wrap {
   background: rgba(16, 185, 129, 0.18);
+}
+
+:global(.dark-mode) .comparison-section,
+:global(.dark-mode) .comp-pet-card {
+  background: rgba(40, 40, 60, 0.5);
+  border-color: rgba(16, 185, 129, 0.1);
+}
+
+:global(.dark-mode) .comp-top {
+  border-color: rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+:global(.dark-mode) .comp-bar-track {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+:global(.dark-mode) .comp-bar-name {
+  color: #d1d5db;
+}
+
+:global(.dark-mode) .comp-ring-bg {
+  stroke: rgba(16, 185, 129, 0.12);
+}
+
+:global(.dark-mode) .comp-ring-val {
+  color: #e5e5e5;
+}
+
+:global(.dark-mode) .comp-card-name {
+  color: #e5e5e5;
+}
+
+:global(.dark-mode) .comp-pet-card:hover {
+  background: rgba(50, 50, 70, 0.6);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.08);
+}
+
+:global(.dark-mode) .comp-skel-card {
+  background: rgba(40, 40, 60, 0.4);
+}
+
+:global(.dark-mode) .comp-bar-avatar-fb,
+:global(.dark-mode) .comp-card-avatar-fb {
+  background: rgba(16, 185, 129, 0.1);
 }
 
 :global(.dark-mode) .skeleton-card,
@@ -1617,6 +2150,46 @@ const navigateTo = (page) => {
 
   .type-bar-label {
     width: 48px;
+  }
+
+  .comp-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .comp-pet-card {
+    padding: 14px 12px 12px;
+  }
+
+  .comp-card-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .comp-card-name {
+    font-size: 13px;
+  }
+
+  .comp-card-score-ring {
+    width: 50px;
+    height: 50px;
+  }
+
+  .comp-ring-val {
+    font-size: 14px;
+  }
+
+  .comp-bar-info {
+    min-width: 70px;
+  }
+
+  .comp-bar-name {
+    max-width: 50px;
+    font-size: 12px;
+  }
+
+  .comp-score-chart {
+    gap: 10px;
   }
 }
 </style>
