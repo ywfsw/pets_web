@@ -2,8 +2,9 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { NSelect } from 'naive-ui';
 import { usePetStore } from '@/stores/petStore.js';
-import { fetchPetDetail } from '@/api.js';
+import { fetchPetDetail, fetchHealthReport } from '@/api.js';
 import WeightTrendChart from '@/components/WeightTrendChart.vue';
+import HealthReportChart from '@/components/HealthReportChart.vue';
 
 const petStore = usePetStore();
 
@@ -180,9 +181,33 @@ async function loadPetDetail() {
   }
 }
 
+// ---- Health Report ----
+const healthReport = ref(null);
+const loadingReport = ref(false);
+const reportMonths = ref(6);
+
+async function loadHealthReport() {
+  if (!selectedPetId.value) { healthReport.value = null; return; }
+  loadingReport.value = true;
+  try {
+    const res = await fetchHealthReport(selectedPetId.value, reportMonths.value);
+    healthReport.value = res.data;
+  } catch (err) {
+    console.error('加载健康报告失败:', err);
+    healthReport.value = null;
+  } finally {
+    loadingReport.value = false;
+  }
+}
+
 watch(selectedPetId, (val) => {
   petStore.setPageSelectedPet('health-overview', val);
   loadPetDetail();
+  loadHealthReport();
+});
+
+watch(reportMonths, () => {
+  loadHealthReport();
 });
 
 onMounted(async () => {
@@ -606,6 +631,22 @@ onMounted(() => {
           <div class="qa-icon-wrap"><span class="qa-icon">🛁</span></div>
           <span class="qa-label">洗澡美容</span>
         </button>
+      </div>
+
+      <!-- Health Report -->
+      <div class="report-section section-entrance" style="--entrance-delay: 0.3s;">
+        <div class="section-header">
+          <span class="section-icon">📊</span>
+          <h3 class="section-title">月度健康报告</h3>
+          <div class="report-months-selector">
+            <button v-for="m in [3, 6, 12]" :key="m"
+              class="month-pill" :class="{ active: reportMonths === m }"
+              @click="reportMonths = m">
+              {{ m }}个月
+            </button>
+          </div>
+        </div>
+        <HealthReportChart :report="healthReport" :loading="loadingReport" />
       </div>
     </template>
 
@@ -1572,6 +1613,61 @@ onMounted(() => {
   z-index: 1;
 }
 
+/* Health Report Section */
+.report-section {
+  margin-bottom: 24px;
+}
+
+.report-section .section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.report-months-selector {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.month-pill {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-color-2, #6b6b6b);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.month-pill:hover {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10B981;
+}
+
+.month-pill.active {
+  background: linear-gradient(135deg, #10B981, #34D399);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 3px 12px rgba(16, 185, 129, 0.25);
+}
+
+html.dark .month-pill {
+  background: rgba(30, 30, 40, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #9CA3AF;
+}
+
+html.dark .month-pill:hover {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34D399;
+}
+
 /* Section entrance animation */
 .section-entrance {
   opacity: 0;
@@ -2115,6 +2211,16 @@ onMounted(() => {
   .pet-avatar-ring {
     width: 44px;
     height: 44px;
+  }
+
+  .report-section .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .report-months-selector {
+    margin-left: 0;
   }
 
   .pet-name {

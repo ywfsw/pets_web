@@ -110,6 +110,10 @@ export const fetchPetDetail = (petId) => {
   return apiClient.get(`/api/pets/detail/${petId}`);
 };
 
+export const fetchHealthReport = (petId, months = 6) => {
+  return apiClient.get(`/api/pets/${petId}/health-report`, { params: { months } });
+};
+
 export const createPet = (payload) => {
   return apiClient.post('/api/pets', payload);
 };
