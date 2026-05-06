@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
+import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 import { fetchDashboardSummary } from '@/api.js';
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
 import PetLeaderboard from '@/components/PetLeaderboard.vue';
@@ -14,6 +15,7 @@ import {
   NEmpty,
   NButton,
   NPopconfirm,
+  NAvatar,
   useMessage
 } from 'naive-ui';
 import {
@@ -26,6 +28,7 @@ import {
 const petStore = usePetStore();
 const authStore = useAuthStore();
 const message = useMessage();
+const { getAvatarUrl } = useCloudinaryImage();
 
 const dashboardData = ref(null);
 const loading = ref(true);
@@ -298,7 +301,14 @@ const computeAge = (birthday) => {
               @click="handleShowDetail(pet.id)"
             >
               <div class="pet-overview-header">
-                <span class="pet-overview-avatar">{{ pet.gender === 'male' ? '♂️' : pet.gender === 'female' ? '♀️' : '🐾' }}</span>
+                <n-avatar
+                  v-if="pet.avatarUrl"
+                  round
+                  :size="44"
+                  :src="getAvatarUrl(pet.avatarUrl)"
+                  class="pet-overview-avatar-img"
+                />
+                <span v-else class="pet-overview-avatar">{{ pet.gender === 'male' ? '♂️' : pet.gender === 'female' ? '♀️' : '🐾' }}</span>
                 <div class="pet-overview-name-wrap">
                   <span class="pet-overview-name">{{ pet.name }}</span>
                   <span v-if="pet.speciesName || pet.breedName" class="pet-overview-breed">
@@ -685,8 +695,17 @@ const computeAge = (birthday) => {
   flex-shrink: 0;
 }
 
+.pet-overview-avatar-img {
+  flex-shrink: 0;
+  border: 2px solid #FFE4E9;
+}
+
 :global(.dark-mode) .pet-overview-avatar {
   background: linear-gradient(135deg, #3D2025 0%, #4D2030 100%);
+}
+
+:global(.dark-mode) .pet-overview-avatar-img {
+  border-color: #3D3D5C;
 }
 
 .pet-overview-name-wrap {
