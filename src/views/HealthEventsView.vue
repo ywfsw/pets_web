@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/authStore.js';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { fetchHealthEventsPage, fetchHealthEventsStats, deleteHealthEvent, completeHealthEvent, uncompleteHealthEvent } from '@/api.js';
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
+import HealthEventTypeChart from '@/components/HealthEventTypeChart.vue';
 import {
   NSelect,
   NTag,
@@ -328,19 +329,9 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
       </div>
     </div>
 
-    <!-- Event Type Breakdown -->
-    <div v-if="stats.typeBreakdown && stats.typeBreakdown.length > 0" class="type-breakdown section-entrance" style="--entrance-delay: 0.15s;">
-      <div class="type-breakdown-items">
-        <div
-          v-for="item in stats.typeBreakdown"
-          :key="item.eventTypeId"
-          class="type-breakdown-chip"
-        >
-          <span class="type-chip-icon">{{ getEventTypeIcon(item.eventTypeName) }}</span>
-          <span class="type-chip-name">{{ item.eventTypeName }}</span>
-          <span class="type-chip-count">{{ item.count }}</span>
-        </div>
-      </div>
+    <!-- Event Type Chart -->
+    <div class="type-chart-section section-entrance" style="--entrance-delay: 0.15s;">
+      <HealthEventTypeChart :stats="stats" />
     </div>
 
     <!-- Loading Skeleton -->
@@ -780,61 +771,9 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
-/* ===== Type Breakdown ===== */
-.type-breakdown {
+/* ===== Type Chart Section ===== */
+.type-chart-section {
   margin-bottom: 20px;
-}
-
-.type-breakdown-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.type-breakdown-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(52, 211, 153, 0.06) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.12);
-  font-size: 13px;
-  transition: all 0.2s ease;
-}
-
-.type-breakdown-chip:hover {
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
-  transform: translateY(-1px);
-}
-
-:global(.dark-mode) .type-breakdown-chip {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(52, 211, 153, 0.06) 100%);
-  border-color: rgba(52, 211, 153, 0.15);
-}
-
-.type-chip-icon {
-  font-size: 16px;
-}
-
-.type-chip-name {
-  font-weight: 600;
-  color: #065F46;
-}
-
-:global(.dark-mode) .type-chip-name {
-  color: #A7F3D0;
-}
-
-.type-chip-count {
-  font-weight: 700;
-  font-size: 12px;
-  color: #FFFFFF;
-  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
-  border-radius: 10px;
-  padding: 1px 8px;
-  min-width: 20px;
-  text-align: center;
 }
 
 /* ===== Skeleton Loading ===== */
