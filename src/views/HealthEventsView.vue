@@ -7,11 +7,7 @@ import { fetchHealthEventsPage, fetchHealthEventsStats, deleteHealthEvent, compl
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
 import {
   NSelect,
-  NCard,
   NTag,
-  NSpace,
-  NEmpty,
-  NSpin,
   NButton,
   NIcon,
   NPagination,
@@ -29,6 +25,11 @@ import {
 const petStore = usePetStore();
 const authStore = useAuthStore();
 const dictStore = useDictionaryStore();
+
+const mounted = ref(false);
+onMounted(() => {
+  requestAnimationFrame(() => { mounted.value = true; });
+});
 
 // State
 const selectedPetId = ref(null);
@@ -235,101 +236,100 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
 </script>
 
 <template>
-  <div class="health-events-page">
-    <!-- Page Header -->
-    <div class="page-header">
-      <div class="page-header-left">
-        <h1 class="page-title">
-          <span class="page-title-icon">🩺</span>
-          健康事件
-        </h1>
-        <p class="page-subtitle">疫苗、驱虫、体检，守护宠物健康</p>
-      </div>
-      <div class="page-header-right">
-        <n-space align="center" :size="12">
-          <n-select
-            v-model:value="selectedPetId"
-            :options="petOptions"
-            placeholder="选择宠物"
-            clearable
-            filterable
-            style="width: 180px;"
-            class="pet-selector"
-          >
-            <template #prefix>
-              <n-icon :component="PawOutline" size="16" />
-            </template>
-          </n-select>
-          <n-button
-            type="primary"
-            @click="handleAdd"
-            :disabled="!authStore.isAuthenticated || petStore.petList.length === 0"
-          >
-            <template #icon>
-              <n-icon :component="AddOutline" />
-            </template>
-            添加事件
-          </n-button>
-        </n-space>
+  <div class="health-events-page" :class="{ 'is-mounted': mounted }">
+    <!-- Immersive Hero -->
+    <div class="health-hero">
+      <div class="hero-gradient-frame">
+        <div class="hero-inner">
+          <div class="hero-decorations">
+            <span class="hero-shape shape-1">🩺</span>
+            <span class="hero-shape shape-2">💉</span>
+            <span class="hero-shape shape-3">✨</span>
+            <span class="hero-shape shape-4">🩹</span>
+            <span class="hero-shape shape-5">💊</span>
+            <span class="hero-shape shape-6">🏥</span>
+          </div>
+          <div class="hero-content">
+            <h1 class="hero-title">
+              <span class="hero-title-icon">🩺</span>
+              <span class="hero-title-text">健康事件</span>
+            </h1>
+            <p class="hero-subtitle">疫苗、驱虫、体检，守护宠物的每一天</p>
+          </div>
+          <div class="hero-stats-bar">
+            <div class="hero-stat">
+              <span class="hero-stat-icon">📋</span>
+              <span class="hero-stat-value">{{ stats.totalCount }}</span>
+              <span class="hero-stat-label">总事件</span>
+            </div>
+            <div class="hero-stat-divider" />
+            <div class="hero-stat">
+              <span class="hero-stat-icon">⏳</span>
+              <span class="hero-stat-value">{{ stats.pendingCount }}</span>
+              <span class="hero-stat-label">待处理</span>
+            </div>
+            <div class="hero-stat-divider" />
+            <div class="hero-stat">
+              <span class="hero-stat-icon">✅</span>
+              <span class="hero-stat-value hero-stat-value-completed">{{ stats.completedCount }}</span>
+              <span class="hero-stat-label">已完成</span>
+            </div>
+            <div class="hero-stat-divider" />
+            <div class="hero-stat">
+              <span class="hero-stat-icon">⚠️</span>
+              <span class="hero-stat-value hero-stat-value-overdue">{{ stats.overdueCount }}</span>
+              <span class="hero-stat-label">已过期</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Status Filter Tabs -->
-    <div class="status-tabs">
-      <button
-        v-for="opt in statusOptions"
-        :key="opt.value"
-        class="status-tab"
-        :class="{ active: statusFilter === opt.value }"
-        @click="statusFilter = opt.value"
-      >
-        {{ opt.label }}
-      </button>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="stats-row">
-      <n-card class="stat-card stat-card-total" :bordered="false">
-        <div class="stat-card-content">
-          <span class="stat-card-icon">📋</span>
-          <div class="stat-card-info">
-            <span class="stat-card-value">{{ stats.totalCount }}</span>
-            <span class="stat-card-label">总事件</span>
-          </div>
+    <!-- Toolbar: Selector + Status Tabs + Add -->
+    <div class="toolbar section-entrance" style="--entrance-delay: 0.1s;">
+      <div class="toolbar-left">
+        <n-select
+          v-model:value="selectedPetId"
+          :options="petOptions"
+          placeholder="选择宠物筛选"
+          clearable
+          filterable
+          size="medium"
+          class="pet-selector"
+        >
+          <template #prefix>
+            <n-icon :component="PawOutline" size="16" />
+          </template>
+        </n-select>
+      </div>
+      <div class="toolbar-right">
+        <div class="status-tabs">
+          <button
+            v-for="opt in statusOptions"
+            :key="opt.value"
+            class="status-tab"
+            :class="{ active: statusFilter === opt.value }"
+            @click="statusFilter = opt.value"
+          >
+            {{ opt.label }}
+          </button>
         </div>
-      </n-card>
-      <n-card class="stat-card stat-card-pending" :bordered="false">
-        <div class="stat-card-content">
-          <span class="stat-card-icon">⏳</span>
-          <div class="stat-card-info">
-            <span class="stat-card-value">{{ stats.pendingCount }}</span>
-            <span class="stat-card-label">待处理</span>
-          </div>
-        </div>
-      </n-card>
-      <n-card class="stat-card stat-card-completed" :bordered="false">
-        <div class="stat-card-content">
-          <span class="stat-card-icon">✅</span>
-          <div class="stat-card-info">
-            <span class="stat-card-value">{{ stats.completedCount }}</span>
-            <span class="stat-card-label">已完成</span>
-          </div>
-        </div>
-      </n-card>
-      <n-card class="stat-card stat-card-overdue" :bordered="false">
-        <div class="stat-card-content">
-          <span class="stat-card-icon">⚠️</span>
-          <div class="stat-card-info">
-            <span class="stat-card-value">{{ stats.overdueCount }}</span>
-            <span class="stat-card-label">已过期</span>
-          </div>
-        </div>
-      </n-card>
+        <n-button
+          type="primary"
+          class="add-btn"
+          @click="handleAdd"
+          :disabled="!authStore.isAuthenticated || petStore.petList.length === 0"
+        >
+          <template #icon>
+            <n-icon :component="AddOutline" />
+          </template>
+          添加事件
+        </n-button>
+      </div>
     </div>
 
     <!-- Event Type Breakdown -->
-    <div v-if="stats.typeBreakdown && stats.typeBreakdown.length > 0" class="type-breakdown">
-      <div class="type-breakdown-label">事件类型分布</div>
+    <div v-if="stats.typeBreakdown && stats.typeBreakdown.length > 0" class="type-breakdown section-entrance" style="--entrance-delay: 0.15s;">
       <div class="type-breakdown-items">
         <div
           v-for="item in stats.typeBreakdown"
@@ -343,40 +343,53 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
       </div>
     </div>
 
-    <!-- Loading -->
-    <n-spin v-if="loading" :show="true" style="width: 100%;">
-      <div style="height: 200px;" />
-    </n-spin>
+    <!-- Loading Skeleton -->
+    <div v-if="loading" class="skeleton-list section-entrance" style="--entrance-delay: 0.25s;">
+      <div v-for="i in 5" :key="i" class="skeleton-record">
+        <div class="skeleton-icon-circle" />
+        <div class="skeleton-lines">
+          <div class="skeleton-line skeleton-line-title" />
+          <div class="skeleton-line skeleton-line-sub" />
+        </div>
+      </div>
+    </div>
 
     <!-- Empty State -->
-    <n-card v-else-if="records.length === 0" class="empty-card" :bordered="false">
-      <n-empty description="暂无健康事件记录，快去给宠物添加第一条记录吧" size="large">
+    <div v-else-if="records.length === 0" class="empty-state section-entrance" style="--entrance-delay: 0.2s;">
+      <div class="empty-icon-wrap">
+        <span class="empty-icon-emoji">🩺</span>
+        <span class="empty-icon-sparkle">✨</span>
+      </div>
+      <div class="empty-title">还没有健康事件</div>
+      <div class="empty-desc">记录疫苗、驱虫、体检，守护宠物健康每一天</div>
+      <n-button
+        v-if="authStore.isAuthenticated && petStore.petList.length > 0"
+        type="primary"
+        class="add-btn"
+        size="medium"
+        @click="handleAdd"
+      >
         <template #icon>
-          <span style="font-size: 48px;">🩺</span>
+          <n-icon :component="AddOutline" />
         </template>
-        <template #extra>
-          <n-button
-            v-if="authStore.isAuthenticated && petStore.petList.length > 0"
-            type="primary"
-            size="small"
-            @click="handleAdd"
-          >
-            添加健康事件
-          </n-button>
-        </template>
-      </n-empty>
-    </n-card>
+        添加第一条事件
+      </n-button>
+    </div>
 
     <!-- Events List -->
-    <div v-else class="events-list">
+    <div v-else class="events-list section-entrance" style="--entrance-delay: 0.25s;">
       <div
-        v-for="event in records"
+        v-for="(event, idx) in records"
         :key="event.id"
         class="event-item"
         :class="{ 'event-completed': event.status === 1, 'event-overdue': getDaysInfo(event.nextDueDate)?.type === 'error' && event.status !== 1 }"
+        :style="{ '--item-delay': `${Math.min(idx * 0.04, 0.5)}s` }"
       >
+        <div class="event-accent" :class="{ 'accent-completed': event.status === 1, 'accent-overdue': getDaysInfo(event.nextDueDate)?.type === 'error' && event.status !== 1 }" />
         <div class="event-left">
-          <div class="event-icon">{{ getEventTypeIcon(getEventTypeName(event)) }}</div>
+          <div class="event-icon-wrap">
+            <span class="event-icon">{{ getEventTypeIcon(getEventTypeName(event)) }}</span>
+          </div>
           <div class="event-info">
             <div class="event-main">
               <span class="event-type-name">{{ getEventTypeName(event) }}</span>
@@ -411,7 +424,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
         <div class="event-actions" v-if="authStore.isAuthenticated">
           <n-popconfirm v-if="event.status === 1" @positive-click="handleUncomplete(event)">
             <template #trigger>
-              <n-button text size="small" type="warning" title="撤销完成">
+              <n-button text size="small" type="warning" class="action-btn" title="撤销完成">
                 <template #icon>
                   <n-icon :component="ArrowUndoOutline" size="16" />
                 </template>
@@ -421,7 +434,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
           </n-popconfirm>
           <n-popconfirm v-else @positive-click="handleComplete(event)">
             <template #trigger>
-              <n-button text size="small" type="success" title="标记完成">
+              <n-button text size="small" type="success" class="action-btn" title="标记完成">
                 <template #icon>
                   <n-icon :component="CheckmarkCircleOutline" size="16" />
                 </template>
@@ -433,6 +446,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
             text
             size="small"
             type="primary"
+            class="action-btn"
             @click="handleEdit(event)"
           >
             <template #icon>
@@ -441,7 +455,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
           </n-button>
           <n-popconfirm @positive-click="handleDelete(event)">
             <template #trigger>
-              <n-button text size="small" type="error">
+              <n-button text size="small" type="error" class="action-btn">
                 <template #icon>
                   <n-icon :component="TrashOutline" size="16" />
                 </template>
@@ -471,186 +485,304 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   margin: 0 auto;
 }
 
-/* Page Header */
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  gap: 16px;
-  flex-wrap: wrap;
+/* ===== Hero Section ===== */
+.health-hero {
+  margin-bottom: 24px;
 }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #2D2D2D;
-  margin: 0;
+.hero-gradient-frame {
+  border-radius: 24px;
+  padding: 3px;
+  background: linear-gradient(135deg, #059669 0%, #10B981 30%, #34D399 60%, #6EE7B7 100%);
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2);
+}
+
+.hero-inner {
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(236, 253, 245, 0.92) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 36px 32px 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+:global(.dark-mode) .hero-gradient-frame {
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.12);
+}
+
+:global(.dark-mode) .hero-inner {
+  background: linear-gradient(135deg, rgba(30, 40, 35, 0.95) 0%, rgba(25, 45, 35, 0.92) 100%);
+}
+
+/* Floating decorations */
+.hero-decorations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero-shape {
+  position: absolute;
+  font-size: 20px;
+  opacity: 0.35;
+  animation: hero-float 6s ease-in-out infinite;
+}
+
+:global(.dark-mode) .hero-shape {
+  opacity: 0.25;
+}
+
+.shape-1 { top: 12%; left: 8%; animation-delay: 0s; font-size: 22px; }
+.shape-2 { top: 20%; right: 12%; animation-delay: 1.2s; }
+.shape-3 { bottom: 25%; left: 18%; animation-delay: 2.4s; font-size: 16px; }
+.shape-4 { top: 15%; right: 30%; animation-delay: 0.8s; font-size: 18px; }
+.shape-5 { bottom: 20%; right: 8%; animation-delay: 3s; }
+.shape-6 { bottom: 30%; left: 35%; animation-delay: 1.8s; font-size: 16px; }
+
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(5deg); }
+  50% { transform: translateY(-14px) rotate(-3deg); }
+  75% { transform: translateY(-6px) rotate(2deg); }
+}
+
+.hero-content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 24px;
+}
+
+.hero-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-:global(.dark-mode) .page-title {
-  color: #FFFFFF;
-}
-
-.page-title-icon {
+  justify-content: center;
+  gap: 12px;
+  margin: 0 0 8px;
   font-size: 32px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #047857 0%, #059669 50%, #10B981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.page-subtitle {
-  font-size: 14px;
-  color: #9CA3AF;
-  margin: 4px 0 0 42px;
+:global(.dark-mode) .hero-title {
+  background: linear-gradient(135deg, #34D399 0%, #6EE7B7 50%, #A7F3D0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
-:global(.dark-mode) .page-subtitle {
-  color: #8888A0;
+.hero-title-icon {
+  font-size: 36px;
+  -webkit-text-fill-color: initial;
+  animation: gentle-bounce 3s ease-in-out infinite;
 }
 
-/* Status Tabs */
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.hero-subtitle {
+  margin: 0;
+  font-size: 15px;
+  color: #065F46;
+  font-weight: 500;
+}
+
+:global(.dark-mode) .hero-subtitle {
+  color: #6EE7B7;
+}
+
+/* Hero Stats Bar */
+.hero-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 14px 24px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  position: relative;
+  z-index: 1;
+}
+
+:global(.dark-mode) .hero-stats-bar {
+  background: rgba(30, 50, 40, 0.5);
+  border-color: rgba(16, 185, 129, 0.1);
+}
+
+.hero-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-stat-icon {
+  font-size: 18px;
+}
+
+.hero-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #047857;
+  line-height: 1;
+}
+
+:global(.dark-mode) .hero-stat-value {
+  color: #34D399;
+}
+
+.hero-stat-value-completed {
+  color: #059669;
+}
+
+:global(.dark-mode) .hero-stat-value-completed {
+  color: #6EE7B7;
+}
+
+.hero-stat-value-overdue {
+  color: #DC2626;
+}
+
+:global(.dark-mode) .hero-stat-value-overdue {
+  color: #FCA5A5;
+}
+
+.hero-stat-label {
+  font-size: 12px;
+  color: #065F46;
+  font-weight: 500;
+}
+
+:global(.dark-mode) .hero-stat-label {
+  color: #6EE7B7;
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(16, 185, 129, 0.15);
+}
+
+:global(.dark-mode) .hero-stat-divider {
+  background: rgba(52, 211, 153, 0.15);
+}
+
+/* ===== Section Entrance Animation ===== */
+.section-entrance {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.is-mounted .section-entrance {
+  animation: section-rise 0.5s ease forwards;
+  animation-delay: var(--entrance-delay, 0s);
+}
+
+@keyframes section-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Toolbar ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pet-selector {
+  width: 200px;
+}
+
 .status-tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: 6px;
 }
 
 .status-tab {
-  padding: 8px 20px;
+  padding: 7px 16px;
   border-radius: 20px;
   border: 1.5px solid #E5E7EB;
   background: #FFFFFF;
   color: #6B7280;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .status-tab:hover {
-  border-color: #FF9BA8;
-  color: #FF9BA8;
+  border-color: #10B981;
+  color: #10B981;
 }
 
 .status-tab.active {
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%);
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
   border-color: transparent;
   color: white;
-  box-shadow: 0 2px 8px rgba(255, 155, 168, 0.3);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 :global(.dark-mode) .status-tab {
-  background: #2A2A45;
-  border-color: #3D3D5C;
-  color: #B8B8CC;
+  background: #1E2A24;
+  border-color: #2D4A3A;
+  color: #88A8A0;
 }
 
 :global(.dark-mode) .status-tab:hover {
-  border-color: #FF9BA8;
-  color: #FF9BA8;
+  border-color: #10B981;
+  color: #34D399;
 }
 
 :global(.dark-mode) .status-tab.active {
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%);
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
   border-color: transparent;
   color: white;
 }
 
-/* Stats Row */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+.add-btn {
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
-.stat-card {
-  border-radius: 16px !important;
-  background: linear-gradient(135deg, rgba(134, 239, 172, 0.08) 0%, rgba(125, 211, 252, 0.08) 100%);
+.add-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
-:global(.dark-mode) .stat-card {
-  background: linear-gradient(135deg, rgba(134, 239, 172, 0.12) 0%, rgba(125, 211, 252, 0.08) 100%);
-}
-
-.stat-card-total {
-  background: linear-gradient(135deg, rgba(125, 211, 252, 0.12) 0%, rgba(125, 211, 252, 0.04) 100%) !important;
-}
-
-.stat-card-pending {
-  background: linear-gradient(135deg, rgba(252, 211, 77, 0.12) 0%, rgba(252, 211, 77, 0.04) 100%) !important;
-}
-
-.stat-card-completed {
-  background: linear-gradient(135deg, rgba(134, 239, 172, 0.12) 0%, rgba(134, 239, 172, 0.04) 100%) !important;
-}
-
-.stat-card-overdue {
-  background: linear-gradient(135deg, rgba(252, 165, 165, 0.12) 0%, rgba(252, 165, 165, 0.04) 100%) !important;
-}
-
-:global(.dark-mode) .stat-card-total {
-  background: linear-gradient(135deg, rgba(125, 211, 252, 0.15) 0%, rgba(125, 211, 252, 0.05) 100%) !important;
-}
-
-:global(.dark-mode) .stat-card-pending {
-  background: linear-gradient(135deg, rgba(252, 211, 77, 0.15) 0%, rgba(252, 211, 77, 0.05) 100%) !important;
-}
-
-:global(.dark-mode) .stat-card-completed {
-  background: linear-gradient(135deg, rgba(134, 239, 172, 0.15) 0%, rgba(134, 239, 172, 0.05) 100%) !important;
-}
-
-:global(.dark-mode) .stat-card-overdue {
-  background: linear-gradient(135deg, rgba(252, 165, 165, 0.15) 0%, rgba(252, 165, 165, 0.05) 100%) !important;
-}
-
-.stat-card-content {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.stat-card-icon {
-  font-size: 28px;
-}
-
-.stat-card-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-card-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: #FF9BA8;
-  line-height: 1.2;
-}
-
-.stat-card-label {
-  font-size: 12px;
-  color: #9CA3AF;
-}
-
-:global(.dark-mode) .stat-card-label {
-  color: #8888A0;
-}
-
-/* Type Breakdown */
+/* ===== Type Breakdown ===== */
 .type-breakdown {
   margin-bottom: 20px;
-}
-
-.type-breakdown-label {
-  font-size: 13px;
-  color: #9CA3AF;
-  margin-bottom: 8px;
-  font-weight: 600;
-}
-
-:global(.dark-mode) .type-breakdown-label {
-  color: #8888A0;
 }
 
 .type-breakdown-items {
@@ -665,20 +797,20 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   gap: 6px;
   padding: 6px 14px;
   border-radius: 20px;
-  background: #FFF5F7;
-  border: 1px solid #F0E6E0;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(52, 211, 153, 0.06) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.12);
   font-size: 13px;
   transition: all 0.2s ease;
 }
 
 .type-breakdown-chip:hover {
-  box-shadow: 0 2px 8px rgba(255, 155, 168, 0.15);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
   transform: translateY(-1px);
 }
 
 :global(.dark-mode) .type-breakdown-chip {
-  background: #2A2A45;
-  border-color: #3D3D5C;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(52, 211, 153, 0.06) 100%);
+  border-color: rgba(52, 211, 153, 0.15);
 }
 
 .type-chip-icon {
@@ -687,32 +819,159 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
 
 .type-chip-name {
   font-weight: 600;
-  color: #4A4A4A;
+  color: #065F46;
 }
 
 :global(.dark-mode) .type-chip-name {
-  color: #E8E8E8;
+  color: #A7F3D0;
 }
 
 .type-chip-count {
   font-weight: 700;
   font-size: 12px;
   color: #FFFFFF;
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%);
+  background: linear-gradient(135deg, #059669 0%, #10B981 100%);
   border-radius: 10px;
   padding: 1px 8px;
   min-width: 20px;
   text-align: center;
 }
 
-/* Empty Card */
-.empty-card {
-  border-radius: 20px !important;
-  padding: 60px 20px;
-  text-align: center;
+/* ===== Skeleton Loading ===== */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* Events List */
+.skeleton-record {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+:global(.dark-mode) .skeleton-record {
+  background: #1E2A24;
+}
+
+.skeleton-icon-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .skeleton-icon-circle {
+  background: linear-gradient(90deg, #2D4A3A 25%, #3A5A4A 50%, #2D4A3A 75%);
+  background-size: 200% 100%;
+}
+
+.skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+:global(.dark-mode) .skeleton-line {
+  background: linear-gradient(90deg, #2D4A3A 25%, #3A5A4A 50%, #2D4A3A 75%);
+  background-size: 200% 100%;
+}
+
+.skeleton-line-title { width: 50%; }
+.skeleton-line-sub { width: 75%; }
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 2px dashed #D1FAE5;
+}
+
+:global(.dark-mode) .empty-state {
+  background: #1E2A24;
+  border-color: #2D4A3A;
+}
+
+.empty-icon-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.empty-icon-emoji {
+  font-size: 56px;
+  display: block;
+  animation: empty-bounce 2s ease-in-out infinite;
+}
+
+.empty-icon-sparkle {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  font-size: 20px;
+  animation: sparkle-twinkle 1.5s ease-in-out infinite;
+}
+
+@keyframes empty-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes sparkle-twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.empty-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2D2D2D;
+  margin-bottom: 8px;
+}
+
+:global(.dark-mode) .empty-title {
+  color: #E8E8E8;
+}
+
+.empty-desc {
+  font-size: 14px;
+  color: #9CA3AF;
+  margin-bottom: 20px;
+}
+
+:global(.dark-mode) .empty-desc {
+  color: #88A8A0;
+}
+
+/* ===== Events List ===== */
 .events-list {
   display: flex;
   flex-direction: column;
@@ -724,48 +983,98 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 0;
   background: #FFFFFF;
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
-  border-left: 4px solid transparent;
+  transition: all 0.25s ease;
+  overflow: hidden;
+  position: relative;
+  opacity: 0;
+  transform: translateX(-12px);
+  animation: record-enter 0.4s ease forwards;
+  animation-delay: var(--item-delay, 0s);
+}
+
+:global(.dark-mode) .event-item {
+  background: #1E2A24;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes record-enter {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .event-item:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.12);
+  transform: translateX(3px);
+}
+
+:global(.dark-mode) .event-item:hover {
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.08);
+}
+
+.event-accent {
+  width: 4px;
+  align-self: stretch;
+  background: linear-gradient(180deg, #10B981 0%, #34D399 100%);
+  border-radius: 4px 0 0 4px;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.25s ease;
+}
+
+.event-accent.accent-completed {
+  background: linear-gradient(180deg, #86EFAC 0%, #BBF7D0 100%);
+}
+
+.event-accent.accent-overdue {
+  background: linear-gradient(180deg, #FCA5A5 0%, #FECACA 100%);
+}
+
+.event-item:hover .event-accent {
+  opacity: 1;
 }
 
 .event-completed {
   opacity: 0.7;
-  border-left-color: #86EFAC;
-}
-
-.event-overdue {
-  border-left-color: #FCA5A5;
-}
-
-:global(.dark-mode) .event-item {
-  background: #2A2A45;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-:global(.dark-mode) .event-item:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .event-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
   flex: 1;
+  padding: 14px 16px 14px 14px;
+}
+
+.event-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(52, 211, 153, 0.1) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+:global(.dark-mode) .event-icon-wrap {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.1) 100%);
+}
+
+.event-item:hover .event-icon-wrap {
+  transform: scale(1.08);
 }
 
 .event-icon {
-  font-size: 24px;
-  flex-shrink: 0;
+  font-size: 22px;
+  line-height: 1;
 }
 
 .event-info {
@@ -799,7 +1108,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
 }
 
 :global(.dark-mode) .event-meta {
-  color: #8888A0;
+  color: #88A8A0;
 }
 
 .event-date {
@@ -807,7 +1116,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
 }
 
 :global(.dark-mode) .event-date {
-  color: #B8B8CC;
+  color: #A7F3D0;
 }
 
 .event-due {
@@ -815,7 +1124,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
 }
 
 :global(.dark-mode) .event-due {
-  color: #B8B8CC;
+  color: #A7F3D0;
 }
 
 .event-notes {
@@ -825,72 +1134,156 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
 }
 
 :global(.dark-mode) .event-notes {
-  color: #8888A0;
+  color: #88A8A0;
 }
 
 .event-actions {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
+  padding-right: 12px;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
 }
 
-/* Pagination */
+.event-item:hover .event-actions {
+  opacity: 1;
+}
+
+.action-btn {
+  border-radius: 8px;
+}
+
+/* ===== Pagination ===== */
 .pagination-wrapper {
   display: flex;
   justify-content: center;
   margin-top: 24px;
 }
 
-/* Responsive */
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .page-header {
+  .hero-inner {
+    padding: 28px 20px 20px;
+  }
+
+  .hero-title {
+    font-size: 26px;
+  }
+
+  .hero-title-icon {
+    font-size: 28px;
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+  }
+
+  .hero-stats-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .hero-stat-divider {
+    display: none;
+  }
+
+  .hero-stat {
+    gap: 6px;
+  }
+
+  .hero-stat-value {
+    font-size: 18px;
+  }
+
+  .hero-stat-label {
+    font-size: 11px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .toolbar-left {
+    width: 100%;
+  }
+
+  .pet-selector {
+    width: 100%;
+  }
+
+  .toolbar-right {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .status-tabs {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+
+  .event-item {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .page-header-left {
-    text-align: center;
-  }
-
-  .page-subtitle {
-    margin-left: 0;
-  }
-
-  .page-header-right {
-    display: flex;
-    justify-content: center;
-  }
-
-  .stats-row {
-    grid-template-columns: repeat(2, 1fr);
+  .event-left {
+    padding: 12px 10px 8px 10px;
     gap: 10px;
   }
 
-  .stat-card-icon {
-    font-size: 22px;
+  .event-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
   }
 
-  .stat-card-value {
+  .event-icon {
     font-size: 18px;
-  }
-
-  .event-item {
-    padding: 12px;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .event-actions {
-    align-self: flex-end;
   }
 
   .event-type-name {
     font-size: 14px;
   }
 
-  .status-tabs {
-    flex-wrap: wrap;
-    justify-content: center;
+  .event-actions {
+    align-self: flex-end;
+    padding: 0 10px 10px;
+  }
+
+  .empty-icon-emoji {
+    font-size: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-inner {
+    padding: 22px 16px 18px;
+  }
+
+  .hero-title {
+    font-size: 22px;
+    gap: 8px;
+  }
+
+  .hero-title-icon {
+    font-size: 24px;
+  }
+
+  .hero-stats-bar {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .hero-stat-value {
+    font-size: 16px;
   }
 }
 </style>
