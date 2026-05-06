@@ -18,9 +18,24 @@ import {
   NButton,
   darkTheme,
   NAvatar,
-  NDropdown
+  NDropdown,
+  NDrawer,
+  NDrawerContent
 } from 'naive-ui';
-import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline } from '@vicons/ionicons5';
+import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, MenuOutline } from '@vicons/ionicons5';
+
+// 图标组件映射（用于抽屉菜单渲染）
+const iconComponentMap = {
+  'dashboard': HomeOutline,
+  'pets': PawOutline,
+  'pet-album': Images,
+  'timeline': TimeOutline,
+  'feeding': RestaurantOutline,
+  'health-events': MedicalOutline,
+  'weight-logs': ScaleOutline,
+  'leaderboard': TrophyOutline,
+  'admin': Settings,
+};
 
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { usePetStore } from '@/stores/petStore.js';
@@ -260,6 +275,12 @@ const dictStore = useDictionaryStore();
 const petStore = usePetStore();
 const authStore = useAuthStore();
 const isAuthModalVisible = ref(false);
+const showMobileMenu = ref(false);
+
+const handleMobileMenuClick = (key) => {
+  handleMenuUpdate(key);
+  showMobileMenu.value = false;
+};
 
 const handleMenuUpdate = (key) => {
   if (key === 'admin') {
@@ -340,7 +361,8 @@ onMounted(async () => {
                     </a>
                   </template>
                   <template #extra>
-                    <n-space align="center" :size="16">
+                    <!-- 桌面端导航 -->
+                    <n-space align="center" :size="16" class="desktop-nav">
                       <n-menu
                         v-model:value="activeKey"
                         mode="horizontal"
@@ -388,6 +410,29 @@ onMounted(async () => {
                         </template>
                       </n-switch>
                     </n-space>
+
+                    <!-- 移动端导航 -->
+                    <div class="mobile-nav">
+                      <n-switch v-model:value="isDarkTheme" size="small" class="pet-theme-switch">
+                        <template #checked>
+                          <n-icon :component="Moon" size="14" />
+                        </template>
+                        <template #unchecked>
+                          <n-icon :component="Sunny" size="14" />
+                        </template>
+                      </n-switch>
+                      <n-button
+                        quaternary
+                        circle
+                        size="large"
+                        class="hamburger-btn"
+                        @click="showMobileMenu = true"
+                      >
+                        <template #icon>
+                          <n-icon :component="MenuOutline" size="24" />
+                        </template>
+                      </n-button>
+                    </div>
                   </template>
                 </n-page-header>
               </n-layout-header>
@@ -408,6 +453,86 @@ onMounted(async () => {
                 <span>Made with ❤️ 萌宠之家</span>
               </n-layout-footer>
             </n-layout>
+            <!-- Mobile Drawer -->
+            <n-drawer
+              v-model:show="showMobileMenu"
+              placement="right"
+              :width="280"
+              class="mobile-drawer"
+            >
+              <n-drawer-content :native-scrollbar="false">
+                <template #header>
+                  <div class="drawer-header">
+                    <span class="drawer-title">🐾 萌宠之家</span>
+                  </div>
+                </template>
+                <div class="drawer-body">
+                  <!-- 用户信息 -->
+                  <div v-if="authStore.isAuthenticated" class="drawer-user">
+                    <n-avatar
+                      round
+                      size="large"
+                      style="background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%);"
+                    >
+                      {{ authStore.userInfo?.username?.charAt(0)?.toUpperCase() || 'U' }}
+                    </n-avatar>
+                    <div class="drawer-user-info">
+                      <span class="drawer-username">{{ authStore.userInfo?.username || '用户' }}</span>
+                      <span v-if="authStore.isAdmin" class="pet-role-badge">管理员</span>
+                    </div>
+                  </div>
+
+                  <n-button
+                    v-if="!authStore.isAuthenticated"
+                    type="primary"
+                    block
+                    class="pet-login-btn"
+                    @click="showMobileMenu = false; openAuthModal()"
+                    style="margin-bottom: 16px;"
+                  >
+                    登录 / 注册
+                  </n-button>
+
+                  <!-- 导航菜单 -->
+                  <div class="drawer-menu">
+                    <div
+                      v-for="item in menuOptions"
+                      :key="item.key"
+                      class="drawer-menu-item"
+                      :class="{ active: activeKey === item.key }"
+                      @click="handleMobileMenuClick(item.key)"
+                    >
+                      <n-icon :component="iconComponentMap[item.key]" size="20" />
+                      <span>{{ item.label }}</span>
+                    </div>
+                  </div>
+
+                  <!-- 底部操作 -->
+                  <div class="drawer-footer">
+                    <div class="drawer-footer-row">
+                      <span class="drawer-footer-label">深色模式</span>
+                      <n-switch v-model:value="isDarkTheme" size="small">
+                        <template #checked>
+                          <n-icon :component="Moon" size="12" />
+                        </template>
+                        <template #unchecked>
+                          <n-icon :component="Sunny" size="12" />
+                        </template>
+                      </n-switch>
+                    </div>
+                    <div
+                      v-if="authStore.isAuthenticated"
+                      class="drawer-menu-item logout-item"
+                      @click="handleLogout(); showMobileMenu = false"
+                    >
+                      <n-icon :component="LogOutOutline" />
+                      <span>退出登录</span>
+                    </div>
+                  </div>
+                </div>
+              </n-drawer-content>
+            </n-drawer>
+
             <!-- Modals -->
             <AuthModal
               :show="isAuthModalVisible"
@@ -555,6 +680,155 @@ onMounted(async () => {
   color: #8888A0;
 }
 
+/* 移动端导航 */
+.mobile-nav {
+  display: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.hamburger-btn {
+  color: #FF9BA8 !important;
+}
+
+/* 抽屉样式 */
+.drawer-header {
+  display: flex;
+  align-items: center;
+}
+
+.drawer-title {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.drawer-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.drawer-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 20px;
+  border-bottom: 1px solid var(--border-color, #F0E6E0);
+  margin-bottom: 16px;
+}
+
+.drawer-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.drawer-username {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-color-1, #2D2D2D);
+}
+
+.drawer-menu {
+  flex: 1;
+}
+
+.drawer-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #6B6B6B;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+}
+
+.drawer-menu-item:hover {
+  background: #FFF5F7;
+  color: #FF7A8A;
+}
+
+.drawer-menu-item.active {
+  background: linear-gradient(135deg, #FFF0F3 0%, #FFE4E9 100%);
+  color: #FF7A8A;
+  font-weight: 600;
+}
+
+.drawer-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, #F0E6E0);
+}
+
+.drawer-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+}
+
+.drawer-footer-label {
+  font-size: 14px;
+  color: #6B6B6B;
+}
+
+.logout-item {
+  color: #FCA5A5 !important;
+}
+
+.logout-item:hover {
+  background: #FFF0F0 !important;
+  color: #EF4444 !important;
+}
+
+/* 深色主题抽屉样式 */
+.dark-mode .drawer-user {
+  border-color: #3D3D5C;
+}
+
+.dark-mode .drawer-username {
+  color: #E8E8E8;
+}
+
+.dark-mode .drawer-menu-item {
+  color: #B8B8CC;
+}
+
+.dark-mode .drawer-menu-item:hover {
+  background: #2D2D4A;
+  color: #FF9BA8;
+}
+
+.dark-mode .drawer-menu-item.active {
+  background: linear-gradient(135deg, #3D2D3D 0%, #3D2D4A 100%);
+  color: #FF9BA8;
+}
+
+.dark-mode .drawer-footer {
+  border-color: #3D3D5C;
+}
+
+.dark-mode .drawer-footer-label {
+  color: #B8B8CC;
+}
+
+.dark-mode .logout-item {
+  color: #FCA5A5 !important;
+}
+
+.dark-mode .logout-item:hover {
+  background: #3D2D2D !important;
+}
+
 /* 响应式 */
 @media (max-width: 768px) {
   .pet-logo-text {
@@ -571,6 +845,14 @@ onMounted(async () => {
 
   .pet-role-badge {
     display: none;
+  }
+
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .mobile-nav {
+    display: flex !important;
   }
 }
 </style>
