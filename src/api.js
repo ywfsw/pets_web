@@ -287,6 +287,27 @@ export const fetchBathingStats = (params = { days: 30 }) => {
   return apiClient.get('/api/bathing-records/stats', { params });
 };
 
+// --- 用药记录 API ---
+export const fetchMedicationRecordsPage = (params = { pageNum: 1, pageSize: 20 }) => {
+  return apiClient.get('/api/medication-records/page', { params });
+};
+
+export const createMedicationRecord = (payload) => {
+  return apiClient.post('/api/medication-records', payload);
+};
+
+export const updateMedicationRecord = (id, payload) => {
+  return apiClient.put(`/api/medication-records/${id}`, payload);
+};
+
+export const deleteMedicationRecord = (id) => {
+  return apiClient.delete(`/api/medication-records/${id}`);
+};
+
+export const fetchMedicationStats = (params = { days: 30 }) => {
+  return apiClient.get('/api/medication-records/stats', { params });
+};
+
 // --- Auth API ---
 export const login = (payload) => {
   return apiClient.post('/api/auth/login', payload);

@@ -32,7 +32,10 @@ import {
     deleteFeedingRecord,
     createBathingRecord,
     updateBathingRecord,
-    deleteBathingRecord
+    deleteBathingRecord,
+    createMedicationRecord,
+    updateMedicationRecord,
+    deleteMedicationRecord
   } from '@/api.js';
   
   // (❗) 宠物表单的默认值
@@ -93,6 +96,18 @@ import {
     petId: petId,
     bathTime: Date.now(),
     serviceType: '',
+    notes: ''
+  });
+
+  // 用药记录表单的默认值
+  const defaultMedicationRecordForm = (petId) => ({
+    petId: petId,
+    medicationName: '',
+    medicationType: '',
+    dosage: '',
+    frequency: '',
+    startDate: Date.now(),
+    endDate: null,
     notes: ''
   });
   
@@ -167,6 +182,13 @@ import {
       show: false,
       isEdit: false,
       data: defaultBathingRecordForm(null),
+      loading: false
+    });
+
+    const medicationRecordFormModal = ref({
+      show: false,
+      isEdit: false,
+      data: defaultMedicationRecordForm(null),
       loading: false
     });
   
@@ -652,6 +674,72 @@ import {
       bathingRecordFormModal.value.show = false;
     }
 
+    // 用药记录
+    function showMedicationRecordFormModal(petId, recordToEdit = null) {
+      if (recordToEdit) {
+        medicationRecordFormModal.value.data = {
+          id: recordToEdit.id,
+          petId: petId,
+          medicationName: recordToEdit.medicationName || '',
+          medicationType: recordToEdit.medicationType || '',
+          dosage: recordToEdit.dosage || '',
+          frequency: recordToEdit.frequency || '',
+          startDate: recordToEdit.startDate ? new Date(recordToEdit.startDate).getTime() : Date.now(),
+          endDate: recordToEdit.endDate ? new Date(recordToEdit.endDate).getTime() : null,
+          notes: recordToEdit.notes || ''
+        };
+        medicationRecordFormModal.value.isEdit = true;
+      } else {
+        medicationRecordFormModal.value.data = defaultMedicationRecordForm(petId);
+        medicationRecordFormModal.value.isEdit = false;
+      }
+      medicationRecordFormModal.value.show = true;
+    }
+
+    async function handleSaveMedicationRecord() {
+      medicationRecordFormModal.value.loading = true;
+      const payload = { ...medicationRecordFormModal.value.data };
+      if (typeof payload.startDate === 'number') {
+        const d = new Date(payload.startDate);
+        payload.startDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      }
+      if (payload.endDate && typeof payload.endDate === 'number') {
+        const d = new Date(payload.endDate);
+        payload.endDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      }
+      try {
+        if (medicationRecordFormModal.value.isEdit && payload.id) {
+          await updateMedicationRecord(payload.id, payload);
+        } else {
+          await createMedicationRecord(payload);
+        }
+        closeMedicationRecordFormModal();
+        loadPetDetail(payload.petId);
+      } catch (err) {
+        console.error("保存用药记录失败:", err);
+        throw err;
+      } finally {
+        medicationRecordFormModal.value.loading = false;
+      }
+    }
+
+    async function handleDeleteMedicationRecord(recordId) {
+      const petId = detailModal.value.data?.id;
+      try {
+        await deleteMedicationRecord(recordId);
+        if (petId) {
+          await loadPetDetail(petId);
+        }
+      } catch (err) {
+        console.error("删除用药记录失败:", err);
+        throw err;
+      }
+    }
+
+    function closeMedicationRecordFormModal() {
+      medicationRecordFormModal.value.show = false;
+    }
+
     // 删除体重记录
     async function handleDeleteWeightLog(logId) {
       const petId = detailModal.value.data?.id;
@@ -721,6 +809,7 @@ import {
       weightLogFormModal.value.show = false;
       feedingRecordFormModal.value.show = false;
       bathingRecordFormModal.value.show = false;
+      medicationRecordFormModal.value.show = false;
     }
 
     function setSearchKeyword(keyword) {
@@ -841,6 +930,7 @@ import {
       weightLogFormModal, // (❗)
       feedingRecordFormModal,
       bathingRecordFormModal,
+      medicationRecordFormModal,
       pagination,
       petLeaderboard, // (❗)
       loadingLeaderboard, // (❗)
@@ -884,6 +974,10 @@ import {
       handleSaveBathingRecord,
       handleDeleteBathingRecord,
       closeBathingRecordFormModal,
+      showMedicationRecordFormModal,
+      handleSaveMedicationRecord,
+      handleDeleteMedicationRecord,
+      closeMedicationRecordFormModal,
       handleDeleteWeightLog,
       handleDeleteHealthEvent,
       handleCompleteHealthEvent,
