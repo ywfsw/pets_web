@@ -24,7 +24,7 @@ const dictStore = useDictionaryStore();
 const { getFullResolutionUrl } = useCloudinaryImage();
 
 // State
-const selectedPetId = ref(null);
+const selectedPetId = ref(petStore.getPageSelectedPet('growth-timeline'));
 const petDetail = ref(null);
 const photos = ref([]);
 const loading = ref(false);
@@ -73,6 +73,7 @@ const loadTimelineData = async (petId) => {
 
 // Watch pet selection
 watch(selectedPetId, (newId) => {
+  petStore.setPageSelectedPet('growth-timeline', newId);
   if (newId) {
     loadTimelineData(newId);
   } else {
@@ -89,7 +90,7 @@ const initPetSelection = async () => {
   if (petStore.timelinePetId) {
     selectedPetId.value = petStore.timelinePetId;
     petStore.timelinePetId = null;
-  } else if (petStore.petList.length === 1) {
+  } else if (!selectedPetId.value && petStore.petList.length === 1) {
     selectedPetId.value = petStore.petList[0].id;
   }
 };

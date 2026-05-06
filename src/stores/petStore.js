@@ -145,6 +145,7 @@ import {
     const genderFilter = ref(saved.genderFilter ?? null);
     const ageFilter = ref(saved.ageFilter ?? null);
     const sortOption = ref(saved.sortOption ?? 'default');
+    const pageSelectedPets = ref(saved.pageSelectedPets ?? {});
 
     // (❗) 分页状态
     const pagination = ref(defaultPagination());
@@ -900,6 +901,15 @@ import {
       loadPetList(1);
     }
 
+    function setPageSelectedPet(pageName, petId) {
+      pageSelectedPets.value = { ...pageSelectedPets.value, [pageName]: petId };
+      savePreferences({ pageSelectedPets: pageSelectedPets.value });
+    }
+
+    function getPageSelectedPet(pageName) {
+      return pageSelectedPets.value[pageName] ?? null;
+    }
+
     function navigateToAlbum(petId = null, petName = '') {
       albumFilterPetId.value = petId;
       albumFilterPetName.value = petName;
@@ -982,6 +992,7 @@ import {
       genderFilter,
       ageFilter,
       sortOption,
+      pageSelectedPets,
       upcomingEvents, loadingUpcoming,
       loadingList,
       detailModal,
@@ -1051,6 +1062,8 @@ import {
       setAgeFilter,
       clearAgeFilter,
       setSortOption,
+      setPageSelectedPet,
+      getPageSelectedPet,
       switchToEditMode,
       handleDeletePet, // (❗)
       navigateToAlbum,

@@ -30,7 +30,7 @@ onMounted(async () => {
   loadRecords();
 });
 
-const selectedPetId = ref(null);
+const selectedPetId = ref(petStore.getPageSelectedPet('weight-logs'));
 const records = ref([]);
 const loading = ref(false);
 const pageNum = ref(1);
@@ -69,7 +69,8 @@ const loadRecords = async () => {
   }
 };
 
-watch(selectedPetId, () => {
+watch(selectedPetId, (val) => {
+  petStore.setPageSelectedPet('weight-logs', val);
   pageNum.value = 1;
   loadRecords();
 });

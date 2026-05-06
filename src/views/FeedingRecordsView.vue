@@ -29,7 +29,7 @@ onMounted(() => {
 });
 
 // State
-const selectedPetId = ref(null);
+const selectedPetId = ref(petStore.getPageSelectedPet('feeding-records'));
 const records = ref([]);
 const loading = ref(false);
 const pageNum = ref(1);
@@ -101,7 +101,8 @@ const handleTimeRangeChange = (days) => {
 };
 
 // Watch pet selection
-watch(selectedPetId, () => {
+watch(selectedPetId, (val) => {
+  petStore.setPageSelectedPet('feeding-records', val);
   pageNum.value = 1;
   loadRecords();
   loadStats();

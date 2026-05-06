@@ -7,7 +7,7 @@ import WeightTrendChart from '@/components/WeightTrendChart.vue';
 
 const petStore = usePetStore();
 
-const selectedPetId = ref(null);
+const selectedPetId = ref(petStore.getPageSelectedPet('health-overview'));
 const petDetail = ref(null);
 const loading = ref(false);
 
@@ -180,13 +180,16 @@ async function loadPetDetail() {
   }
 }
 
-watch(selectedPetId, loadPetDetail);
+watch(selectedPetId, (val) => {
+  petStore.setPageSelectedPet('health-overview', val);
+  loadPetDetail();
+});
 
 onMounted(async () => {
   if (petStore.petList.length === 0) {
     await petStore.loadPetList(1);
   }
-  if (petStore.petList.length > 0 && !selectedPetId.value) {
+  if (!selectedPetId.value && petStore.petList.length > 0) {
     selectedPetId.value = petStore.petList[0].id;
   }
 });

@@ -26,7 +26,7 @@ onMounted(() => {
   requestAnimationFrame(() => { mounted.value = true; });
 });
 
-const selectedPetId = ref(null);
+const selectedPetId = ref(petStore.getPageSelectedPet('medication-records'));
 const records = ref([]);
 const loading = ref(false);
 const pageNum = ref(1);
@@ -96,7 +96,8 @@ const loadStats = async () => {
   }
 };
 
-watch(selectedPetId, () => {
+watch(selectedPetId, (val) => {
+  petStore.setPageSelectedPet('medication-records', val);
   pageNum.value = 1;
   loadRecords();
   loadStats();

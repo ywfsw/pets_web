@@ -27,7 +27,7 @@ onMounted(() => {
   requestAnimationFrame(() => { mounted.value = true; });
 });
 
-const selectedPetId = ref(null);
+const selectedPetId = ref(petStore.getPageSelectedPet('bathing-records'));
 const records = ref([]);
 const loading = ref(false);
 const pageNum = ref(1);
@@ -102,7 +102,8 @@ const handleStatsDaysChange = (days) => {
   loadStats();
 };
 
-watch(selectedPetId, () => {
+watch(selectedPetId, (val) => {
+  petStore.setPageSelectedPet('bathing-records', val);
   pageNum.value = 1;
   loadRecords();
   loadStats();

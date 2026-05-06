@@ -33,7 +33,7 @@ onMounted(() => {
 });
 
 // State
-const selectedPetId = ref(null);
+const selectedPetId = ref(petStore.getPageSelectedPet('health-events'));
 const statusFilter = ref(null); // null=all, 0=pending, 1=completed
 const records = ref([]);
 const loading = ref(false);
@@ -114,7 +114,8 @@ const loadStats = async () => {
 };
 
 // Watch filters
-watch(selectedPetId, () => {
+watch(selectedPetId, (val) => {
+  petStore.setPageSelectedPet('health-events', val);
   pageNum.value = 1;
   loadEvents();
   loadStats();
