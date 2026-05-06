@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { usePetStore } from '@/stores/petStore.js'
 import { useAuthStore } from '@/stores/authStore.js'
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js'
@@ -9,6 +9,9 @@ const authStore = useAuthStore()
 const isOpen = ref(false)
 const bellRef = ref(null)
 const panelRef = ref(null)
+const isRefreshing = ref(false)
+let refreshTimer = null
+const REFRESH_INTERVAL = 5 * 60 * 1000
 
 const notifications = computed(() => {
   if (!authStore.isAuthenticated) return []
@@ -34,8 +37,21 @@ const soonNotifications = computed(() =>
 const totalCount = computed(() => overdueNotifications.value.length + todayNotifications.value.length)
 const hasNotifications = computed(() => notifications.value.length > 0)
 
+async function refreshNotifications() {
+  if (!authStore.isAuthenticated || isRefreshing.value) return
+  isRefreshing.value = true
+  try {
+    await petStore.loadUpcomingEvents()
+  } finally {
+    isRefreshing.value = false
+  }
+}
+
 function togglePanel() {
   isOpen.value = !isOpen.value
+  if (isOpen.value) {
+    refreshNotifications()
+  }
 }
 
 function closePanel(e) {
@@ -72,15 +88,34 @@ function getNotifBg(event) {
   return 'rgba(59, 130, 246, 0.08)'
 }
 
+watch(() => authStore.isAuthenticated, (auth) => {
+  if (auth) {
+    refreshNotifications()
+    if (!refreshTimer) {
+      refreshTimer = setInterval(refreshNotifications, REFRESH_INTERVAL)
+    }
+  } else {
+    if (refreshTimer) {
+      clearInterval(refreshTimer)
+      refreshTimer = null
+    }
+  }
+})
+
 onMounted(() => {
   document.addEventListener('click', closePanel)
   if (authStore.isAuthenticated) {
     petStore.loadUpcomingEvents()
+    refreshTimer = setInterval(refreshNotifications, REFRESH_INTERVAL)
   }
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', closePanel)
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+    refreshTimer = null
+  }
 })
 </script>
 
@@ -103,9 +138,12 @@ onUnmounted(() => {
       <div v-if="isOpen" ref="panelRef" class="notif-panel">
         <div class="notif-panel-header">
           <span class="notif-panel-title">🔔 通知中心</span>
-          <span v-if="notifications.length > 0" class="notif-panel-count">
-            {{ notifications.length }} 条提醒
-          </span>
+          <div class="notif-header-right">
+            <span v-if="isRefreshing" class="notif-refresh-dot"></span>
+            <span v-if="notifications.length > 0" class="notif-panel-count">
+              {{ notifications.length }} 条提醒
+            </span>
+          </div>
         </div>
 
         <div class="notif-panel-body">
@@ -400,6 +438,26 @@ onUnmounted(() => {
 .dark-mode .notif-panel-count {
   background: rgba(255, 155, 168, 0.06);
   color: #888;
+}
+
+.notif-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notif-refresh-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF7A8A, #FF9DB5);
+  animation: refresh-spin 1s linear infinite;
+}
+
+@keyframes refresh-spin {
+  from { transform: rotate(0deg); opacity: 1; }
+  50% { opacity: 0.4; }
+  to { transform: rotate(360deg); opacity: 1; }
 }
 
 /* --- Body --- */
