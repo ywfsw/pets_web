@@ -15,11 +15,12 @@ import {
   NAvatar,
   NDropdown
 } from 'naive-ui';
-import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, BrushOutline, MedkitOutline } from '@vicons/ionicons5';
+import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, BrushOutline, MedkitOutline, HeartOutline } from '@vicons/ionicons5';
 
 // 图标组件映射（用于抽屉菜单渲染）
 const iconComponentMap = {
   'dashboard': HomeOutline,
+  'health-overview': HeartOutline,
   'pets': PawOutline,
   'pet-album': Images,
   'timeline': TimeOutline,
@@ -47,6 +48,7 @@ import MedicationRecordsView from '@/views/MedicationRecordsView.vue';
 import HealthEventsView from '@/views/HealthEventsView.vue';
 import WeightLogsView from '@/views/WeightLogsView.vue';
 import LeaderboardView from '@/views/LeaderboardView.vue';
+import HealthOverviewView from '@/views/HealthOverviewView.vue';
 
 import AuthModal from '@/components/AuthModal.vue';
 import PetDetailModal from '@/components/PetDetailModal.vue';
@@ -194,6 +196,7 @@ watch(isDarkTheme, (dark) => {
 const menuOptions = computed(() => {
   const options = [
     { label: '首页', key: 'dashboard' },
+    { label: '健康概览', key: 'health-overview' },
     { label: '宠物管理', key: 'pets' },
     { label: '宠物相册', key: 'pet-album' },
     { label: '成长时间线', key: 'timeline' },
@@ -503,6 +506,7 @@ onMounted(async () => {
               <n-layout-content content-style="padding: 96px 24px 24px; max-width: 1400px; margin: 0 auto; width: 100%;">
                 <div class="pet-content">
                   <DashboardView v-if="activeKey === 'dashboard'" />
+                  <HealthOverviewView v-if="activeKey === 'health-overview'" />
                   <PetManagement v-if="activeKey === 'pets'" />
                   <PetAlbum v-if="activeKey === 'pet-album'" />
                   <GrowthTimelineView v-if="activeKey === 'timeline'" />
