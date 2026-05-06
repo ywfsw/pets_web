@@ -55,6 +55,7 @@ import PetDetailModal from '@/components/PetDetailModal.vue';
 import PetFormModal from '@/components/PetFormModal.vue';
 import DictItemFormModal from '@/components/DictItemFormModal.vue';
 import GlobalNaiveUIServices from '@/components/GlobalNaiveUIServices.vue';
+import NotificationBell from '@/components/NotificationBell.vue';
 
 // 宠物主题色 - 白天模式
 const lightThemeOverrides = {
@@ -465,6 +466,9 @@ onMounted(async () => {
 
                   <!-- 右侧操作区 -->
                   <div class="nav-actions">
+                    <!-- 通知中心 -->
+                    <NotificationBell />
+
                     <!-- 用户区域 -->
                     <div v-if="authStore.isAuthenticated" class="nav-user" @click="null">
                       <n-dropdown
