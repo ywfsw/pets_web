@@ -8,7 +8,6 @@ import {
   NLoadingBarProvider,
   NLayout,
   NLayoutContent,
-  NLayoutFooter,
   NSwitch,
   NIcon,
   darkTheme,
@@ -537,9 +536,37 @@ onMounted(async () => {
                   </div>
                 </Transition>
               </n-layout-content>
-              <n-layout-footer bordered class="pet-footer">
-                <span>Made with ❤️ 萌宠之家</span>
-              </n-layout-footer>
+              <footer class="glass-footer">
+                <div class="footer-inner">
+                  <div class="footer-brand">
+                    <span class="footer-paw">🐾</span>
+                    <span class="footer-title">萌宠之家</span>
+                  </div>
+                  <div class="footer-stats" v-if="authStore.isAuthenticated && petStore.petList.length > 0">
+                    <span class="footer-stat">
+                      <span class="footer-stat-icon">🐱</span>
+                      <span class="footer-stat-num">{{ petStore.petList.length }}</span>
+                      <span class="footer-stat-label">只宠物</span>
+                    </span>
+                    <span class="footer-stat-divider">·</span>
+                    <span class="footer-stat">
+                      <span class="footer-stat-icon">📋</span>
+                      <span class="footer-stat-num">{{ petStore.upcomingEvents.length }}</span>
+                      <span class="footer-stat-label">条提醒</span>
+                    </span>
+                  </div>
+                  <div class="footer-copy">
+                    <span>Made with</span>
+                    <span class="footer-heart">❤️</span>
+                    <span>for pet lovers everywhere</span>
+                  </div>
+                </div>
+                <div class="footer-decorations">
+                  <span class="footer-shape shape-1">🐾</span>
+                  <span class="footer-shape shape-2">✨</span>
+                  <span class="footer-shape shape-3">🐾</span>
+                </div>
+              </footer>
             </n-layout>
 
             <!-- 悬浮返回顶部按钮 -->
@@ -980,19 +1007,235 @@ onMounted(async () => {
   min-height: 60vh;
 }
 
-/* 页脚 */
-.pet-footer {
-  text-align: center;
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: #9CA3AF;
-  font-size: 14px;
-  transition: all 0.3s ease;
+/* 毛玻璃页脚 */
+.glass-footer {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 24px 22px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-top: 1px solid rgba(255, 155, 168, 0.15);
+  box-shadow: 0 -4px 24px rgba(255, 155, 168, 0.06);
 }
 
-.dark-mode .pet-footer {
-  background: rgba(37, 37, 66, 0.9) !important;
+.dark-mode .glass-footer {
+  background: rgba(30, 30, 52, 0.75);
+  border-top-color: rgba(255, 155, 168, 0.08);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.footer-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-paw {
+  font-size: 20px;
+  animation: footer-paw-float 4s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes footer-paw-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(5deg); }
+}
+
+.footer-title {
+  font-size: 16px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 50%, #E88BA0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.3px;
+}
+
+.footer-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  background: rgba(255, 155, 168, 0.06);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 155, 168, 0.08);
+}
+
+.dark-mode .footer-stats {
+  background: rgba(255, 155, 168, 0.04);
+  border-color: rgba(255, 155, 168, 0.06);
+}
+
+.footer-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.footer-stat-icon {
+  font-size: 14px;
+}
+
+.footer-stat-num {
+  font-weight: 700;
+  color: #FF7A8A;
+  font-variant-numeric: tabular-nums;
+}
+
+.dark-mode .footer-stat-num {
+  color: #FFBFC5;
+}
+
+.footer-stat-label {
+  color: #9CA3AF;
+  font-size: 12px;
+}
+
+.dark-mode .footer-stat-label {
   color: #8888A0;
+}
+
+.footer-stat-divider {
+  color: rgba(255, 155, 168, 0.3);
+  font-size: 16px;
+}
+
+.footer-copy {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #B8B8C8;
+}
+
+.dark-mode .footer-copy {
+  color: #8888A0;
+}
+
+.footer-heart {
+  display: inline-block;
+  animation: footer-heart-beat 2s ease-in-out infinite;
+  font-size: 14px;
+}
+
+@keyframes footer-heart-beat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* 浮动装饰元素 */
+.footer-decorations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.footer-shape {
+  position: absolute;
+  opacity: 0.06;
+  font-size: 24px;
+  animation: footer-shape-float 6s ease-in-out infinite;
+}
+
+.dark-mode .footer-shape {
+  opacity: 0.04;
+}
+
+.footer-shape.shape-1 {
+  bottom: 4px;
+  left: 8%;
+  animation-delay: 0s;
+  font-size: 20px;
+}
+
+.footer-shape.shape-2 {
+  top: 6px;
+  right: 15%;
+  animation-delay: 2s;
+  font-size: 18px;
+}
+
+.footer-shape.shape-3 {
+  bottom: 8px;
+  right: 5%;
+  animation-delay: 4s;
+  font-size: 16px;
+}
+
+@keyframes footer-shape-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-4px) rotate(8deg); }
+  66% { transform: translateY(2px) rotate(-4deg); }
+}
+
+/* 页脚移动端响应式 */
+@media (max-width: 768px) {
+  .glass-footer {
+    padding: 22px 16px 18px;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  .footer-stats {
+    padding: 5px 12px;
+  }
+
+  .footer-copy {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .glass-footer {
+    padding: 18px 12px 14px;
+  }
+
+  .footer-brand {
+    gap: 6px;
+  }
+
+  .footer-paw {
+    font-size: 18px;
+  }
+
+  .footer-title {
+    font-size: 14px;
+  }
+
+  .footer-stats {
+    gap: 8px;
+    padding: 4px 10px;
+  }
+
+  .footer-stat {
+    font-size: 12px;
+  }
+
+  .footer-stat-icon {
+    font-size: 12px;
+  }
+
+  .footer-stat-label {
+    font-size: 11px;
+  }
 }
 
 /* ============================================
