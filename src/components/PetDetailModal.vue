@@ -13,14 +13,10 @@ import {
   NText,
   NSkeleton,
   NButton,
-  NCard,
-  NGrid,
-  NGi,
   NIcon,
   NTag,
   NPopconfirm,
   NSpin,
-  NEmpty,
   NCollapse,
   NCollapseItem
 } from 'naive-ui';
@@ -254,19 +250,6 @@ const handleUncompleteHealthEvent = async (eventId) => {
   }
 };
 
-// 获取物种标签类型
-const getSpeciesTagType = (species) => {
-  const typeMap = {
-    'dog': 'warning',
-    'cat': 'success',
-    'bird': 'info',
-    'fish': 'info',
-    'rabbit': 'warning',
-    'hamster': 'warning'
-  };
-  return typeMap[species?.toLowerCase()] || 'default';
-};
-
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
 
 // 健康事件筛选状态
@@ -396,451 +379,469 @@ const timelineItems = computed(() => {
 </script>
 
 <template>
-  <n-modal
-    :show="petStore.detailModal.show"
-    @update:show="handleClose"
-    preset="card"
-    style="width: 650px; border-radius: 24px;"
-    :bordered="false"
-    class="pet-detail-modal"
-    :mask-closable="false"
-  >
-    <template v-if="petStore.detailModal.loading">
-      <n-space vertical align="center">
-        <n-skeleton height="120px" width="120px" :sharp="false" style="border-radius: 50%;" />
-        <n-skeleton text :repeat="6" />
-      </n-space>
-    </template>
+  <!-- 自定义遮罩层 -->
+  <Transition name="detail-overlay">
+    <div
+      v-if="petStore.detailModal.show"
+      class="detail-overlay"
+      @click.self="handleClose"
+    >
+      <!-- 浮动装饰元素 -->
+      <span class="detail-float-shape" style="top: 8%; left: 5%; font-size: 24px; animation-delay: 0s;">🐾</span>
+      <span class="detail-float-shape" style="top: 15%; right: 8%; font-size: 20px; animation-delay: 1.2s;">✨</span>
+      <span class="detail-float-shape" style="bottom: 20%; left: 8%; font-size: 22px; animation-delay: 0.6s;">💕</span>
+      <span class="detail-float-shape" style="top: 45%; right: 5%; font-size: 18px; animation-delay: 1.8s;">🌸</span>
+      <span class="detail-float-shape" style="bottom: 10%; right: 12%; font-size: 20px; animation-delay: 0.3s;">⭐</span>
+      <span class="detail-float-shape" style="bottom: 35%; left: 4%; font-size: 18px; animation-delay: 2.1s;">🦋</span>
 
-    <template v-else-if="petStore.detailModal.data">
-      <!-- 头部头像区域 -->
-      <div class="detail-header">
-        <div class="avatar-container">
-          <n-avatar
-            round
-            :size="120"
-            :src="getAvatarUrl(petStore.detailModal.data.avatarUrl || petStore.detailModal.data.profileImageUrl)"
-            style="border: 4px solid #FFE4E9; box-shadow: 0 4px 20px rgba(255, 155, 168, 0.3);"
-          />
-        </div>
-        <h2 class="pet-name">{{ petStore.detailModal.data.name }}</h2>
-        <n-space align="center" :size="8">
-          <n-tag v-if="petStore.detailModal.data.speciesLabel" :type="getSpeciesTagType(petStore.detailModal.data.species)" round size="small">
-            <template #icon>
-              <n-icon :component="PawOutline" size="14" />
-            </template>
-            {{ petStore.detailModal.data.speciesLabel }}
-          </n-tag>
-          <n-tag v-if="petStore.detailModal.data.breedLabel" type="default" round size="small">
-            {{ petStore.detailModal.data.breedLabel }}
-          </n-tag>
-          <n-tag v-if="petStore.detailModal.data.gender === 'male'" type="info" round size="small">♂ 公</n-tag>
-          <n-tag v-if="petStore.detailModal.data.gender === 'female'" type="error" round size="small">♀ 母</n-tag>
-        </n-space>
-      </div>
+      <!-- 毛玻璃卡片 -->
+      <div class="detail-glass-card" @click.stop>
+        <!-- 自定义关闭按钮 -->
+        <button class="detail-close-btn" @click="handleClose" aria-label="关闭">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
 
-      <!-- 基本信息 -->
-      <n-card class="info-card" :bordered="false" size="small">
-        <n-grid :cols="2" :x-gap="16" :y-gap="12">
-          <n-gi>
-            <n-space align="center" :size="8">
-              <n-icon :component="CalendarOutline" color="#FF9BA8" />
-              <n-text depth="3">生日:</n-text>
-              <n-text>{{ petStore.detailModal.data.birthday || '未知' }}</n-text>
-              <n-tag v-if="petAge" type="success" size="small" round>🎂 {{ petAge }}</n-tag>
-            </n-space>
-          </n-gi>
-          <n-gi>
-            <n-space align="center" :size="8">
-              <n-icon :component="HeartOutline" color="#FF6B8A" />
-              <n-text depth="3">获赞:</n-text>
-              <n-text strong style="color: #FF6B8A;">{{ petStore.detailModal.data.likeCount || 0 }}</n-text>
-            </n-space>
-          </n-gi>
-        </n-grid>
-        <!-- 备注信息 -->
-        <div v-if="petStore.detailModal.data.notes" class="pet-notes">
-          <n-text depth="3" style="font-size: 13px;">📝 {{ petStore.detailModal.data.notes }}</n-text>
-        </div>
-      </n-card>
-
-      <!-- 可折叠内容区块 -->
-      <n-collapse
-        v-model:expanded-names="expandedSections"
-        class="detail-collapse"
-      >
-        <!-- 成长时间线 -->
-        <n-collapse-item v-if="timelineItems.length" name="timeline">
-          <template #header>
-            <n-space align="center" :size="8">
-              <span style="font-size: 18px;">📖</span>
-              <span class="collapse-header-title">成长时间线</span>
-              <n-tag size="tiny" round>{{ timelineItems.length }} 条记录</n-tag>
-            </n-space>
-          </template>
-          <n-card class="section-card timeline-card" :bordered="false" size="small">
-            <div class="timeline">
-              <template v-for="item in timelineItems" :key="item.id">
-                <div v-if="item.showMonth" class="timeline-month">
-                  <span class="timeline-month-label">{{ item.monthLabel }}</span>
-                </div>
-                <div class="timeline-item" :class="{ 'timeline-photo-item': item.type === 'photo', 'timeline-feeding-item': item.type === 'feeding' }">
-                  <div class="timeline-dot" :style="{ background: item.color }">
-                    <span class="timeline-dot-icon">{{ item.icon }}</span>
-                  </div>
-                  <div class="timeline-line" />
-                  <div class="timeline-content" :class="{ 'timeline-completed': item.completed }">
-                    <div class="timeline-content-header">
-                      <span class="timeline-title">{{ item.title }}</span>
-                      <span class="timeline-date">{{ item.date }}</span>
-                    </div>
-                    <span v-if="item.subtitle" class="timeline-subtitle">{{ item.subtitle }}</span>
-                  </div>
-                </div>
-              </template>
+        <!-- 卡片内容滚动区 -->
+        <div class="detail-scroll-area">
+          <template v-if="petStore.detailModal.loading">
+            <div class="detail-skeleton-wrap">
+              <n-skeleton height="120px" width="120px" :sharp="false" style="border-radius: 50%;" />
+              <n-skeleton text :repeat="6" style="margin-top: 16px;" />
             </div>
-          </n-card>
-        </n-collapse-item>
-
-        <!-- 最近照片 -->
-        <n-collapse-item name="photos">
-          <template #header>
-            <n-space align="center" :size="8">
-              <n-icon :component="ImagesOutline" size="18" color="#C084FC" />
-              <span class="collapse-header-title">最近照片</span>
-              <n-tag v-if="recentPhotos.length" size="tiny" round>{{ recentPhotos.length }} 张</n-tag>
-            </n-space>
           </template>
-          <n-spin :show="loadingPhotos">
-            <n-card v-if="recentPhotos.length" class="section-card" :bordered="false" size="small">
-              <div class="photo-grid">
-                <div
-                  v-for="photo in recentPhotos"
-                  :key="photo.id"
-                  class="photo-grid-item"
-                  @click="openPhotoLightbox(photo.imageUrl)"
-                >
-                  <img
-                    :src="getGalleryThumbnailUrl(photo.imageUrl)"
-                    :alt="photo.description || '宠物照片'"
-                    loading="lazy"
-                  />
+
+          <template v-else-if="petStore.detailModal.data">
+            <!-- 头部头像区域 -->
+            <div class="detail-header">
+              <div class="detail-avatar-ring">
+                <div class="detail-avatar-glow" />
+                <n-avatar
+                  round
+                  :size="110"
+                  :src="getAvatarUrl(petStore.detailModal.data.avatarUrl || petStore.detailModal.data.profileImageUrl)"
+                  class="detail-avatar-img"
+                />
+              </div>
+              <h2 class="detail-pet-name">{{ petStore.detailModal.data.name }}</h2>
+              <div class="detail-tags">
+                <span v-if="petStore.detailModal.data.speciesLabel" class="detail-tag detail-tag-species">
+                  <n-icon :component="PawOutline" size="13" />
+                  {{ petStore.detailModal.data.speciesLabel }}
+                </span>
+                <span v-if="petStore.detailModal.data.breedLabel" class="detail-tag detail-tag-breed">
+                  {{ petStore.detailModal.data.breedLabel }}
+                </span>
+                <span v-if="petStore.detailModal.data.gender === 'male'" class="detail-tag detail-tag-male">♂ 公</span>
+                <span v-if="petStore.detailModal.data.gender === 'female'" class="detail-tag detail-tag-female">♀ 母</span>
+              </div>
+            </div>
+
+            <!-- 基本信息 -->
+            <div class="detail-info-card">
+              <div class="detail-info-row">
+                <div class="detail-info-item">
+                  <n-icon :component="CalendarOutline" color="#FF9BA8" :size="18" />
+                  <div class="detail-info-text">
+                    <span class="detail-info-label">生日</span>
+                    <span class="detail-info-value">{{ petStore.detailModal.data.birthday || '未知' }}</span>
+                  </div>
+                  <span v-if="petAge" class="detail-age-badge">🎂 {{ petAge }}</span>
+                </div>
+                <div class="detail-info-item">
+                  <n-icon :component="HeartOutline" color="#FF6B8A" :size="18" />
+                  <div class="detail-info-text">
+                    <span class="detail-info-label">获赞</span>
+                    <span class="detail-info-value detail-like-count">{{ petStore.detailModal.data.likeCount || 0 }}</span>
+                  </div>
                 </div>
               </div>
-              <div class="view-all-photos">
-                <n-button text type="primary" @click="handleViewAllPhotos" size="small">
-                  <template #icon>
-                    <n-icon :component="ArrowForwardOutline" />
-                  </template>
-                  查看全部照片
-                </n-button>
+              <!-- 备注信息 -->
+              <div v-if="petStore.detailModal.data.notes" class="detail-notes">
+                <span class="detail-notes-icon">📝</span>
+                <span class="detail-notes-text">{{ petStore.detailModal.data.notes }}</span>
               </div>
-            </n-card>
-            <n-card v-else-if="!loadingPhotos" class="section-card" :bordered="false" size="small">
-              <n-empty description="还没有照片哦～" size="small">
-                <template #icon>
-                  <span style="font-size: 32px;">📷</span>
-                </template>
-              </n-empty>
-            </n-card>
-          </n-spin>
-        </n-collapse-item>
+            </div>
 
-        <!-- 体重记录 -->
-        <n-collapse-item name="weight">
-          <template #header>
-            <n-space align="center" :size="8">
-              <n-icon :component="ScaleOutline" size="18" color="#7DD3FC" />
-              <span class="collapse-header-title">近期体重</span>
-              <n-tag v-if="petStore.detailModal.data.weightLogs?.length" size="tiny" round>
-                {{ petStore.detailModal.data.weightLogs.length }} 条
-              </n-tag>
-            </n-space>
-          </template>
-          <WeightTrendChart
-            :weight-logs="petStore.detailModal.data.weightLogs"
-            style="margin-bottom: 10px;"
-          />
-          <n-card class="section-card" :bordered="false" size="small">
-            <n-list v-if="petStore.detailModal.data.weightLogs?.length" hoverable>
-              <n-list-item v-for="log in petStore.detailModal.data.weightLogs" :key="log.id">
-                <n-space justify="space-between" align="center">
-                  <n-text>{{ log.logDate }}</n-text>
-                  <n-space align="center">
-                    <n-text strong>{{ log.weightKg }} kg</n-text>
-                    <n-popconfirm
-                      @positive-click="handleEditWeightLog(log)"
-                      :positive-button-props="{ type: 'info', size: 'tiny' }"
-                      :negative-button-props="{ size: 'tiny' }"
-                    >
-                      <template #trigger>
-                        <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
-                          <template #icon>
-                            <n-icon :component="CreateOutline" :size="14" />
-                          </template>
-                        </n-button>
-                      </template>
-                      编辑这条体重记录？
-                    </n-popconfirm>
-                    <n-popconfirm
-                      @positive-click="handleDeleteWeightLog(log.id)"
-                      :positive-button-props="{ type: 'error', size: 'tiny' }"
-                      :negative-button-props="{ size: 'tiny' }"
-                    >
-                      <template #trigger>
-                        <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
-                          <template #icon>
-                            <n-icon :component="TrashOutline" :size="14" />
-                          </template>
-                        </n-button>
-                      </template>
-                      确定删除这条体重记录？
-                    </n-popconfirm>
+            <!-- 可折叠内容区块 -->
+            <n-collapse
+              v-model:expanded-names="expandedSections"
+              class="detail-collapse"
+            >
+              <!-- 成长时间线 -->
+              <n-collapse-item v-if="timelineItems.length" name="timeline">
+                <template #header>
+                  <n-space align="center" :size="8">
+                    <span style="font-size: 18px;">📖</span>
+                    <span class="collapse-header-title">成长时间线</span>
+                    <n-tag size="tiny" round>{{ timelineItems.length }} 条记录</n-tag>
                   </n-space>
-                </n-space>
-              </n-list-item>
-            </n-list>
-            <n-text v-else depth="3"><i>暂无体重记录</i></n-text>
-          </n-card>
-        </n-collapse-item>
+                </template>
+                <div class="section-card timeline-card">
+                  <div class="timeline">
+                    <template v-for="item in timelineItems" :key="item.id">
+                      <div v-if="item.showMonth" class="timeline-month">
+                        <span class="timeline-month-label">{{ item.monthLabel }}</span>
+                      </div>
+                      <div class="timeline-item" :class="{ 'timeline-photo-item': item.type === 'photo', 'timeline-feeding-item': item.type === 'feeding' }">
+                        <div class="timeline-dot" :style="{ background: item.color }">
+                          <span class="timeline-dot-icon">{{ item.icon }}</span>
+                        </div>
+                        <div class="timeline-line" />
+                        <div class="timeline-content" :class="{ 'timeline-completed': item.completed }">
+                          <div class="timeline-content-header">
+                            <span class="timeline-title">{{ item.title }}</span>
+                            <span class="timeline-date">{{ item.date }}</span>
+                          </div>
+                          <span v-if="item.subtitle" class="timeline-subtitle">{{ item.subtitle }}</span>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </n-collapse-item>
 
-        <!-- 健康事件 -->
-        <n-collapse-item name="health">
-          <template #header>
-            <n-space align="center" :size="8">
-              <n-icon :component="HeartOutline" size="18" color="#86EFAC" />
-              <span class="collapse-header-title">健康事件</span>
-              <n-tag v-if="petStore.detailModal.data.healthEvents?.length" size="tiny" round>
-                {{ petStore.detailModal.data.healthEvents.length }} 条
-              </n-tag>
-            </n-space>
+              <!-- 最近照片 -->
+              <n-collapse-item name="photos">
+                <template #header>
+                  <n-space align="center" :size="8">
+                    <n-icon :component="ImagesOutline" size="18" color="#C084FC" />
+                    <span class="collapse-header-title">最近照片</span>
+                    <n-tag v-if="recentPhotos.length" size="tiny" round>{{ recentPhotos.length }} 张</n-tag>
+                  </n-space>
+                </template>
+                <n-spin :show="loadingPhotos">
+                  <div v-if="recentPhotos.length" class="section-card">
+                    <div class="photo-grid">
+                      <div
+                        v-for="photo in recentPhotos"
+                        :key="photo.id"
+                        class="photo-grid-item"
+                        @click="openPhotoLightbox(photo.imageUrl)"
+                      >
+                        <img
+                          :src="getGalleryThumbnailUrl(photo.imageUrl)"
+                          :alt="photo.description || '宠物照片'"
+                          loading="lazy"
+                        />
+                      </div>
+                    </div>
+                    <div class="view-all-photos">
+                      <n-button text type="primary" @click="handleViewAllPhotos" size="small">
+                        <template #icon>
+                          <n-icon :component="ArrowForwardOutline" />
+                        </template>
+                        查看全部照片
+                      </n-button>
+                    </div>
+                  </div>
+                  <div v-else-if="!loadingPhotos" class="section-card detail-empty-section">
+                    <div class="detail-empty">
+                      <span class="detail-empty-icon">📷</span>
+                      <span class="detail-empty-text">还没有照片哦～</span>
+                    </div>
+                  </div>
+                </n-spin>
+              </n-collapse-item>
+
+              <!-- 体重记录 -->
+              <n-collapse-item name="weight">
+                <template #header>
+                  <n-space align="center" :size="8">
+                    <n-icon :component="ScaleOutline" size="18" color="#7DD3FC" />
+                    <span class="collapse-header-title">近期体重</span>
+                    <n-tag v-if="petStore.detailModal.data.weightLogs?.length" size="tiny" round>
+                      {{ petStore.detailModal.data.weightLogs.length }} 条
+                    </n-tag>
+                  </n-space>
+                </template>
+                <WeightTrendChart
+                  :weight-logs="petStore.detailModal.data.weightLogs"
+                  style="margin-bottom: 10px;"
+                />
+                <div class="section-card">
+                  <n-list v-if="petStore.detailModal.data.weightLogs?.length" hoverable>
+                    <n-list-item v-for="log in petStore.detailModal.data.weightLogs" :key="log.id">
+                      <n-space justify="space-between" align="center">
+                        <n-text>{{ log.logDate }}</n-text>
+                        <n-space align="center">
+                          <n-text strong>{{ log.weightKg }} kg</n-text>
+                          <n-popconfirm
+                            @positive-click="handleEditWeightLog(log)"
+                            :positive-button-props="{ type: 'info', size: 'tiny' }"
+                            :negative-button-props="{ size: 'tiny' }"
+                          >
+                            <template #trigger>
+                              <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
+                                <template #icon>
+                                  <n-icon :component="CreateOutline" :size="14" />
+                                </template>
+                              </n-button>
+                            </template>
+                            编辑这条体重记录？
+                          </n-popconfirm>
+                          <n-popconfirm
+                            @positive-click="handleDeleteWeightLog(log.id)"
+                            :positive-button-props="{ type: 'error', size: 'tiny' }"
+                            :negative-button-props="{ size: 'tiny' }"
+                          >
+                            <template #trigger>
+                              <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
+                                <template #icon>
+                                  <n-icon :component="TrashOutline" :size="14" />
+                                </template>
+                              </n-button>
+                            </template>
+                            确定删除这条体重记录？
+                          </n-popconfirm>
+                        </n-space>
+                      </n-space>
+                    </n-list-item>
+                  </n-list>
+                  <div v-else class="detail-empty">
+                    <span class="detail-empty-icon">⚖️</span>
+                    <span class="detail-empty-text">暂无体重记录</span>
+                  </div>
+                </div>
+              </n-collapse-item>
+
+              <!-- 健康事件 -->
+              <n-collapse-item name="health">
+                <template #header>
+                  <n-space align="center" :size="8">
+                    <n-icon :component="HeartOutline" size="18" color="#86EFAC" />
+                    <span class="collapse-header-title">健康事件</span>
+                    <n-tag v-if="petStore.detailModal.data.healthEvents?.length" size="tiny" round>
+                      {{ petStore.detailModal.data.healthEvents.length }} 条
+                    </n-tag>
+                  </n-space>
+                </template>
+                <!-- 状态筛选标签 -->
+                <div v-if="petStore.detailModal.data.healthEvents?.length" class="health-event-filter">
+                  <n-button
+                    :type="healthEventFilter === 'all' ? 'primary' : 'default'"
+                    size="tiny"
+                    round
+                    :secondary="healthEventFilter !== 'all'"
+                    @click.stop="healthEventFilter = 'all'"
+                  >
+                    全部 ({{ petStore.detailModal.data.healthEvents.length }})
+                  </n-button>
+                  <n-button
+                    :type="healthEventFilter === 'pending' ? 'warning' : 'default'"
+                    size="tiny"
+                    round
+                    :secondary="healthEventFilter !== 'pending'"
+                    @click.stop="healthEventFilter = 'pending'"
+                  >
+                    待处理 ({{ pendingCount }})
+                  </n-button>
+                  <n-button
+                    :type="healthEventFilter === 'completed' ? 'success' : 'default'"
+                    size="tiny"
+                    round
+                    :secondary="healthEventFilter !== 'completed'"
+                    @click.stop="healthEventFilter = 'completed'"
+                  >
+                    已完成 ({{ completedCount }})
+                  </n-button>
+                </div>
+                <div class="section-card">
+                  <n-list v-if="filteredHealthEvents.length" hoverable>
+                    <n-list-item v-for="event in filteredHealthEvents" :key="event.id" :class="{ 'completed-event': event.status === 1 }">
+                      <n-space vertical :size="4">
+                        <n-space align="center" justify="space-between">
+                          <n-space align="center">
+                            <n-text>{{ event.eventDate }}</n-text>
+                            <span class="event-type-icon">{{ getEventTypeIcon(event.eventTypeLabel) }}</span>
+                            <n-tag :type="event.nextDueDate ? 'warning' : 'success'" size="small" round>
+                              {{ event.eventTypeLabel || '未知事件' }}
+                            </n-tag>
+                            <n-tag v-if="event.status === 1" type="success" size="small" round>
+                              ✓ 已完成
+                            </n-tag>
+                          </n-space>
+                          <n-popconfirm
+                            v-if="event.status !== 1"
+                            @positive-click="handleCompleteHealthEvent(event.id)"
+                            :positive-button-props="{ type: 'success', size: 'tiny' }"
+                            :negative-button-props="{ size: 'tiny' }"
+                          >
+                            <template #trigger>
+                              <n-button text type="success" size="tiny" :disabled="!authStore.isAuthenticated">
+                                <template #icon>
+                                  <n-icon :component="CheckmarkCircleOutline" :size="14" />
+                                </template>
+                              </n-button>
+                            </template>
+                            标记此事件为已完成？
+                          </n-popconfirm>
+                          <n-popconfirm
+                            v-if="event.status === 1"
+                            @positive-click="handleUncompleteHealthEvent(event.id)"
+                            :positive-button-props="{ type: 'warning', size: 'tiny' }"
+                            :negative-button-props="{ size: 'tiny' }"
+                          >
+                            <template #trigger>
+                              <n-button text type="warning" size="tiny" :disabled="!authStore.isAuthenticated">
+                                <template #icon>
+                                  <n-icon :component="ArrowUndoOutline" :size="14" />
+                                </template>
+                              </n-button>
+                            </template>
+                            撤销完成，恢复为待处理？
+                          </n-popconfirm>
+                          <n-popconfirm
+                            @positive-click="handleEditHealthEvent(event)"
+                            :positive-button-props="{ type: 'info', size: 'tiny' }"
+                            :negative-button-props="{ size: 'tiny' }"
+                          >
+                            <template #trigger>
+                              <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
+                                <template #icon>
+                                  <n-icon :component="CreateOutline" :size="14" />
+                                </template>
+                              </n-button>
+                            </template>
+                            编辑这条健康事件？
+                          </n-popconfirm>
+                          <n-popconfirm
+                            @positive-click="handleDeleteHealthEvent(event.id)"
+                            :positive-button-props="{ type: 'error', size: 'tiny' }"
+                            :negative-button-props="{ size: 'tiny' }"
+                          >
+                            <template #trigger>
+                              <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
+                                <template #icon>
+                                  <n-icon :component="TrashOutline" :size="14" />
+                                </template>
+                              </n-button>
+                            </template>
+                            确定删除这条健康事件？
+                          </n-popconfirm>
+                        </n-space>
+                        <n-text v-if="event.notes" depth="3">{{ event.notes }}</n-text>
+                        <n-text v-if="event.nextDueDate" depth="2" style="color: #F59E0B;">
+                          下次: {{ event.nextDueDate }}
+                        </n-text>
+                      </n-space>
+                    </n-list-item>
+                  </n-list>
+                  <div v-else class="detail-empty">
+                    <span class="detail-empty-icon">{{ healthEventFilter === 'all' ? '🩺' : '📋' }}</span>
+                    <span class="detail-empty-text">{{ healthEventFilter === 'all' ? '暂无健康事件' : '该分类下暂无事件' }}</span>
+                  </div>
+                </div>
+              </n-collapse-item>
+
+              <!-- 喂养记录 -->
+              <n-collapse-item name="feeding">
+                <template #header>
+                  <n-space align="center" :size="8">
+                    <n-icon :component="RestaurantOutline" size="18" color="#FBBF24" />
+                    <span class="collapse-header-title">喂养记录</span>
+                    <n-tag v-if="petStore.detailModal.data.feedingRecords?.length" size="tiny" round>
+                      {{ petStore.detailModal.data.feedingRecords.length }} 条
+                    </n-tag>
+                  </n-space>
+                </template>
+                <div class="section-card">
+                  <n-list v-if="petStore.detailModal.data.feedingRecords?.length" hoverable>
+                    <n-list-item v-for="record in petStore.detailModal.data.feedingRecords" :key="record.id">
+                      <n-space vertical :size="4">
+                        <n-space align="center" justify="space-between">
+                          <n-space align="center">
+                            <n-text>{{ record.feedTime ? new Date(record.feedTime).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '' }}</n-text>
+                            <n-tag type="warning" size="small" round>🍽️ {{ record.foodType || '喂食' }}</n-tag>
+                            <n-tag v-if="record.amountGrams" size="small" round>{{ record.amountGrams }}g</n-tag>
+                          </n-space>
+                          <n-space :size="4">
+                            <n-popconfirm
+                              @positive-click="handleEditFeedingRecord(record)"
+                              :positive-button-props="{ type: 'info', size: 'tiny' }"
+                              :negative-button-props="{ size: 'tiny' }"
+                            >
+                              <template #trigger>
+                                <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
+                                  <template #icon><n-icon :component="CreateOutline" :size="14" /></template>
+                                </n-button>
+                              </template>
+                              编辑这条喂养记录？
+                            </n-popconfirm>
+                            <n-popconfirm
+                              @positive-click="handleDeleteFeedingRecord(record.id)"
+                              :positive-button-props="{ type: 'error', size: 'tiny' }"
+                              :negative-button-props="{ size: 'tiny' }"
+                            >
+                              <template #trigger>
+                                <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
+                                  <template #icon><n-icon :component="TrashOutline" :size="14" /></template>
+                                </n-button>
+                              </template>
+                              确定删除这条喂养记录？
+                            </n-popconfirm>
+                          </n-space>
+                        </n-space>
+                        <n-text v-if="record.notes" depth="3">{{ record.notes }}</n-text>
+                      </n-space>
+                    </n-list-item>
+                  </n-list>
+                  <div v-else class="detail-empty">
+                    <span class="detail-empty-icon">🍽️</span>
+                    <span class="detail-empty-text">还没有喂养记录哦～</span>
+                  </div>
+                </div>
+              </n-collapse-item>
+            </n-collapse>
           </template>
-          <!-- 状态筛选标签 -->
-          <div v-if="petStore.detailModal.data.healthEvents?.length" class="health-event-filter">
-            <n-button
-              :type="healthEventFilter === 'all' ? 'primary' : 'default'"
-              size="tiny"
-              round
-              :secondary="healthEventFilter !== 'all'"
-              @click.stop="healthEventFilter = 'all'"
+        </div>
+
+        <!-- 底部操作栏 -->
+        <div v-if="!petStore.detailModal.loading && petStore.detailModal.data" class="detail-footer">
+          <div class="detail-footer-left">
+            <n-popconfirm
+              @positive-click="handleDeletePet"
+              :positive-button-props="{ type: 'error', size: 'small' }"
+              :negative-button-props="{ size: 'small' }"
             >
-              全部 ({{ petStore.detailModal.data.healthEvents.length }})
+              <template #trigger>
+                <n-button type="error" secondary size="small" class="detail-footer-btn detail-delete-btn">
+                  <template #icon>
+                    <n-icon><TrashOutline /></n-icon>
+                  </template>
+                  删除
+                </n-button>
+              </template>
+              确定要删除这只宠物吗？此操作不可恢复。
+            </n-popconfirm>
+          </div>
+          <div class="detail-footer-right">
+            <n-button @click="handleShowWeightForm" class="detail-footer-btn" size="small">
+              <template #icon><n-icon><ScaleOutline /></n-icon></template>
+              <span class="btn-label-text">体重</span>
             </n-button>
-            <n-button
-              :type="healthEventFilter === 'pending' ? 'warning' : 'default'"
-              size="tiny"
-              round
-              :secondary="healthEventFilter !== 'pending'"
-              @click.stop="healthEventFilter = 'pending'"
-            >
-              待处理 ({{ pendingCount }})
+            <n-button @click="handleShowHealthEventForm" class="detail-footer-btn" size="small">
+              <template #icon><n-icon><HeartOutline /></n-icon></template>
+              <span class="btn-label-text">事件</span>
             </n-button>
-            <n-button
-              :type="healthEventFilter === 'completed' ? 'success' : 'default'"
-              size="tiny"
-              round
-              :secondary="healthEventFilter !== 'completed'"
-              @click.stop="healthEventFilter = 'completed'"
-            >
-              已完成 ({{ completedCount }})
+            <n-button @click="handleShowFeedingForm" class="detail-footer-btn" size="small">
+              <template #icon><n-icon><RestaurantOutline /></n-icon></template>
+              <span class="btn-label-text">喂食</span>
+            </n-button>
+            <n-button @click="handleViewTimeline" class="detail-footer-btn" size="small">
+              <template #icon><n-icon><TimeOutline /></n-icon></template>
+              <span class="btn-label-text">时间线</span>
+            </n-button>
+            <n-button type="primary" @click="petStore.switchToEditMode()" class="detail-edit-btn" size="small">
+              编辑信息
             </n-button>
           </div>
-          <n-card class="section-card" :bordered="false" size="small">
-            <n-list v-if="filteredHealthEvents.length" hoverable>
-              <n-list-item v-for="event in filteredHealthEvents" :key="event.id" :class="{ 'completed-event': event.status === 1 }">
-                <n-space vertical :size="4">
-                  <n-space align="center" justify="space-between">
-                    <n-space align="center">
-                      <n-text>{{ event.eventDate }}</n-text>
-                      <span class="event-type-icon">{{ getEventTypeIcon(event.eventTypeLabel) }}</span>
-                      <n-tag :type="event.nextDueDate ? 'warning' : 'success'" size="small" round>
-                        {{ event.eventTypeLabel || '未知事件' }}
-                      </n-tag>
-                      <n-tag v-if="event.status === 1" type="success" size="small" round>
-                        ✓ 已完成
-                      </n-tag>
-                    </n-space>
-                    <n-popconfirm
-                      v-if="event.status !== 1"
-                      @positive-click="handleCompleteHealthEvent(event.id)"
-                      :positive-button-props="{ type: 'success', size: 'tiny' }"
-                      :negative-button-props="{ size: 'tiny' }"
-                    >
-                      <template #trigger>
-                        <n-button text type="success" size="tiny" :disabled="!authStore.isAuthenticated">
-                          <template #icon>
-                            <n-icon :component="CheckmarkCircleOutline" :size="14" />
-                          </template>
-                        </n-button>
-                      </template>
-                      标记此事件为已完成？
-                    </n-popconfirm>
-                    <n-popconfirm
-                      v-if="event.status === 1"
-                      @positive-click="handleUncompleteHealthEvent(event.id)"
-                      :positive-button-props="{ type: 'warning', size: 'tiny' }"
-                      :negative-button-props="{ size: 'tiny' }"
-                    >
-                      <template #trigger>
-                        <n-button text type="warning" size="tiny" :disabled="!authStore.isAuthenticated">
-                          <template #icon>
-                            <n-icon :component="ArrowUndoOutline" :size="14" />
-                          </template>
-                        </n-button>
-                      </template>
-                      撤销完成，恢复为待处理？
-                    </n-popconfirm>
-                    <n-popconfirm
-                      @positive-click="handleEditHealthEvent(event)"
-                      :positive-button-props="{ type: 'info', size: 'tiny' }"
-                      :negative-button-props="{ size: 'tiny' }"
-                    >
-                      <template #trigger>
-                        <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
-                          <template #icon>
-                            <n-icon :component="CreateOutline" :size="14" />
-                          </template>
-                        </n-button>
-                      </template>
-                      编辑这条健康事件？
-                    </n-popconfirm>
-                    <n-popconfirm
-                      @positive-click="handleDeleteHealthEvent(event.id)"
-                      :positive-button-props="{ type: 'error', size: 'tiny' }"
-                      :negative-button-props="{ size: 'tiny' }"
-                    >
-                      <template #trigger>
-                        <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
-                          <template #icon>
-                            <n-icon :component="TrashOutline" :size="14" />
-                          </template>
-                        </n-button>
-                      </template>
-                      确定删除这条健康事件？
-                    </n-popconfirm>
-                  </n-space>
-                  <n-text v-if="event.notes" depth="3">{{ event.notes }}</n-text>
-                  <n-text v-if="event.nextDueDate" depth="2" style="color: #F59E0B;">
-                    下次: {{ event.nextDueDate }}
-                  </n-text>
-                </n-space>
-              </n-list-item>
-            </n-list>
-            <n-text v-else depth="3"><i>{{ healthEventFilter === 'all' ? '暂无健康事件' : '该分类下暂无事件' }}</i></n-text>
-          </n-card>
-        </n-collapse-item>
+        </div>
+      </div>
+    </div>
+  </Transition>
 
-        <!-- 喂养记录 -->
-        <n-collapse-item name="feeding">
-          <template #header>
-            <n-space align="center" :size="8">
-              <n-icon :component="RestaurantOutline" size="18" color="#FBBF24" />
-              <span class="collapse-header-title">喂养记录</span>
-              <n-tag v-if="petStore.detailModal.data.feedingRecords?.length" size="tiny" round>
-                {{ petStore.detailModal.data.feedingRecords.length }} 条
-              </n-tag>
-            </n-space>
-          </template>
-          <n-card class="section-card" :bordered="false" size="small">
-            <n-list v-if="petStore.detailModal.data.feedingRecords?.length" hoverable>
-              <n-list-item v-for="record in petStore.detailModal.data.feedingRecords" :key="record.id">
-                <n-space vertical :size="4">
-                  <n-space align="center" justify="space-between">
-                    <n-space align="center">
-                      <n-text>{{ record.feedTime ? new Date(record.feedTime).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '' }}</n-text>
-                      <n-tag type="warning" size="small" round>🍽️ {{ record.foodType || '喂食' }}</n-tag>
-                      <n-tag v-if="record.amountGrams" size="small" round>{{ record.amountGrams }}g</n-tag>
-                    </n-space>
-                    <n-space :size="4">
-                      <n-popconfirm
-                        @positive-click="handleEditFeedingRecord(record)"
-                        :positive-button-props="{ type: 'info', size: 'tiny' }"
-                        :negative-button-props="{ size: 'tiny' }"
-                      >
-                        <template #trigger>
-                          <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
-                            <template #icon><n-icon :component="CreateOutline" :size="14" /></template>
-                          </n-button>
-                        </template>
-                        编辑这条喂养记录？
-                      </n-popconfirm>
-                      <n-popconfirm
-                        @positive-click="handleDeleteFeedingRecord(record.id)"
-                        :positive-button-props="{ type: 'error', size: 'tiny' }"
-                        :negative-button-props="{ size: 'tiny' }"
-                      >
-                        <template #trigger>
-                          <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
-                            <template #icon><n-icon :component="TrashOutline" :size="14" /></template>
-                          </n-button>
-                        </template>
-                        确定删除这条喂养记录？
-                      </n-popconfirm>
-                    </n-space>
-                  </n-space>
-                  <n-text v-if="record.notes" depth="3">{{ record.notes }}</n-text>
-                </n-space>
-              </n-list-item>
-            </n-list>
-            <n-empty v-else description="还没有喂养记录哦～" size="small">
-              <template #icon>
-                <span style="font-size: 32px;">🍽️</span>
-              </template>
-            </n-empty>
-          </n-card>
-        </n-collapse-item>
-      </n-collapse>
-    </template>
-
-    <template #footer>
-      <n-space justify="space-between">
-        <n-popconfirm
-          @positive-click="handleDeletePet"
-          :positive-button-props="{ type: 'error', size: 'small' }"
-          :negative-button-props="{ size: 'small' }"
-        >
-          <template #trigger>
-            <n-button type="error" secondary size="small">
-              <template #icon>
-                <n-icon><TrashOutline /></n-icon>
-              </template>
-              删除
-            </n-button>
-          </template>
-          确定要删除这只宠物吗？此操作不可恢复。
-        </n-popconfirm>
-        <n-space justify="end">
-          <n-button @click="handleShowWeightForm" class="action-btn">
-            <template #icon>
-              <n-icon><ScaleOutline /></n-icon>
-            </template>
-            体重记录
-          </n-button>
-          <n-button @click="handleShowHealthEventForm" class="action-btn">
-            <template #icon>
-              <n-icon><HeartOutline /></n-icon>
-            </template>
-            添加事件
-          </n-button>
-          <n-button @click="handleShowFeedingForm" class="action-btn">
-            <template #icon>
-              <n-icon><RestaurantOutline /></n-icon>
-            </template>
-            喂食
-          </n-button>
-          <n-button @click="handleViewTimeline" class="action-btn">
-            <template #icon>
-              <n-icon><TimeOutline /></n-icon>
-            </template>
-            时间线
-          </n-button>
-          <n-button type="primary" @click="petStore.switchToEditMode()" class="edit-btn">
-            编辑信息
-          </n-button>
-        </n-space>
-      </n-space>
-    </template>
-  </n-modal>
   <HealthEventFormModal />
   <WeightLogFormModal />
   <FeedingRecordFormModal />
@@ -870,57 +871,401 @@ const timelineItems = computed(() => {
 </template>
 
 <style scoped>
-.pet-detail-modal :deep(.n-card-header) {
-  padding-bottom: 0;
+/* ===== 遮罩层 ===== */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 20px;
 }
 
-/* 头部 */
+:global(.dark-mode) .detail-overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* 遮罩过渡 */
+.detail-overlay-enter-active {
+  transition: opacity 0.3s ease;
+}
+.detail-overlay-leave-active {
+  transition: opacity 0.25s ease;
+}
+.detail-overlay-enter-from,
+.detail-overlay-leave-to {
+  opacity: 0;
+}
+
+/* ===== 浮动装饰 ===== */
+.detail-float-shape {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.5;
+  animation: detailFloat 6s ease-in-out infinite;
+  z-index: 0;
+  user-select: none;
+}
+
+:global(.dark-mode) .detail-float-shape {
+  opacity: 0.3;
+}
+
+@keyframes detailFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-12px) rotate(5deg); }
+  66% { transform: translateY(6px) rotate(-3deg); }
+}
+
+/* ===== 毛玻璃卡片 ===== */
+.detail-glass-card {
+  position: relative;
+  z-index: 1;
+  width: 650px;
+  max-width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 200, 210, 0.4);
+  box-shadow:
+    0 8px 32px rgba(255, 155, 168, 0.15),
+    0 2px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  animation: detailCardIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:global(.dark-mode) .detail-glass-card {
+  background: rgba(35, 35, 60, 0.92);
+  border-color: rgba(255, 155, 168, 0.2);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+@keyframes detailCardIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ===== 关闭按钮 ===== */
+.detail-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 155, 168, 0.1);
+  color: #999;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.detail-close-btn:hover {
+  background: rgba(255, 155, 168, 0.2);
+  color: #FF6B8A;
+  transform: rotate(90deg);
+}
+
+:global(.dark-mode) .detail-close-btn {
+  color: #888;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:global(.dark-mode) .detail-close-btn:hover {
+  background: rgba(255, 155, 168, 0.2);
+  color: #FF9BA8;
+}
+
+/* ===== 滚动区 ===== */
+.detail-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 28px 20px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 155, 168, 0.3) transparent;
+}
+
+.detail-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.detail-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.detail-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 155, 168, 0.3);
+  border-radius: 3px;
+}
+
+/* ===== 骨架屏 ===== */
+.detail-skeleton-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 0;
+}
+
+/* ===== 头部 ===== */
 .detail-header {
   text-align: center;
-  padding: 20px 0;
+  padding: 8px 0 20px;
 }
 
-.avatar-container {
+.detail-avatar-ring {
+  position: relative;
+  display: inline-block;
   margin-bottom: 16px;
 }
 
-.pet-name {
+.detail-avatar-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF9BA8, #FFC3A0, #C084FC, #FF9BA8);
+  background-size: 300% 300%;
+  animation: avatarGlow 4s ease infinite;
+  opacity: 0.5;
+  filter: blur(8px);
+}
+
+:global(.dark-mode) .detail-avatar-glow {
+  opacity: 0.35;
+}
+
+@keyframes avatarGlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.detail-avatar-img {
+  position: relative;
+  z-index: 1;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 20px rgba(255, 155, 168, 0.3);
+}
+
+:global(.dark-mode) .detail-avatar-img {
+  border-color: #2D2D50;
+  box-shadow: 0 4px 20px rgba(255, 155, 168, 0.2);
+}
+
+.detail-pet-name {
   font-size: 24px;
   font-weight: 700;
-  color: #2D2D2D;
-  margin-bottom: 12px;
+  background: linear-gradient(135deg, #FF6B8A, #FF9BA8, #C084FC);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 12px;
+  line-height: 1.3;
 }
 
-/* 信息卡片 */
-.info-card {
-  background: var(--pet-bg-secondary);
+/* 标签 */
+.detail-tags {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.detail-tag-species {
+  background: rgba(255, 155, 168, 0.12);
+  color: #E8637A;
+}
+
+:global(.dark-mode) .detail-tag-species {
+  background: rgba(255, 155, 168, 0.15);
+  color: #FFB4C2;
+}
+
+.detail-tag-breed {
+  background: rgba(192, 132, 252, 0.1);
+  color: #9333EA;
+}
+
+:global(.dark-mode) .detail-tag-breed {
+  background: rgba(192, 132, 252, 0.15);
+  color: #D8B4FE;
+}
+
+.detail-tag-male {
+  background: rgba(96, 165, 250, 0.1);
+  color: #3B82F6;
+}
+
+:global(.dark-mode) .detail-tag-male {
+  background: rgba(96, 165, 250, 0.15);
+  color: #93C5FD;
+}
+
+.detail-tag-female {
+  background: rgba(244, 114, 182, 0.1);
+  color: #EC4899;
+}
+
+:global(.dark-mode) .detail-tag-female {
+  background: rgba(244, 114, 182, 0.15);
+  color: #F9A8D4;
+}
+
+/* ===== 信息卡片 ===== */
+.detail-info-card {
+  background: rgba(255, 240, 243, 0.5);
+  backdrop-filter: blur(8px);
   border-radius: 16px;
-  margin: 16px 0;
+  border: 1px solid rgba(255, 200, 210, 0.3);
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
-/* 宠物备注 */
-.pet-notes {
+:global(.dark-mode) .detail-info-card {
+  background: rgba(45, 45, 72, 0.5);
+  border-color: rgba(255, 155, 168, 0.12);
+}
+
+.detail-info-row {
+  display: flex;
+  gap: 16px;
+}
+
+.detail-info-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  transition: background 0.2s;
+}
+
+:global(.dark-mode) .detail-info-item {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.detail-info-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-info-label {
+  font-size: 11px;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+.detail-info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pet-text, #2D2D2D);
+}
+
+:global(.dark-mode) .detail-info-value {
+  color: #E8E8E8;
+}
+
+.detail-like-count {
+  color: #FF6B8A !important;
+}
+
+.detail-age-badge {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: rgba(134, 239, 172, 0.15);
+  color: #16A34A;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+:global(.dark-mode) .detail-age-badge {
+  background: rgba(134, 239, 172, 0.12);
+  color: #86EFAC;
+}
+
+/* 备注 */
+.detail-notes {
   margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--pet-border, #F0E6E0);
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255, 155, 168, 0.25);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   line-height: 1.6;
   word-break: break-word;
 }
 
-/* 折叠面板 */
+.detail-notes-icon {
+  flex-shrink: 0;
+  font-size: 15px;
+}
+
+.detail-notes-text {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+:global(.dark-mode) .detail-notes-text {
+  color: #9CA3AF;
+}
+
+/* ===== 折叠面板 ===== */
 .detail-collapse {
-  margin-top: 16px;
+  margin-top: 4px;
 }
 
 .detail-collapse :deep(.n-collapse-item) {
   margin-bottom: 8px;
   border-radius: 16px;
-  background: var(--pet-bg-secondary, #FAFAFA);
+  background: rgba(255, 240, 243, 0.35);
   padding: 4px 12px;
+  border: 1px solid rgba(255, 200, 210, 0.2);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.detail-collapse :deep(.n-collapse-item:hover) {
+  border-color: rgba(255, 155, 168, 0.3);
 }
 
 :global(.dark-mode) .detail-collapse :deep(.n-collapse-item) {
-  background: #2A2A45;
+  background: rgba(42, 42, 69, 0.5);
+  border-color: rgba(255, 155, 168, 0.1);
 }
 
 .detail-collapse :deep(.n-collapse-item__header) {
@@ -946,60 +1291,58 @@ const timelineItems = computed(() => {
   color: #E8E8E8;
 }
 
-/* 区块 */
-.section {
-  margin-top: 16px;
-}
-
-.section-header {
-  margin-bottom: 8px;
-}
-
-.section-header :deep(.n-h4) {
-  font-weight: 600;
-  color: var(--pet-text);
-}
-
+/* ===== 区块卡片 ===== */
 .section-card {
   background: transparent;
-  border-radius: 16px;
-}
-
-/* 删除按钮 */
-.delete-btn {
   border-radius: 12px;
 }
 
-/* 按钮 */
-.action-btn {
-  border-radius: 12px;
+/* ===== 自定义空状态 ===== */
+.detail-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0;
+  gap: 8px;
 }
 
-.edit-btn {
-  background: linear-gradient(135deg, var(--pet-primary) 0%, var(--pet-primarySuppl) 100%) !important;
-  border: none !important;
-  border-radius: 12px !important;
-  font-weight: 600;
+.detail-empty-icon {
+  font-size: 32px;
+  animation: emptyBounce 2s ease-in-out infinite;
 }
 
-/* 已完成事件样式 */
-.pet-detail-modal :deep(.n-list-item.completed-event) {
-  opacity: 0.65;
+@keyframes emptyBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
-.pet-detail-modal :deep(.n-list-item.completed-event .n-text) {
+.detail-empty-text {
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+:global(.dark-mode) .detail-empty-text {
+  color: #6B7280;
+}
+
+/* ===== 已完成事件 ===== */
+.detail-glass-card :deep(.n-list-item.completed-event) {
+  opacity: 0.6;
+}
+
+.detail-glass-card :deep(.n-list-item.completed-event .n-text) {
   text-decoration: line-through;
 }
 
-/* 查看全部照片 */
+/* ===== 查看全部照片 ===== */
 .view-all-photos {
   text-align: center;
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px dashed var(--pet-border, #F0E6E0);
+  border-top: 1px dashed rgba(255, 155, 168, 0.2);
 }
 
-/* 照片网格 */
+/* ===== 照片网格 ===== */
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1012,7 +1355,7 @@ const timelineItems = computed(() => {
   overflow: hidden;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 
@@ -1032,7 +1375,7 @@ const timelineItems = computed(() => {
   transform: scale(1.08);
 }
 
-/* 照片 lightbox */
+/* ===== 照片 lightbox ===== */
 .photo-lightbox-close {
   position: absolute;
   top: 20px;
@@ -1049,7 +1392,7 @@ const timelineItems = computed(() => {
   object-fit: contain;
 }
 
-/* 健康事件筛选 */
+/* ===== 健康事件筛选 ===== */
 .health-event-filter {
   display: flex;
   gap: 8px;
@@ -1057,21 +1400,75 @@ const timelineItems = computed(() => {
   flex-wrap: wrap;
 }
 
-/* 事件类型图标 */
+/* ===== 事件类型图标 ===== */
 .event-type-icon {
   font-size: 14px;
   line-height: 1;
   flex-shrink: 0;
 }
 
-/* 响应式：照片网格 */
-@media (max-width: 576px) {
-  .photo-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* ===== 底部操作栏 ===== */
+.detail-footer {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 28px;
+  border-top: 1px solid rgba(255, 200, 210, 0.25);
+  background: rgba(255, 245, 247, 0.6);
+  backdrop-filter: blur(10px);
 }
 
-/* 成长时间线 */
+:global(.dark-mode) .detail-footer {
+  background: rgba(30, 30, 50, 0.6);
+  border-top-color: rgba(255, 155, 168, 0.1);
+}
+
+.detail-footer-left {
+  flex-shrink: 0;
+}
+
+.detail-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.detail-footer-btn {
+  border-radius: 10px !important;
+  font-weight: 500;
+}
+
+.detail-delete-btn {
+  border-radius: 10px !important;
+}
+
+.detail-edit-btn {
+  background: linear-gradient(135deg, #FF9BA8 0%, #FF6B8A 100%) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 107, 138, 0.3);
+  transition: box-shadow 0.25s, transform 0.25s;
+}
+
+.detail-edit-btn:hover {
+  box-shadow: 0 4px 16px rgba(255, 107, 138, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+:global(.dark-mode) .detail-edit-btn {
+  background: linear-gradient(135deg, #FF7A8F 0%, #FF5577 100%) !important;
+}
+
+.btn-label-text {
+  font-size: 12px;
+}
+
+/* ===== 成长时间线 ===== */
 .timeline-card {
   max-height: 400px;
   overflow-y: auto;
@@ -1095,8 +1492,8 @@ const timelineItems = computed(() => {
 .timeline-month-label {
   font-size: 13px;
   font-weight: 700;
-  color: var(--pet-primary, #FF9BA8);
-  background: var(--pet-bg-secondary, #FFF5F7);
+  color: #FF9BA8;
+  background: rgba(255, 155, 168, 0.1);
   padding: 2px 10px;
   border-radius: 10px;
 }
@@ -1144,7 +1541,7 @@ const timelineItems = computed(() => {
   top: 24px;
   width: 2px;
   bottom: 0;
-  background: var(--pet-border, #F0E6E0);
+  background: rgba(255, 155, 168, 0.2);
 }
 
 .timeline-item:last-child .timeline-line {
@@ -1180,7 +1577,7 @@ const timelineItems = computed(() => {
 
 .timeline-date {
   font-size: 12px;
-  color: var(--pet-text3, #9CA3AF);
+  color: #9CA3AF;
   flex-shrink: 0;
 }
 
@@ -1190,7 +1587,7 @@ const timelineItems = computed(() => {
 
 .timeline-subtitle {
   font-size: 12px;
-  color: var(--pet-text2, #6B6B6B);
+  color: #6B6B6B;
   margin-top: 2px;
   display: block;
   overflow: hidden;
@@ -1224,5 +1621,80 @@ const timelineItems = computed(() => {
 
 :global(.dark-mode) .timeline-feeding-item .timeline-title {
   color: #FBBF24;
+}
+
+/* ===== 移动端响应式 ===== */
+@media (max-width: 768px) {
+  .detail-glass-card {
+    width: 95vw;
+    max-height: 92vh;
+  }
+
+  .detail-scroll-area {
+    padding: 20px 18px 16px;
+  }
+
+  .detail-footer {
+    padding: 12px 18px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .detail-footer-left {
+    width: 100%;
+  }
+
+  .detail-footer-right {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .detail-pet-name {
+    font-size: 20px;
+  }
+
+  .detail-info-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-overlay {
+    padding: 10px;
+  }
+
+  .detail-glass-card {
+    border-radius: 20px;
+  }
+
+  .detail-scroll-area {
+    padding: 16px 14px 12px;
+  }
+
+  .detail-footer {
+    padding: 10px 14px;
+  }
+
+  .detail-footer-right {
+    gap: 4px;
+  }
+
+  .btn-label-text {
+    display: none;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .detail-avatar-img {
+    width: 80px !important;
+    height: 80px !important;
+  }
+
+  .detail-pet-name {
+    font-size: 18px;
+  }
 }
 </style>
