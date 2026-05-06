@@ -29,7 +29,10 @@ import {
     uncompleteHealthEvent,
     createFeedingRecord,
     updateFeedingRecord,
-    deleteFeedingRecord
+    deleteFeedingRecord,
+    createBathingRecord,
+    updateBathingRecord,
+    deleteBathingRecord
   } from '@/api.js';
   
   // (❗) 宠物表单的默认值
@@ -82,6 +85,14 @@ import {
     feedTime: Date.now(),
     foodType: '',
     amountGrams: null,
+    notes: ''
+  });
+
+  // 洗澡美容记录表单的默认值
+  const defaultBathingRecordForm = (petId) => ({
+    petId: petId,
+    bathTime: Date.now(),
+    serviceType: '',
     notes: ''
   });
   
@@ -149,6 +160,13 @@ import {
       show: false,
       isEdit: false,
       data: defaultFeedingRecordForm(null),
+      loading: false
+    });
+
+    const bathingRecordFormModal = ref({
+      show: false,
+      isEdit: false,
+      data: defaultBathingRecordForm(null),
       loading: false
     });
   
@@ -577,6 +595,63 @@ import {
       feedingRecordFormModal.value.show = false;
     }
 
+    // 洗澡美容记录
+    function showBathingRecordFormModal(petId, recordToEdit = null) {
+      if (recordToEdit) {
+        bathingRecordFormModal.value.data = {
+          id: recordToEdit.id,
+          petId: petId,
+          bathTime: recordToEdit.bathTime ? new Date(recordToEdit.bathTime).getTime() : Date.now(),
+          serviceType: recordToEdit.serviceType || '',
+          notes: recordToEdit.notes || ''
+        };
+        bathingRecordFormModal.value.isEdit = true;
+      } else {
+        bathingRecordFormModal.value.data = defaultBathingRecordForm(petId);
+        bathingRecordFormModal.value.isEdit = false;
+      }
+      bathingRecordFormModal.value.show = true;
+    }
+
+    async function handleSaveBathingRecord() {
+      bathingRecordFormModal.value.loading = true;
+      const payload = { ...bathingRecordFormModal.value.data };
+      if (typeof payload.bathTime === 'number') {
+        payload.bathTime = new Date(payload.bathTime).toISOString();
+      }
+      try {
+        if (bathingRecordFormModal.value.isEdit && payload.id) {
+          await updateBathingRecord(payload.id, payload);
+        } else {
+          await createBathingRecord(payload);
+        }
+        closeBathingRecordFormModal();
+        loadPetDetail(payload.petId);
+      } catch (err) {
+        console.error("保存洗澡美容记录失败:", err);
+        throw err;
+      } finally {
+        bathingRecordFormModal.value.loading = false;
+      }
+    }
+
+    async function handleDeleteBathingRecord(recordId) {
+      const petId = detailModal.value.data?.id;
+      try {
+        await deleteBathingRecord(recordId);
+        if (petId) {
+          await loadPetDetail(petId);
+        }
+      } catch (err) {
+        console.error("删除洗澡美容记录失败:", err);
+        throw err;
+      }
+    }
+
+    function closeBathingRecordFormModal() {
+      bathingRecordFormModal.value.show = false;
+    }
+
     // 删除体重记录
     async function handleDeleteWeightLog(logId) {
       const petId = detailModal.value.data?.id;
@@ -645,6 +720,7 @@ import {
       healthEventFormModal.value.show = false;
       weightLogFormModal.value.show = false;
       feedingRecordFormModal.value.show = false;
+      bathingRecordFormModal.value.show = false;
     }
 
     function setSearchKeyword(keyword) {
@@ -764,6 +840,7 @@ import {
       healthEventFormModal, // (❗)
       weightLogFormModal, // (❗)
       feedingRecordFormModal,
+      bathingRecordFormModal,
       pagination,
       petLeaderboard, // (❗)
       loadingLeaderboard, // (❗)
@@ -803,6 +880,10 @@ import {
       handleSaveFeedingRecord,
       handleDeleteFeedingRecord,
       closeFeedingRecordFormModal,
+      showBathingRecordFormModal,
+      handleSaveBathingRecord,
+      handleDeleteBathingRecord,
+      closeBathingRecordFormModal,
       handleDeleteWeightLog,
       handleDeleteHealthEvent,
       handleCompleteHealthEvent,

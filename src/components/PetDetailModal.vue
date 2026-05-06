@@ -20,13 +20,14 @@ import {
   NCollapse,
   NCollapseItem
 } from 'naive-ui';
-import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline, ArrowForwardOutline, RestaurantOutline, TimeOutline } from '@vicons/ionicons5';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline, ArrowForwardOutline, RestaurantOutline, TimeOutline, BrushOutline } from '@vicons/ionicons5';
 import { getPetGalleryByPetId } from '@/api.js';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
 import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
 import WeightTrendChart from '@/components/WeightTrendChart.vue';
 import FeedingRecordFormModal from '@/components/FeedingRecordFormModal.vue';
+import BathingRecordFormModal from '@/components/BathingRecordFormModal.vue';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -162,6 +163,33 @@ const handleDeleteFeedingRecord = async (recordId) => {
   }
 };
 
+// 洗澡美容记录
+const handleShowBathingForm = () => {
+  if (petStore.detailModal.data?.id) {
+    petStore.showBathingRecordFormModal(petStore.detailModal.data.id);
+  }
+};
+
+const handleEditBathingRecord = (record) => {
+  if (petStore.detailModal.data?.id) {
+    petStore.showBathingRecordFormModal(petStore.detailModal.data.id, record);
+  }
+};
+
+const handleDeleteBathingRecord = async (recordId) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再操作');
+    return;
+  }
+  try {
+    await petStore.handleDeleteBathingRecord(recordId);
+    message.success('洗澡美容记录已删除');
+  } catch (error) {
+    console.error('删除洗澡美容记录失败:', error);
+    message.error('删除失败，请重试');
+  }
+};
+
 const handleClose = () => {
   petStore.closeAllPetModals();
 };
@@ -279,12 +307,13 @@ const petStats = computed(() => {
     { icon: '⚖️', label: '体重', value: data.weightLogs?.length || 0, color: '#7DD3FC' },
     { icon: '🩺', label: '健康', value: data.healthEvents?.length || 0, color: '#86EFAC' },
     { icon: '🍽️', label: '喂养', value: data.feedingRecords?.length || 0, color: '#FBBF24' },
+    { icon: '🛁', label: '美容', value: data.bathingRecords?.length || 0, color: '#06B6D4' },
     { icon: '📖', label: '时间线', value: timelineItems.value.length, color: '#FF9BA8' }
   ];
 });
 
 // 折叠面板展开状态
-const expandedSections = ref(['timeline', 'photos', 'weight', 'health', 'feeding']);
+const expandedSections = ref(['timeline', 'photos', 'weight', 'health', 'feeding', 'bathing']);
 
 // 成长时间线：合并体重记录、健康事件和照片
 const timelineItems = computed(() => {
@@ -342,6 +371,25 @@ const timelineItems = computed(() => {
         title,
         subtitle: record.notes || '',
         color: '#FBBF24'
+      });
+    }
+  }
+
+  // 洗澡美容记录
+  if (data.bathingRecords) {
+    for (const record of data.bathingRecords) {
+      const dateStr = record.bathTime
+        ? new Date(record.bathTime).toISOString().slice(0, 10)
+        : null;
+      const serviceIcons = { '洗澡': '🛁', '美容': '✂️', '梳毛': '🪮', '剪指甲': '💅', '清洁耳朵': '👂', '刷牙': '🪥', '修剪毛发': '💇', '药浴': '💊' };
+      items.push({
+        id: `b-${record.id}`,
+        type: 'bathing',
+        date: dateStr,
+        icon: serviceIcons[record.serviceType] || '🛁',
+        title: record.serviceType || '洗澡美容',
+        subtitle: record.notes || '',
+        color: '#06B6D4'
       });
     }
   }
@@ -819,6 +867,70 @@ const timelineItems = computed(() => {
                   </div>
                 </div>
               </n-collapse-item>
+
+              <!-- 洗澡美容记录 -->
+              <n-collapse-item name="bathing">
+                <template #header>
+                  <n-space align="center" :size="8">
+                    <n-icon :component="BrushOutline" size="18" color="#06B6D4" />
+                    <span class="collapse-header-title">洗澡美容</span>
+                    <n-tag v-if="petStore.detailModal.data.bathingRecords?.length" size="tiny" round>
+                      {{ petStore.detailModal.data.bathingRecords.length }} 条
+                    </n-tag>
+                  </n-space>
+                </template>
+                <div class="section-card">
+                  <div style="margin-bottom: 12px;">
+                    <n-button size="small" type="primary" @click="handleShowBathingForm" :disabled="!authStore.isAuthenticated" style="background: linear-gradient(135deg, #0891B2, #06B6D4); border: none; border-radius: 10px;">
+                      <template #icon><n-icon :component="BrushOutline" /></template>
+                      记录洗澡美容
+                    </n-button>
+                  </div>
+                  <n-list v-if="petStore.detailModal.data.bathingRecords?.length" hoverable>
+                    <n-list-item v-for="record in petStore.detailModal.data.bathingRecords" :key="record.id">
+                      <n-space vertical :size="4">
+                        <n-space align="center" justify="space-between">
+                          <n-space align="center">
+                            <n-text>{{ record.bathTime ? new Date(record.bathTime).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '' }}</n-text>
+                            <n-tag type="info" size="small" round>🛁 {{ record.serviceType || '洗澡' }}</n-tag>
+                          </n-space>
+                          <n-space :size="4">
+                            <n-popconfirm
+                              @positive-click="handleEditBathingRecord(record)"
+                              :positive-button-props="{ type: 'info', size: 'tiny' }"
+                              :negative-button-props="{ size: 'tiny' }"
+                            >
+                              <template #trigger>
+                                <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
+                                  <template #icon><n-icon :component="CreateOutline" :size="14" /></template>
+                                </n-button>
+                              </template>
+                              编辑这条记录？
+                            </n-popconfirm>
+                            <n-popconfirm
+                              @positive-click="handleDeleteBathingRecord(record.id)"
+                              :positive-button-props="{ type: 'error', size: 'tiny' }"
+                              :negative-button-props="{ size: 'tiny' }"
+                            >
+                              <template #trigger>
+                                <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
+                                  <template #icon><n-icon :component="TrashOutline" :size="14" /></template>
+                                </n-button>
+                              </template>
+                              确定删除这条记录？
+                            </n-popconfirm>
+                          </n-space>
+                        </n-space>
+                        <n-text v-if="record.notes" depth="3">{{ record.notes }}</n-text>
+                      </n-space>
+                    </n-list-item>
+                  </n-list>
+                  <div v-else class="detail-empty">
+                    <span class="detail-empty-icon">🛁</span>
+                    <span class="detail-empty-text">还没有洗澡美容记录哦～</span>
+                  </div>
+                </div>
+              </n-collapse-item>
             </n-collapse>
           </template>
         </div>
@@ -855,6 +967,10 @@ const timelineItems = computed(() => {
               <template #icon><n-icon><RestaurantOutline /></n-icon></template>
               <span class="btn-label-text">喂食</span>
             </n-button>
+            <n-button @click="handleShowBathingForm" class="detail-footer-btn" size="small">
+              <template #icon><n-icon><BrushOutline /></n-icon></template>
+              <span class="btn-label-text">美容</span>
+            </n-button>
             <n-button @click="handleViewTimeline" class="detail-footer-btn" size="small">
               <template #icon><n-icon><TimeOutline /></n-icon></template>
               <span class="btn-label-text">时间线</span>
@@ -871,6 +987,7 @@ const timelineItems = computed(() => {
   <HealthEventFormModal />
   <WeightLogFormModal />
   <FeedingRecordFormModal />
+  <BathingRecordFormModal />
 
   <!-- 照片全屏查看弹窗 -->
   <n-modal

@@ -266,6 +266,23 @@ export const deleteFeedingRecord = (id) => {
   return apiClient.delete(`/api/feeding-records/${id}`);
 };
 
+// --- 洗澡美容记录 API ---
+export const fetchBathingRecordsPage = (params = { pageNum: 1, pageSize: 20 }) => {
+  return apiClient.get('/api/bathing-records/page', { params });
+};
+
+export const createBathingRecord = (payload) => {
+  return apiClient.post('/api/bathing-records', payload);
+};
+
+export const updateBathingRecord = (id, payload) => {
+  return apiClient.put(`/api/bathing-records/${id}`, payload);
+};
+
+export const deleteBathingRecord = (id) => {
+  return apiClient.delete(`/api/bathing-records/${id}`);
+};
+
 // --- Auth API ---
 export const login = (payload) => {
   return apiClient.post('/api/auth/login', payload);
