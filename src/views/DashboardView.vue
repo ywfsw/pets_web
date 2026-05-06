@@ -36,6 +36,7 @@ const { displayValue: animTotalPhotos } = useCountUp(statSource('totalPhotos'), 
 const { displayValue: animTotalWeight } = useCountUp(statSource('totalWeightRecords'), { delay: 350 })
 const { displayValue: animTotalHealth } = useCountUp(statSource('totalHealthEvents'), { delay: 400 })
 const { displayValue: animTotalFeeding } = useCountUp(statSource('totalFeedings'), { delay: 450 })
+const { displayValue: animTotalMedications } = useCountUp(statSource('totalMedications'), { delay: 500 })
 const animTotalRecords = computed(() => animTotalHealth.value + animTotalFeeding.value + animTotalWeight.value)
 
 const loadDashboard = async () => {
@@ -69,7 +70,7 @@ const handleCompleteEvent = async (eventId) => {
 };
 
 const getActivityColor = (type) => {
-  const map = { weight: '#7DD3FC', health: '#FCA5A5', feeding: '#FBBF24', photo: '#C084FC' };
+  const map = { weight: '#7DD3FC', health: '#FCA5A5', feeding: '#FBBF24', photo: '#C084FC', medication: '#A78BFA', bathing: '#67E8F9' };
   return map[type] || '#9CA3AF';
 };
 
@@ -165,6 +166,10 @@ const handleQuickAction = (action) => {
 
     case 'addFeeding':
       petStore.activePage = 'feeding';
+      break;
+
+    case 'medication':
+      petStore.activePage = 'medication';
       break;
 
     case 'album':
@@ -284,10 +289,10 @@ const computeAge = (birthday) => {
             <div class="stat-label">健康事件</div>
             <div class="stat-glow"></div>
           </div>
-          <div class="stat-card stat-feeding" style="--stat-delay: 0.25s">
-            <div class="stat-icon-wrap"><span class="stat-icon">🍽️</span></div>
-            <div class="stat-value">{{ animTotalFeeding }}</div>
-            <div class="stat-label">喂养记录</div>
+          <div class="stat-card stat-medication" style="--stat-delay: 0.25s">
+            <div class="stat-icon-wrap"><span class="stat-icon">💊</span></div>
+            <div class="stat-value">{{ animTotalMedications }}</div>
+            <div class="stat-label">用药记录</div>
             <div class="stat-glow"></div>
           </div>
         </div>
@@ -330,11 +335,15 @@ const computeAge = (birthday) => {
               <div class="quick-action-icon add-feeding-icon">🍽️</div>
               <span class="quick-action-label">记录喂养</span>
             </div>
-            <div class="quick-action-card" style="--qa-delay: 0.16s" @click="handleQuickAction('album')">
+            <div class="quick-action-card" style="--qa-delay: 0.16s" @click="handleQuickAction('medication')">
+              <div class="quick-action-icon medication-icon">💊</div>
+              <span class="quick-action-label">用药记录</span>
+            </div>
+            <div class="quick-action-card" style="--qa-delay: 0.2s" @click="handleQuickAction('album')">
               <div class="quick-action-icon album-icon">📷</div>
               <span class="quick-action-label">宠物相册</span>
             </div>
-            <div class="quick-action-card" style="--qa-delay: 0.2s" @click="handleQuickAction('timeline')">
+            <div class="quick-action-card" style="--qa-delay: 0.24s" @click="handleQuickAction('timeline')">
               <div class="quick-action-icon timeline-icon">📈</div>
               <span class="quick-action-label">成长时间线</span>
             </div>
@@ -908,11 +917,11 @@ const computeAge = (birthday) => {
 }
 .stat-health .stat-glow { box-shadow: 0 8px 32px rgba(244, 114, 182, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
 
-.stat-feeding {
-  background: rgba(255, 248, 220, 0.55);
-  border-color: rgba(254, 240, 138, 0.4);
+.stat-medication {
+  background: rgba(245, 240, 255, 0.55);
+  border-color: rgba(196, 181, 253, 0.4);
 }
-.stat-feeding .stat-glow { box-shadow: 0 8px 32px rgba(250, 204, 21, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
+.stat-medication .stat-glow { box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
 
 :global(.dark-mode) .stat-pets {
   background: rgba(61, 32, 37, 0.55);
@@ -934,16 +943,16 @@ const computeAge = (birthday) => {
   background: rgba(58, 29, 46, 0.55);
   border-color: rgba(120, 50, 90, 0.4);
 }
-:global(.dark-mode) .stat-feeding {
-  background: rgba(58, 53, 32, 0.55);
-  border-color: rgba(120, 110, 50, 0.4);
+:global(.dark-mode) .stat-medication {
+  background: rgba(45, 32, 64, 0.55);
+  border-color: rgba(100, 70, 140, 0.4);
 }
 :global(.dark-mode) .stat-pets .stat-glow { box-shadow: 0 8px 32px rgba(255, 100, 120, 0.15); }
 :global(.dark-mode) .stat-events .stat-glow { box-shadow: 0 8px 32px rgba(251, 191, 36, 0.12); }
 :global(.dark-mode) .stat-photos .stat-glow { box-shadow: 0 8px 32px rgba(167, 139, 250, 0.12); }
 :global(.dark-mode) .stat-weight .stat-glow { box-shadow: 0 8px 32px rgba(56, 189, 248, 0.12); }
 :global(.dark-mode) .stat-health .stat-glow { box-shadow: 0 8px 32px rgba(244, 114, 182, 0.12); }
-:global(.dark-mode) .stat-feeding .stat-glow { box-shadow: 0 8px 32px rgba(250, 204, 21, 0.12); }
+:global(.dark-mode) .stat-medication .stat-glow { box-shadow: 0 8px 32px rgba(139, 92, 246, 0.12); }
 
 .stat-icon-wrap {
   margin-bottom: 10px;
@@ -1767,7 +1776,7 @@ const computeAge = (birthday) => {
 
 .quick-actions-row {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 12px;
 }
 
@@ -1879,6 +1888,11 @@ const computeAge = (birthday) => {
   box-shadow: 0 4px 16px rgba(52, 211, 153, 0.15);
 }
 
+.medication-icon {
+  background: linear-gradient(135deg, rgba(245, 240, 255, 0.8), rgba(237, 233, 254, 0.8));
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.15);
+}
+
 :global(.dark-mode) .add-pet-icon {
   background: linear-gradient(135deg, rgba(61, 32, 37, 0.8), rgba(77, 32, 48, 0.8));
   box-shadow: 0 4px 16px rgba(255, 100, 120, 0.1);
@@ -1907,6 +1921,11 @@ const computeAge = (birthday) => {
 :global(.dark-mode) .timeline-icon {
   background: linear-gradient(135deg, rgba(26, 58, 42, 0.8), rgba(42, 74, 58, 0.8));
   box-shadow: 0 4px 16px rgba(52, 211, 153, 0.1);
+}
+
+:global(.dark-mode) .medication-icon {
+  background: linear-gradient(135deg, rgba(45, 32, 64, 0.8), rgba(61, 32, 80, 0.8));
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.1);
 }
 
 .quick-action-label {
