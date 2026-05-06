@@ -2,7 +2,6 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { usePetStore } from '@/stores/petStore.js'
 import { useAuthStore } from '@/stores/authStore.js'
-import { getEventTypeIcon } from '@/utils/eventTypeIcon.js'
 
 const petStore = usePetStore()
 const authStore = useAuthStore()
@@ -13,35 +12,39 @@ const isRefreshing = ref(false)
 let refreshTimer = null
 const REFRESH_INTERVAL = 5 * 60 * 1000
 
-const notifications = computed(() => {
-  if (!authStore.isAuthenticated) return []
-  return petStore.upcomingEvents || []
-})
+const allNotifications = computed(() => petStore.notificationSummary || [])
 
-const overdueNotifications = computed(() =>
-  notifications.value.filter(e => e.isOverdue)
+const criticalNotifs = computed(() =>
+  allNotifications.value.filter(n => n.urgency <= 1)
 )
 
-const todayNotifications = computed(() =>
-  notifications.value.filter(e => !e.isOverdue && e.daysLeft === 0)
+const warningNotifs = computed(() =>
+  allNotifications.value.filter(n => n.urgency === 2)
 )
 
-const urgentNotifications = computed(() =>
-  notifications.value.filter(e => e.daysLeft > 0 && e.daysLeft <= 3)
+const infoNotifs = computed(() =>
+  allNotifications.value.filter(n => n.urgency >= 3)
 )
 
-const soonNotifications = computed(() =>
-  notifications.value.filter(e => e.daysLeft > 3 && e.daysLeft <= 7)
-)
+const totalCount = computed(() => criticalNotifs.value.length)
+const hasNotifications = computed(() => allNotifications.value.length > 0)
 
-const totalCount = computed(() => overdueNotifications.value.length + todayNotifications.value.length)
-const hasNotifications = computed(() => notifications.value.length > 0)
+const typeConfig = {
+  health: { color: '#EF4444', icon: '🩺', label: '健康' },
+  medication: { color: '#8B5CF6', icon: '💊', label: '用药' },
+  feeding: { color: '#F59E0B', icon: '🍽️', label: '喂养' },
+  bathing: { color: '#06B6D4', icon: '🛁', label: '美容' }
+}
+
+function getTypeConfig(type) {
+  return typeConfig[type] || typeConfig.health
+}
 
 async function refreshNotifications() {
   if (!authStore.isAuthenticated || isRefreshing.value) return
   isRefreshing.value = true
   try {
-    await petStore.loadUpcomingEvents()
+    await petStore.loadNotificationSummary()
   } finally {
     isRefreshing.value = false
   }
@@ -60,32 +63,39 @@ function closePanel(e) {
   }
 }
 
-function handleNotificationClick() {
+function handleNotificationClick(notif) {
   isOpen.value = false
-  petStore.activePage = 'health-events'
+  if (notif.pageTarget) {
+    petStore.activePage = notif.pageTarget
+  }
 }
 
-function goToHealthEvents() {
-  isOpen.value = false
-  petStore.activePage = 'health-events'
+function getUrgencyBg(urgency) {
+  if (urgency === 0) return 'rgba(239, 68, 68, 0.08)'
+  if (urgency === 1) return 'rgba(245, 158, 11, 0.08)'
+  if (urgency === 2) return 'rgba(249, 115, 22, 0.06)'
+  return 'rgba(59, 130, 246, 0.05)'
 }
 
-function getEventIcon(event) {
-  return getEventTypeIcon(event.eventTypeLabel || '')
+function getUrgencyBorder(urgency) {
+  if (urgency === 0) return '#EF4444'
+  if (urgency === 1) return '#F59E0B'
+  if (urgency === 2) return '#F97316'
+  return '#3B82F6'
 }
 
-function getNotifLabel(event) {
-  if (event.isOverdue) return `已过期 ${Math.abs(event.daysLeft)} 天`
-  if (event.daysLeft === 0) return '今日到期'
-  if (event.daysLeft === 1) return '明天到期'
-  return `${event.daysLeft} 天后到期`
+function getUrgencyLabel(urgency) {
+  if (urgency === 0) return '紧急'
+  if (urgency === 1) return '今日'
+  if (urgency === 2) return '提醒'
+  return '信息'
 }
 
-function getNotifBg(event) {
-  if (event.isOverdue) return 'rgba(239, 68, 68, 0.08)'
-  if (event.daysLeft === 0) return 'rgba(245, 158, 11, 0.08)'
-  if (event.daysLeft <= 3) return 'rgba(249, 115, 22, 0.08)'
-  return 'rgba(59, 130, 246, 0.08)'
+function getUrgencyBadgeBg(urgency) {
+  if (urgency === 0) return 'linear-gradient(135deg, #EF4444, #DC2626)'
+  if (urgency === 1) return 'linear-gradient(135deg, #F59E0B, #D97706)'
+  if (urgency === 2) return 'linear-gradient(135deg, #F97316, #EA580C)'
+  return 'linear-gradient(135deg, #3B82F6, #2563EB)'
 }
 
 watch(() => authStore.isAuthenticated, (auth) => {
@@ -105,7 +115,7 @@ watch(() => authStore.isAuthenticated, (auth) => {
 onMounted(() => {
   document.addEventListener('click', closePanel)
   if (authStore.isAuthenticated) {
-    petStore.loadUpcomingEvents()
+    petStore.loadNotificationSummary()
     refreshTimer = setInterval(refreshNotifications, REFRESH_INTERVAL)
   }
 })
@@ -140,116 +150,129 @@ onUnmounted(() => {
           <span class="notif-panel-title">🔔 通知中心</span>
           <div class="notif-header-right">
             <span v-if="isRefreshing" class="notif-refresh-dot"></span>
-            <span v-if="notifications.length > 0" class="notif-panel-count">
-              {{ notifications.length }} 条提醒
+            <span v-if="allNotifications.length > 0" class="notif-panel-count">
+              {{ allNotifications.length }} 条提醒
             </span>
           </div>
         </div>
 
         <div class="notif-panel-body">
           <!-- 无通知 -->
-          <div v-if="notifications.length === 0" class="notif-empty">
+          <div v-if="allNotifications.length === 0 && !isRefreshing" class="notif-empty">
             <span class="notif-empty-icon">✨</span>
             <span class="notif-empty-text">暂无待处理提醒</span>
             <span class="notif-empty-sub">所有宠物都很健康！</span>
           </div>
 
-          <!-- 已过期 -->
-          <div v-if="overdueNotifications.length > 0" class="notif-group">
-            <div class="notif-group-label notif-group-overdue">
-              <span>⚠️</span> 已过期 ({{ overdueNotifications.length }})
+          <!-- 加载中 -->
+          <div v-if="isRefreshing && allNotifications.length === 0" class="notif-loading">
+            <div class="notif-loading-dot"></div>
+            <span class="notif-loading-text">正在加载...</span>
+          </div>
+
+          <!-- 紧急 & 今日 -->
+          <div v-if="criticalNotifs.length > 0" class="notif-group">
+            <div class="notif-group-label" style="color: #EF4444;">
+              <span>⚠️</span> 需要处理 ({{ criticalNotifs.length }})
             </div>
             <div
-              v-for="event in overdueNotifications"
-              :key="'o-' + event.id"
+              v-for="notif in criticalNotifs"
+              :key="'c-' + notif.type + '-' + (notif.sourceId || notif.petId)"
               class="notif-item"
-              :style="{ borderLeftColor: '#EF4444', background: getNotifBg(event) }"
-              @click="handleNotificationClick()"
+              :style="{
+                borderLeftColor: getUrgencyBorder(notif.urgency),
+                background: getUrgencyBg(notif.urgency)
+              }"
+              @click="handleNotificationClick(notif)"
             >
-              <span class="notif-item-icon">{{ getEventIcon(event) }}</span>
+              <span class="notif-item-icon" :style="{ background: getTypeConfig(notif.type).color + '18' }">
+                {{ getTypeConfig(notif.type).icon }}
+              </span>
               <div class="notif-item-content">
-                <span class="notif-item-pet">{{ event.petName }}</span>
-                <span class="notif-item-event">{{ event.eventTypeLabel }}</span>
+                <span class="notif-item-pet">{{ notif.petName }}</span>
+                <span class="notif-item-event">{{ notif.message }}</span>
               </div>
-              <span class="notif-item-badge" style="background: #EF4444; color: #fff;">
-                {{ getNotifLabel(event) }}
+              <span
+                class="notif-item-badge"
+                :style="{ background: getUrgencyBadgeBg(notif.urgency), color: '#fff' }"
+              >
+                {{ getUrgencyLabel(notif.urgency) }}
               </span>
             </div>
           </div>
 
-          <!-- 今日到期 -->
-          <div v-if="todayNotifications.length > 0" class="notif-group">
-            <div class="notif-group-label notif-group-today">
-              <span>⏰</span> 今日到期 ({{ todayNotifications.length }})
+          <!-- 提醒类 -->
+          <div v-if="warningNotifs.length > 0" class="notif-group">
+            <div class="notif-group-label" style="color: #F97316;">
+              <span>📋</span> 提醒 ({{ warningNotifs.length }})
             </div>
             <div
-              v-for="event in todayNotifications"
-              :key="'t-' + event.id"
+              v-for="notif in warningNotifs"
+              :key="'w-' + notif.type + '-' + (notif.sourceId || notif.petId)"
               class="notif-item"
-              :style="{ borderLeftColor: '#F59E0B', background: getNotifBg(event) }"
-              @click="handleNotificationClick()"
+              :style="{
+                borderLeftColor: getUrgencyBorder(notif.urgency),
+                background: getUrgencyBg(notif.urgency)
+              }"
+              @click="handleNotificationClick(notif)"
             >
-              <span class="notif-item-icon">{{ getEventIcon(event) }}</span>
+              <span class="notif-item-icon" :style="{ background: getTypeConfig(notif.type).color + '18' }">
+                {{ getTypeConfig(notif.type).icon }}
+              </span>
               <div class="notif-item-content">
-                <span class="notif-item-pet">{{ event.petName }}</span>
-                <span class="notif-item-event">{{ event.eventTypeLabel }}</span>
+                <span class="notif-item-pet">{{ notif.petName }}</span>
+                <span class="notif-item-event">{{ notif.message }}</span>
               </div>
-              <span class="notif-item-badge" style="background: #F59E0B; color: #fff;">
-                {{ getNotifLabel(event) }}
+              <span
+                class="notif-item-badge"
+                :style="{ background: getUrgencyBadgeBg(notif.urgency), color: '#fff' }"
+              >
+                {{ getUrgencyLabel(notif.urgency) }}
               </span>
             </div>
           </div>
 
-          <!-- 即将到期 1-3天 -->
-          <div v-if="urgentNotifications.length > 0" class="notif-group">
-            <div class="notif-group-label notif-group-urgent">
-              <span>📅</span> 即将到期 ({{ urgentNotifications.length }})
+          <!-- 信息类 -->
+          <div v-if="infoNotifs.length > 0" class="notif-group">
+            <div class="notif-group-label" style="color: #3B82F6;">
+              <span>ℹ️</span> 信息 ({{ infoNotifs.length }})
             </div>
             <div
-              v-for="event in urgentNotifications"
-              :key="'u-' + event.id"
+              v-for="notif in infoNotifs"
+              :key="'i-' + notif.type + '-' + (notif.sourceId || notif.petId)"
               class="notif-item"
-              :style="{ borderLeftColor: '#F97316', background: getNotifBg(event) }"
-              @click="handleNotificationClick()"
+              :style="{
+                borderLeftColor: getUrgencyBorder(notif.urgency),
+                background: getUrgencyBg(notif.urgency)
+              }"
+              @click="handleNotificationClick(notif)"
             >
-              <span class="notif-item-icon">{{ getEventIcon(event) }}</span>
-              <div class="notif-item-content">
-                <span class="notif-item-pet">{{ event.petName }}</span>
-                <span class="notif-item-event">{{ event.eventTypeLabel }}</span>
-              </div>
-              <span class="notif-item-badge" style="background: #F97316; color: #fff;">
-                {{ getNotifLabel(event) }}
+              <span class="notif-item-icon" :style="{ background: getTypeConfig(notif.type).color + '18' }">
+                {{ getTypeConfig(notif.type).icon }}
               </span>
-            </div>
-          </div>
-
-          <!-- 近期 4-7天 -->
-          <div v-if="soonNotifications.length > 0" class="notif-group">
-            <div class="notif-group-label notif-group-soon">
-              <span>📋</span> 近期提醒 ({{ soonNotifications.length }})
-            </div>
-            <div
-              v-for="event in soonNotifications"
-              :key="'s-' + event.id"
-              class="notif-item"
-              :style="{ borderLeftColor: '#3B82F6', background: getNotifBg(event) }"
-              @click="handleNotificationClick()"
-            >
-              <span class="notif-item-icon">{{ getEventIcon(event) }}</span>
               <div class="notif-item-content">
-                <span class="notif-item-pet">{{ event.petName }}</span>
-                <span class="notif-item-event">{{ event.eventTypeLabel }}</span>
+                <span class="notif-item-pet">{{ notif.petName }}</span>
+                <span class="notif-item-event">{{ notif.message }}</span>
+                <span v-if="notif.detail" class="notif-item-detail">{{ notif.detail }}</span>
               </div>
-              <span class="notif-item-badge" style="background: #3B82F6; color: #fff;">
-                {{ getNotifLabel(event) }}
+              <span
+                class="notif-item-badge"
+                :style="{ background: getUrgencyBadgeBg(notif.urgency), color: '#fff' }"
+              >
+                {{ getTypeConfig(notif.type).label }}
               </span>
             </div>
           </div>
         </div>
 
-        <div class="notif-panel-footer" @click="goToHealthEvents">
-          <span>查看全部健康事件</span>
-          <span class="notif-footer-arrow">→</span>
+        <div class="notif-panel-footer">
+          <span class="notif-footer-types">
+            <span class="notif-type-dot" style="background: #EF4444;" title="健康">🩺</span>
+            <span class="notif-type-dot" style="background: #8B5CF6;" title="用药">💊</span>
+            <span class="notif-type-dot" style="background: #F59E0B;" title="喂养">🍽️</span>
+            <span class="notif-type-dot" style="background: #06B6D4;" title="美容">🛁</span>
+          </span>
+          <span class="notif-footer-hint">点击通知查看详情</span>
         </div>
       </div>
     </transition>
@@ -356,13 +379,13 @@ onUnmounted(() => {
   to { transform: scale(0); opacity: 0; }
 }
 
-/* --- Panel --- */
+/* Panel */
 .notif-panel {
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
-  width: 380px;
-  max-height: 520px;
+  width: 400px;
+  max-height: 540px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(24px) saturate(1.6);
@@ -404,7 +427,7 @@ onUnmounted(() => {
   to { opacity: 0; transform: translateY(-8px) scale(0.96); }
 }
 
-/* --- Header --- */
+/* Header */
 .notif-panel-header {
   display: flex;
   align-items: center;
@@ -460,7 +483,7 @@ onUnmounted(() => {
   to { transform: rotate(360deg); opacity: 1; }
 }
 
-/* --- Body --- */
+/* Body */
 .notif-panel-body {
   flex: 1;
   overflow-y: auto;
@@ -477,7 +500,7 @@ onUnmounted(() => {
   border-radius: 4px;
 }
 
-/* --- Groups --- */
+/* Groups */
 .notif-group {
   padding: 0 8px;
 }
@@ -493,17 +516,11 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-.notif-group-overdue { color: #EF4444; }
-.notif-group-today { color: #F59E0B; }
-.notif-group-urgent { color: #F97316; }
-.notif-group-soon { color: #3B82F6; }
+.dark-mode .notif-group-label {
+  opacity: 0.85;
+}
 
-.dark-mode .notif-group-overdue { color: #FCA5A5; }
-.dark-mode .notif-group-today { color: #FCD34D; }
-.dark-mode .notif-group-urgent { color: #FDBA74; }
-.dark-mode .notif-group-soon { color: #93C5FD; }
-
-/* --- Items --- */
+/* Items */
 .notif-item {
   display: flex;
   align-items: center;
@@ -521,6 +538,8 @@ onUnmounted(() => {
 .notif-item:nth-child(3) { animation-delay: 0.06s; }
 .notif-item:nth-child(4) { animation-delay: 0.09s; }
 .notif-item:nth-child(5) { animation-delay: 0.12s; }
+.notif-item:nth-child(6) { animation-delay: 0.15s; }
+.notif-item:nth-child(7) { animation-delay: 0.18s; }
 
 @keyframes notif-item-in {
   from { opacity: 0; transform: translateX(-8px); }
@@ -537,7 +556,7 @@ onUnmounted(() => {
 }
 
 .notif-item-icon {
-  font-size: 20px;
+  font-size: 18px;
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -545,11 +564,6 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.dark-mode .notif-item-icon {
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .notif-item-content {
@@ -561,6 +575,19 @@ onUnmounted(() => {
 }
 
 .notif-item-pet {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9CA3AF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dark-mode .notif-item-pet {
+  color: #777;
+}
+
+.notif-item-event {
   font-size: 13px;
   font-weight: 600;
   color: #2D2D2D;
@@ -569,20 +596,20 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
-.dark-mode .notif-item-pet {
+.dark-mode .notif-item-event {
   color: #E8E8E8;
 }
 
-.notif-item-event {
-  font-size: 12px;
-  color: #6B6B6B;
+.notif-item-detail {
+  font-size: 11px;
+  color: #9CA3AF;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.dark-mode .notif-item-event {
-  color: #999;
+.dark-mode .notif-item-detail {
+  color: #777;
 }
 
 .notif-item-badge {
@@ -594,7 +621,7 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-/* --- Empty --- */
+/* Empty */
 .notif-empty {
   display: flex;
   flex-direction: column;
@@ -628,43 +655,75 @@ onUnmounted(() => {
   color: #9CA3AF;
 }
 
-/* --- Footer --- */
+/* Loading */
+.notif-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 20px;
+}
+
+.notif-loading-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 155, 168, 0.2);
+  border-top-color: #FF7A8A;
+  animation: loading-spin 0.8s linear infinite;
+}
+
+@keyframes loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+.notif-loading-text {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+/* Footer */
 .notif-panel-footer {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 14px 20px;
+  justify-content: space-between;
+  padding: 12px 20px;
   border-top: 1px solid rgba(255, 155, 168, 0.1);
-  font-size: 13px;
-  font-weight: 600;
-  color: #FF7A8A;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.notif-panel-footer:hover {
-  background: rgba(255, 155, 168, 0.08);
-}
-
-.notif-footer-arrow {
-  transition: transform 0.25s ease;
-}
-
-.notif-panel-footer:hover .notif-footer-arrow {
-  transform: translateX(3px);
+  gap: 8px;
 }
 
 .dark-mode .notif-panel-footer {
   border-top-color: rgba(255, 155, 168, 0.06);
-  color: #FFBFC5;
 }
 
-.dark-mode .notif-panel-footer:hover {
-  background: rgba(255, 155, 168, 0.06);
+.notif-footer-types {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-/* --- Mobile --- */
+.notif-type-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.notif-type-dot:hover {
+  opacity: 1;
+}
+
+.notif-footer-hint {
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+/* Mobile */
 @media (max-width: 768px) {
   .notif-panel {
     position: fixed;

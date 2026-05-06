@@ -9,6 +9,7 @@ import { useAuthStore } from './authStore.js';
 import {
   fetchPetPage,
     fetchUpcomingEvents,
+    fetchNotificationSummary,
     likePet,
     fetchPetDetail,
     createPet,
@@ -140,6 +141,8 @@ import {
     const timelinePetId = ref(null);
     const upcomingEvents = ref([]);
     const loadingUpcoming = ref(false);
+    const notificationSummary = ref([]);
+    const loadingNotificationSummary = ref(false);
     const searchKeyword = ref('');
     const speciesFilter = ref(saved.speciesFilter ?? null);
     const genderFilter = ref(saved.genderFilter ?? null);
@@ -251,6 +254,16 @@ import {
         upcomingEvents.value = processedEvents;
       } catch (err) { console.error("加载提醒事件失败:", err); }
       finally { loadingUpcoming.value = false; }
+    }
+
+    async function loadNotificationSummary() {
+      if (loadingNotificationSummary.value) return;
+      loadingNotificationSummary.value = true;
+      try {
+        const response = await fetchNotificationSummary();
+        notificationSummary.value = response.data || [];
+      } catch (err) { console.error("加载通知汇总失败:", err); }
+      finally { loadingNotificationSummary.value = false; }
     }
   
     /**
@@ -810,6 +823,7 @@ import {
         }
         // 刷新提醒列表
         await loadUpcomingEvents();
+        await loadNotificationSummary();
       } catch (err) {
         console.error("标记事件完成失败:", err);
         throw err;
@@ -825,6 +839,7 @@ import {
           await loadPetDetail(petId);
         }
         await loadUpcomingEvents();
+        await loadNotificationSummary();
       } catch (err) {
         console.error("撤销事件完成失败:", err);
         throw err;
@@ -994,6 +1009,7 @@ import {
       sortOption,
       pageSelectedPets,
       upcomingEvents, loadingUpcoming,
+      notificationSummary, loadingNotificationSummary,
       loadingList,
       detailModal,
       petFormModal,
@@ -1017,6 +1033,7 @@ import {
 
       // Actions
       loadUpcomingEvents,
+      loadNotificationSummary,
       loadPetList,
       loadPetLeaderboard, // (❗)
       loadFullLeaderboard,

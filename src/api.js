@@ -140,6 +140,10 @@ export const fetchUpcomingEvents = () => {
   return apiClient.get('/api/health-events/upcoming');
 };
 
+export const fetchNotificationSummary = () => {
+  return apiClient.get('/api/notifications/summary');
+};
+
 export const fetchWeightLogsPage = (params = { pageNum: 1, pageSize: 20 }) => {
   return apiClient.get('/api/weight-logs/page', { params });
 };
