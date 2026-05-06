@@ -28,6 +28,28 @@ const dashboardData = ref(null);
 const loading = ref(true);
 const error = ref(false);
 
+// 宠物速览排序
+const petSortOption = ref('default');
+const sortedPetOverviews = computed(() => {
+  const pets = dashboardData.value?.petOverviews || [];
+  if (!pets.length) return [];
+  const sorted = [...pets];
+  switch (petSortOption.value) {
+    case 'likes':
+      return sorted.sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0));
+    case 'pending':
+      return sorted.sort((a, b) => (b.pendingEventsCount || 0) - (a.pendingEventsCount || 0));
+    case 'age':
+      return sorted.sort((a, b) => {
+        if (!a.birthday) return 1;
+        if (!b.birthday) return -1;
+        return a.birthday.localeCompare(b.birthday);
+      });
+    default:
+      return sorted;
+  }
+});
+
 // 数字滚动动画
 const statSource = (key) => computed(() => dashboardData.value?.[key] ?? 0)
 const { displayValue: animTotalPets } = useCountUp(statSource('totalPets'), { delay: 200 })
@@ -357,13 +379,28 @@ const computeAge = (birthday) => {
 
         <!-- 宠物速览 -->
         <div v-if="dashboardData.petOverviews?.length" class="pet-overviews-section section-entrance" style="--enter-delay: 0.16s">
-          <div class="section-header">
-            <span class="section-emoji">🐾</span>
-            <span class="section-title">我的宠物</span>
+          <div class="pet-overviews-header">
+            <div class="section-header">
+              <span class="section-emoji">🐾</span>
+              <span class="section-title">我的宠物</span>
+            </div>
+            <div class="pet-sort-bar">
+              <button
+                v-for="opt in [
+                  { key: 'default', label: '默认' },
+                  { key: 'likes', label: '❤️ 热门' },
+                  { key: 'pending', label: '📋 待办' },
+                  { key: 'age', label: '🎂 年龄' },
+                ]"
+                :key="opt.key"
+                :class="['pet-sort-pill', { active: petSortOption === opt.key }]"
+                @click="petSortOption = opt.key"
+              >{{ opt.label }}</button>
+            </div>
           </div>
           <div class="pet-overviews-row">
             <div
-              v-for="pet in dashboardData.petOverviews"
+              v-for="pet in sortedPetOverviews"
               :key="pet.id"
               class="pet-overview-card"
               @click="handleShowDetail(pet.id)"
@@ -392,6 +429,10 @@ const computeAge = (birthday) => {
                 <div v-if="pet.latestWeight" class="pet-meta-item">
                   <span class="pet-meta-icon">⚖️</span>
                   <span>{{ pet.latestWeight }}</span>
+                </div>
+                <div v-if="pet.likeCount > 0" class="pet-meta-item pet-meta-likes">
+                  <span class="pet-meta-icon">❤️</span>
+                  <span>{{ pet.likeCount }}</span>
                 </div>
                 <div v-if="pet.pendingEventsCount > 0" class="pet-meta-item pet-meta-pending">
                   <span class="pet-meta-icon">📋</span>
@@ -1012,6 +1053,71 @@ const computeAge = (birthday) => {
   margin-bottom: 20px;
 }
 
+.pet-overviews-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pet-overviews-header .section-header {
+  margin-bottom: 0;
+}
+
+.pet-sort-bar {
+  display: flex;
+  gap: 6px;
+}
+
+.pet-sort-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 12px;
+  font-weight: 500;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.pet-sort-pill:hover {
+  background: rgba(255, 255, 255, 0.75);
+  color: #374151;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.pet-sort-pill.active {
+  background: linear-gradient(135deg, #F472B6 0%, #FB923C 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 10px rgba(244, 114, 182, 0.3);
+}
+
+:global(.dark-mode) .pet-sort-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #A0A0B8;
+}
+
+:global(.dark-mode) .pet-sort-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #D1D5DB;
+}
+
+:global(.dark-mode) .pet-sort-pill.active {
+  background: linear-gradient(135deg, #F472B6 0%, #FB923C 100%);
+  color: #fff;
+  border-color: transparent;
+}
+
 .section-header {
   display: flex;
   align-items: center;
@@ -1167,6 +1273,15 @@ const computeAge = (birthday) => {
 
 :global(.dark-mode) .pet-meta-pending {
   color: #FCD34D;
+}
+
+.pet-meta-likes {
+  color: #E11D48;
+  font-weight: 600;
+}
+
+:global(.dark-mode) .pet-meta-likes {
+  color: #FB7185;
 }
 
 .pet-overview-arrow {
@@ -1965,6 +2080,20 @@ const computeAge = (birthday) => {
 
   .pet-overviews-row {
     grid-template-columns: 1fr;
+  }
+
+  .pet-overviews-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pet-sort-bar {
+    gap: 4px;
+  }
+
+  .pet-sort-pill {
+    padding: 3px 10px;
+    font-size: 11px;
   }
 
   .quick-actions-row {
