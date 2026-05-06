@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
   stats: {
@@ -12,18 +12,47 @@ const emit = defineEmits(['update:days']);
 
 const hoveredIndex = ref(-1);
 const timeRange = ref('30');
+const customStartDate = ref('');
+const customEndDate = ref('');
+const showCustomRange = ref(false);
 
 const timeRangeOptions = [
   { label: '7天', value: '7' },
   { label: '30天', value: '30' },
   { label: '90天', value: '90' },
-  { label: '全部', value: 'all' }
+  { label: '全部', value: 'all' },
+  { label: '自定义', value: 'custom' }
 ];
 
 function onTimeRangeChange(val) {
   timeRange.value = val;
-  emit('update:days', val === 'all' ? null : Number(val));
+  if (val === 'custom') {
+    showCustomRange.value = true;
+    if (!customStartDate.value && !customEndDate.value && props.stats?.dailyStats?.length) {
+      const sorted = [...props.stats.dailyStats].sort((a, b) => a.date.localeCompare(b.date));
+      if (sorted.length >= 1) {
+        customStartDate.value = sorted[0].date;
+        customEndDate.value = sorted[sorted.length - 1].date;
+      }
+    }
+    emit('update:days', null);
+  } else {
+    showCustomRange.value = false;
+    emit('update:days', val === 'all' ? null : Number(val));
+  }
 }
+
+watch(customStartDate, (val) => {
+  if (val && customEndDate.value && val > customEndDate.value) {
+    customEndDate.value = val;
+  }
+});
+
+watch(customEndDate, (val) => {
+  if (val && customStartDate.value && val < customStartDate.value) {
+    customStartDate.value = val;
+  }
+});
 
 function onBarEnter(index) {
   hoveredIndex.value = index;
@@ -36,7 +65,18 @@ function onBarLeave() {
 const chartData = computed(() => {
   if (!props.stats?.dailyStats?.length) return null;
 
-  const data = props.stats.dailyStats;
+  let data = [...props.stats.dailyStats];
+
+  if (timeRange.value === 'custom') {
+    if (customStartDate.value) {
+      data = data.filter(d => d.date >= customStartDate.value);
+    }
+    if (customEndDate.value) {
+      data = data.filter(d => d.date <= customEndDate.value);
+    }
+  }
+
+  if (!data.length) return null;
 
   const width = 460;
   const height = 200;
@@ -130,6 +170,26 @@ const chartData = computed(() => {
           @click="onTimeRangeChange(opt.value)"
         >{{ opt.label }}</button>
       </div>
+      <Transition name="custom-range-fade">
+        <div v-if="showCustomRange" class="custom-date-range">
+          <span class="custom-range-label">📅</span>
+          <div class="custom-range-inputs">
+            <input
+              v-model="customStartDate"
+              type="date"
+              class="custom-date-input"
+              :max="customEndDate || undefined"
+            />
+            <span class="custom-range-sep">至</span>
+            <input
+              v-model="customEndDate"
+              type="date"
+              class="custom-date-input"
+              :min="customStartDate || undefined"
+            />
+          </div>
+        </div>
+      </Transition>
       <svg
         :viewBox="`0 0 ${chartData.width} ${chartData.height}`"
         class="trend-svg"
@@ -235,7 +295,8 @@ const chartData = computed(() => {
     </div>
     <div v-else class="chart-empty">
       <span class="chart-empty-icon">📊</span>
-      <span class="chart-empty-text">暂无喂养数据，添加喂养记录后将显示趋势图</span>
+      <span class="chart-empty-text" v-if="timeRange === 'custom' && (customStartDate || customEndDate)">该日期范围内暂无喂养数据</span>
+      <span class="chart-empty-text" v-else>暂无喂养数据，添加喂养记录后将显示趋势图</span>
     </div>
   </div>
 </template>
@@ -395,5 +456,94 @@ const chartData = computed(() => {
     flex-direction: column;
     gap: 8px;
   }
+}
+
+.custom-date-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 6px;
+  padding: 10px 14px;
+  background: rgba(251, 146, 60, 0.06);
+  border: 1px solid rgba(251, 146, 60, 0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+:global(.dark-mode) .custom-date-range {
+  background: rgba(251, 146, 60, 0.05);
+  border-color: rgba(251, 146, 60, 0.1);
+}
+
+.custom-range-label {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.custom-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.custom-date-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid rgba(251, 146, 60, 0.25);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #334155;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+.custom-date-input:focus {
+  border-color: #FB923C;
+  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.15);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.custom-date-input:hover {
+  border-color: rgba(251, 146, 60, 0.4);
+}
+
+:global(.dark-mode) .custom-date-input {
+  background: rgba(41, 37, 36, 0.8);
+  color: #E2E8F0;
+  border-color: rgba(251, 146, 60, 0.15);
+}
+
+:global(.dark-mode) .custom-date-input:focus {
+  background: rgba(41, 37, 36, 0.95);
+  border-color: #FB923C;
+  box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1);
+}
+
+.custom-range-sep {
+  color: #94A3B8;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .custom-range-sep {
+  color: #64748B;
+}
+
+.custom-range-fade-enter-active {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.custom-range-fade-leave-active {
+  transition: all 0.18s ease;
+}
+
+.custom-range-fade-enter-from,
+.custom-range-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 </style>
