@@ -31,6 +31,17 @@ const genderOptions = [
   { label: '♀ 母', value: 'female' }
 ];
 
+// 年龄范围选项
+const ageOptions = [
+  { label: '🍼 幼崽 (< 1岁)', value: 'baby' },
+  { label: '🐾 青年 (1-3岁)', value: 'young' },
+  { label: '🐕 成年 (3-7岁)', value: 'adult' },
+  { label: '🧓 老年 (7岁+)', value: 'senior' }
+];
+
+// 年龄 key → 标签映射
+const ageLabelMap = { baby: '🍼 幼崽', young: '🐾 青年', adult: '🐕 成年', senior: '🧓 老年' };
+
 // 物种选项（从字典中获取）
 const speciesFilterOptions = computed(() => {
   return dictStore.species.map(s => ({ label: s.itemLabel, value: s.id }));
@@ -345,6 +356,15 @@ const handleLike = async (petId) => {
             class="pet-filter-select"
             @update:value="petStore.setGenderFilter"
           />
+          <n-select
+            :value="petStore.ageFilter"
+            :options="ageOptions"
+            placeholder="年龄"
+            clearable
+            size="small"
+            class="pet-filter-select"
+            @update:value="petStore.setAgeFilter"
+          />
           <n-button
             @click="handleCreatePet"
             type="primary"
@@ -356,7 +376,7 @@ const handleLike = async (petId) => {
             添加新萌宠
           </n-button>
         </div>
-        <div v-if="petStore.searchKeyword || petStore.speciesFilter || petStore.genderFilter" class="active-filters">
+        <div v-if="petStore.searchKeyword || petStore.speciesFilter || petStore.genderFilter || petStore.ageFilter" class="active-filters">
           <n-tag v-if="petStore.searchKeyword" size="small" round closable @close="handleClearSearch" class="filter-tag">
             🔍 {{ petStore.searchKeyword }}
           </n-tag>
@@ -365,6 +385,9 @@ const handleLike = async (petId) => {
           </n-tag>
           <n-tag v-if="petStore.genderFilter" size="small" round type="warning" closable @close="petStore.clearGenderFilter" class="filter-tag">
             {{ petStore.genderFilter === 'male' ? '♂ 公' : '♀ 母' }}
+          </n-tag>
+          <n-tag v-if="petStore.ageFilter" size="small" round type="success" closable @close="petStore.clearAgeFilter" class="filter-tag">
+            {{ ageLabelMap[petStore.ageFilter] || petStore.ageFilter }}
           </n-tag>
         </div>
       </div>

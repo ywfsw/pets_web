@@ -125,6 +125,7 @@ import {
     const searchKeyword = ref('');
     const speciesFilter = ref(null);
     const genderFilter = ref(null);
+    const ageFilter = ref(null);
 
     // (❗) 分页状态
     const pagination = ref(defaultPagination());
@@ -251,6 +252,11 @@ import {
         }
         if (genderFilter.value) {
           params.gender = genderFilter.value;
+        }
+        if (ageFilter.value && ageRangeMap[ageFilter.value]) {
+          const range = ageRangeMap[ageFilter.value];
+          if (range.min != null) params.ageMinMonths = range.min;
+          if (range.max != null) params.ageMaxMonths = range.max;
         }
         const response = await fetchPetPage(params);
         const enrichedRecords = response.data.records.map(pet => {
@@ -842,6 +848,24 @@ import {
       loadPetList(1);
     }
 
+    // 年龄 key → months 范围映射
+    const ageRangeMap = {
+      baby:   { max: 12 },
+      young:  { min: 12, max: 36 },
+      adult:  { min: 36, max: 84 },
+      senior: { min: 84 }
+    };
+
+    function setAgeFilter(value) {
+      ageFilter.value = value;
+      loadPetList(1);
+    }
+
+    function clearAgeFilter() {
+      ageFilter.value = null;
+      loadPetList(1);
+    }
+
     function navigateToAlbum(petId = null, petName = '') {
       albumFilterPetId.value = petId;
       albumFilterPetName.value = petName;
@@ -922,6 +946,7 @@ import {
       searchKeyword,
       speciesFilter,
       genderFilter,
+      ageFilter,
       upcomingEvents, loadingUpcoming,
       loadingList,
       detailModal,
@@ -988,6 +1013,8 @@ import {
       clearSpeciesFilter,
       setGenderFilter,
       clearGenderFilter,
+      setAgeFilter,
+      clearAgeFilter,
       switchToEditMode,
       handleDeletePet, // (❗)
       navigateToAlbum,
