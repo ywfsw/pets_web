@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, computed, h } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed, nextTick, h } from 'vue';
 import {
   NConfigProvider,
   NMessageProvider,
@@ -233,6 +233,117 @@ const authStore = useAuthStore();
 const isAuthModalVisible = ref(false);
 const showMobileMenu = ref(false);
 
+// 抽屉滑动手势关闭
+const drawerRef = ref(null);
+const drawerOverlayRef = ref(null);
+let touchStartX = 0;
+let touchStartY = 0;
+let isSwiping = false;
+let swipeOffset = 0;
+const SWIPE_THRESHOLD = 80;
+
+const onSwipeTouchStart = (e) => {
+  if (e.touches.length !== 1) return;
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  isSwiping = false;
+  swipeOffset = 0;
+
+  const drawer = drawerRef.value;
+  if (!drawer) return;
+  const inner = drawer.querySelector('.drawer-swipe-inner');
+  if (inner) {
+    inner.style.transition = 'none';
+  }
+};
+
+const onSwipeTouchMove = (e) => {
+  if (e.touches.length !== 1) return;
+  const deltaX = e.touches[0].clientX - touchStartX;
+  const deltaY = e.touches[0].clientY - touchStartY;
+
+  if (!isSwiping) {
+    if (Math.abs(deltaX) > 10 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      isSwiping = true;
+    } else if (Math.abs(deltaY) > 10) {
+      return;
+    } else {
+      return;
+    }
+  }
+
+  if (deltaX <= 0) return;
+
+  swipeOffset = deltaX;
+  const drawer = drawerRef.value;
+  if (!drawer) return;
+
+  const inner = drawer.querySelector('.drawer-swipe-inner');
+  if (inner) {
+    inner.style.transform = `translateX(${swipeOffset}px)`;
+  }
+
+  const overlay = drawerOverlayRef.value;
+  if (overlay) {
+    const progress = 1 - Math.min(swipeOffset / 300, 1);
+    overlay.style.opacity = progress;
+  }
+};
+
+const onSwipeTouchEnd = () => {
+  const drawer = drawerRef.value;
+  if (!drawer) return;
+
+  const inner = drawer.querySelector('.drawer-swipe-inner');
+  if (inner) {
+    inner.style.transition = 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)';
+    inner.style.transform = 'translateX(0)';
+  }
+
+  const overlay = drawerOverlayRef.value;
+  if (overlay) {
+    overlay.style.transition = 'opacity 0.3s ease';
+    overlay.style.opacity = '1';
+  }
+
+  if (isSwiping && swipeOffset > SWIPE_THRESHOLD) {
+    showMobileMenu.value = false;
+  }
+
+  isSwiping = false;
+  swipeOffset = 0;
+};
+
+const attachSwipeListeners = () => {
+  nextTick(() => {
+    const drawer = drawerRef.value;
+    if (!drawer) return;
+    drawer.addEventListener('touchstart', onSwipeTouchStart, { passive: true });
+    drawer.addEventListener('touchmove', onSwipeTouchMove, { passive: true });
+    drawer.addEventListener('touchend', onSwipeTouchEnd, { passive: true });
+  });
+};
+
+const detachSwipeListeners = () => {
+  const drawer = drawerRef.value;
+  if (!drawer) return;
+  drawer.removeEventListener('touchstart', onSwipeTouchStart);
+  drawer.removeEventListener('touchmove', onSwipeTouchMove);
+  drawer.removeEventListener('touchend', onSwipeTouchEnd);
+};
+
+watch(showMobileMenu, (open) => {
+  if (open) {
+    attachSwipeListeners();
+  } else {
+    detachSwipeListeners();
+  }
+});
+
+onUnmounted(() => {
+  detachSwipeListeners();
+});
+
 const handleMobileMenuClick = (key) => {
   handleMenuUpdate(key);
   showMobileMenu.value = false;
@@ -403,10 +514,11 @@ onMounted(async () => {
 
             <!-- Mobile Drawer - 毛玻璃升级版 -->
             <Transition name="drawer-backdrop">
-              <div v-if="showMobileMenu" class="drawer-overlay" @click="showMobileMenu = false"></div>
+              <div v-if="showMobileMenu" ref="drawerOverlayRef" class="drawer-overlay" @click="showMobileMenu = false"></div>
             </Transition>
             <Transition name="drawer-slide">
-              <div v-if="showMobileMenu" class="glass-drawer">
+              <div v-if="showMobileMenu" ref="drawerRef" class="glass-drawer">
+                <div class="drawer-swipe-inner">
                 <div class="glass-drawer-header">
                   <span class="glass-drawer-logo">🐾</span>
                   <span class="glass-drawer-title">萌宠之家</span>
@@ -489,6 +601,7 @@ onMounted(async () => {
                     <span class="drawer-item-label">退出登录</span>
                   </button>
                 </div>
+                </div><!-- /.drawer-swipe-inner -->
               </div>
             </Transition>
 
@@ -874,10 +987,7 @@ onMounted(async () => {
   -webkit-backdrop-filter: blur(24px) saturate(1.5);
   border-left: 1px solid rgba(255, 155, 168, 0.15);
   box-shadow: -8px 0 40px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  padding: 24px 20px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .dark-mode .glass-drawer {
@@ -893,6 +1003,36 @@ onMounted(async () => {
 .drawer-slide-enter-from,
 .drawer-slide-leave-to {
   transform: translateX(100%);
+}
+
+/* 抽屉滑动手势内部容器 */
+.drawer-swipe-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px 20px;
+  overflow-y: auto;
+  will-change: transform;
+  position: relative;
+}
+
+/* 左侧滑动提示条 */
+.drawer-swipe-inner::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 40px;
+  border-radius: 2px;
+  background: rgba(255, 155, 168, 0.2);
+  transition: all 0.3s ease;
+}
+
+.glass-drawer:hover .drawer-swipe-inner::before {
+  background: rgba(255, 155, 168, 0.35);
+  height: 48px;
 }
 
 .glass-drawer-header {
