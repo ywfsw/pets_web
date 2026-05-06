@@ -30,12 +30,32 @@ const formattedTreeData = computed(() => {
 
 const handleUpdateSelectedKeys = (keys, options) => {
   if (keys.length > 0) {
-    emit('update:selectedCode', keys[0]);
-    emit('select', options[0]); // Emit the full node object for the parent
+    const selectedKey = keys[0];
+    emit('update:selectedCode', selectedKey);
+    // options 中可能包含 null，需要安全处理
+    let node = options?.[0] ?? null;
+    // 如果 options[0] 为 null，尝试从 treeData 中查找对应节点
+    if (!node) {
+      node = findNodeByKey(selectedKey) ?? null;
+    }
+    emit('select', node);
   } else {
     emit('update:selectedCode', null);
     emit('select', null);
   }
+};
+
+// 在 treeData（含 children）中递归查找 key 匹配的节点
+const findNodeByKey = (key) => {
+  for (const node of formattedTreeData.value) {
+    if (node.key === key) return node;
+    if (node.children) {
+      for (const child of node.children) {
+        if (child.key === key) return child;
+      }
+    }
+  }
+  return null;
 };
 
 </script>

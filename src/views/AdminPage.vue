@@ -65,8 +65,8 @@ const petTableColumns = [
 // --- Dictionaries Tab ---
 const selectedDictType = ref({ dictCode: null });
 const onTypeSelect = (type) => {
-  selectedDictType.value = type;
   if (type && type.dictCode) {
+    selectedDictType.value = type;
     dictStore.loadDictItems(type.dictCode);
   }
 };
@@ -119,8 +119,10 @@ const dictItemColumns = [
 watch(() => dictStore.dictTypeTree, (newTree) => {
   if (newTree && newTree.length > 0 && currentTab.value === 'dictionaries') {
     const firstItem = newTree[0];
-    selectedDictType.value = firstItem;
-    dictStore.loadDictItems(firstItem.dictCode);
+    if (firstItem && firstItem.dictCode) {
+      selectedDictType.value = firstItem;
+      dictStore.loadDictItems(firstItem.dictCode);
+    }
   }
 }, { immediate: true });
 
