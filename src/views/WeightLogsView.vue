@@ -6,11 +6,6 @@ import { fetchWeightLogsPage } from '@/api.js';
 import WeightTrendChart from '@/components/WeightTrendChart.vue';
 import {
   NSelect,
-  NCard,
-  NTag,
-  NSpace,
-  NEmpty,
-  NSpin,
   NButton,
   NIcon,
   NPagination,
@@ -25,6 +20,15 @@ import {
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
+
+const mounted = ref(false);
+onMounted(async () => {
+  requestAnimationFrame(() => { mounted.value = true; });
+  if (petStore.petList.length === 0) {
+    await petStore.loadPetList();
+  }
+  loadRecords();
+});
 
 const selectedPetId = ref(null);
 const records = ref([]);
@@ -67,13 +71,6 @@ const loadRecords = async () => {
 
 watch(selectedPetId, () => {
   pageNum.value = 1;
-  loadRecords();
-});
-
-onMounted(async () => {
-  if (petStore.petList.length === 0) {
-    await petStore.loadPetList();
-  }
   loadRecords();
 });
 
@@ -149,123 +146,140 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
 </script>
 
 <template>
-  <div class="weight-logs-page">
-    <div class="page-header">
-      <div class="page-header-left">
-        <h1 class="page-title">
-          <span class="page-title-icon">⚖️</span>
-          体重管理
-        </h1>
-        <p class="page-subtitle">追踪宠物体重变化，守护健康</p>
-      </div>
-      <div class="page-header-right">
-        <n-space align="center" :size="12">
-          <n-select
-            v-model:value="selectedPetId"
-            :options="petOptions"
-            placeholder="选择宠物"
-            clearable
-            filterable
-            style="width: 180px;"
-            class="pet-selector"
-          >
-            <template #prefix>
-              <n-icon :component="PawOutline" size="16" />
-            </template>
-          </n-select>
-          <n-button
-            type="primary"
-            @click="handleAdd"
-            :disabled="!authStore.isAuthenticated || petStore.petList.length === 0"
-          >
-            <template #icon>
-              <n-icon :component="AddOutline" />
-            </template>
-            记录体重
-          </n-button>
-        </n-space>
+  <div class="weight-logs-page" :class="{ 'is-mounted': mounted }">
+    <!-- Immersive Hero -->
+    <div class="weight-hero">
+      <div class="hero-gradient-frame">
+        <div class="hero-inner">
+          <div class="hero-decorations">
+            <span class="hero-shape shape-1">⚖️</span>
+            <span class="hero-shape shape-2">📊</span>
+            <span class="hero-shape shape-3">✨</span>
+            <span class="hero-shape shape-4">📏</span>
+            <span class="hero-shape shape-5">💪</span>
+            <span class="hero-shape shape-6">🐾</span>
+          </div>
+          <div class="hero-content">
+            <h1 class="hero-title">
+              <span class="hero-title-icon">⚖️</span>
+              <span class="hero-title-text">体重管理</span>
+            </h1>
+            <p class="hero-subtitle">追踪宠物体重变化，守护每一步成长</p>
+          </div>
+          <div class="hero-stats-bar">
+            <div class="hero-stat">
+              <span class="hero-stat-icon">📊</span>
+              <span class="hero-stat-value">{{ stats.total }}</span>
+              <span class="hero-stat-label">总记录</span>
+            </div>
+            <div class="hero-stat-divider" />
+            <div class="hero-stat">
+              <span class="hero-stat-icon">📏</span>
+              <span class="hero-stat-value">{{ stats.latest }}<small v-if="stats.latest !== '-'">kg</small></span>
+              <span class="hero-stat-label">最新体重</span>
+            </div>
+            <div class="hero-stat-divider" />
+            <div class="hero-stat">
+              <span class="hero-stat-icon">⬇️</span>
+              <span class="hero-stat-value hero-stat-value-min">{{ stats.min }}<small v-if="stats.min !== '-'">kg</small></span>
+              <span class="hero-stat-label">最低</span>
+            </div>
+            <div class="hero-stat-divider" />
+            <div class="hero-stat">
+              <span class="hero-stat-icon">⬆️</span>
+              <span class="hero-stat-value hero-stat-value-max">{{ stats.max }}<small v-if="stats.max !== '-'">kg</small></span>
+              <span class="hero-stat-label">最高</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="stats-row">
-      <n-card class="stat-card" :bordered="false">
-        <div class="stat-card-content">
-          <span class="stat-card-icon">📊</span>
-          <div class="stat-card-info">
-            <span class="stat-card-value">{{ stats.total }}</span>
-            <span class="stat-card-label">总记录</span>
-          </div>
-        </div>
-      </n-card>
-      <n-card class="stat-card" :bordered="false">
-        <div class="stat-card-content">
-          <span class="stat-card-icon">📏</span>
-          <div class="stat-card-info">
-            <span class="stat-card-value">{{ stats.latest }}<small v-if="stats.latest !== '-'">kg</small></span>
-            <span class="stat-card-label">最新体重</span>
-          </div>
-        </div>
-      </n-card>
-      <n-card class="stat-card" :bordered="false">
-        <div class="stat-card-content">
-          <span class="stat-card-icon">⬇️</span>
-          <div class="stat-card-info">
-            <span class="stat-card-value">{{ stats.min }}<small v-if="stats.min !== '-'">kg</small></span>
-            <span class="stat-card-label">最低体重</span>
-          </div>
-        </div>
-      </n-card>
-      <n-card class="stat-card" :bordered="false">
-        <div class="stat-card-content">
-          <span class="stat-card-icon">⬆️</span>
-          <div class="stat-card-info">
-            <span class="stat-card-value">{{ stats.max }}<small v-if="stats.max !== '-'">kg</small></span>
-            <span class="stat-card-label">最高体重</span>
-          </div>
-        </div>
-      </n-card>
+    <!-- Toolbar -->
+    <div class="toolbar section-entrance" style="--entrance-delay: 0.1s;">
+      <div class="toolbar-left">
+        <n-select
+          v-model:value="selectedPetId"
+          :options="petOptions"
+          placeholder="选择宠物筛选"
+          clearable
+          filterable
+          size="medium"
+          class="pet-selector"
+        >
+          <template #prefix>
+            <n-icon :component="PawOutline" size="16" />
+          </template>
+        </n-select>
+      </div>
+      <div class="toolbar-right">
+        <n-button
+          type="primary"
+          class="add-btn"
+          @click="handleAdd"
+          :disabled="!authStore.isAuthenticated || petStore.petList.length === 0"
+        >
+          <template #icon>
+            <n-icon :component="AddOutline" />
+          </template>
+          记录体重
+        </n-button>
+      </div>
     </div>
 
-    <div class="chart-section">
+    <!-- Chart Section -->
+    <div class="chart-section section-entrance" style="--entrance-delay: 0.15s;">
       <weight-trend-chart :weight-logs="records" />
     </div>
 
-    <n-spin v-if="loading" :show="true" style="width: 100%;">
-      <div style="height: 200px;" />
-    </n-spin>
+    <!-- Loading Skeleton -->
+    <div v-if="loading" class="skeleton-list section-entrance" style="--entrance-delay: 0.25s;">
+      <div v-for="i in 5" :key="i" class="skeleton-record">
+        <div class="skeleton-icon-circle" />
+        <div class="skeleton-lines">
+          <div class="skeleton-line skeleton-line-title" />
+          <div class="skeleton-line skeleton-line-sub" />
+        </div>
+      </div>
+    </div>
 
-    <n-card v-else-if="records.length === 0" class="empty-card" :bordered="false">
-      <n-empty description="暂无体重记录，快去给宠物记录第一次体重吧" size="large">
-        <template #icon>
-          <span style="font-size: 48px;">⚖️</span>
-        </template>
-        <template #extra>
-          <n-button
-            v-if="authStore.isAuthenticated && petStore.petList.length > 0"
-            type="primary"
-            size="small"
-            @click="handleAdd"
-          >
-            记录体重
-          </n-button>
-        </template>
-      </n-empty>
-    </n-card>
+    <!-- Empty State -->
+    <div v-else-if="records.length === 0" class="empty-state section-entrance" style="--entrance-delay: 0.25s;">
+      <div class="empty-icon-wrap">
+        <span class="empty-icon-emoji">⚖️</span>
+        <span class="empty-icon-sparkle">✨</span>
+      </div>
+      <p class="empty-title">暂无体重记录</p>
+      <p class="empty-desc">快去给宠物记录第一次体重吧</p>
+      <n-button
+        v-if="authStore.isAuthenticated && petStore.petList.length > 0"
+        type="primary"
+        class="add-btn"
+        @click="handleAdd"
+      >
+        记录体重
+      </n-button>
+    </div>
 
-    <div v-else class="records-list">
+    <!-- Records List -->
+    <div v-else class="records-list section-entrance" style="--entrance-delay: 0.25s;">
       <div
-        v-for="record in records"
+        v-for="(record, index) in records"
         :key="record.id"
         class="record-item"
+        :style="{ '--item-delay': `${index * 0.05}s` }"
       >
+        <div class="record-accent" />
         <div class="record-left">
-          <div class="record-icon">⚖️</div>
+          <div class="record-icon-wrap">
+            <span class="record-icon">⚖️</span>
+          </div>
           <div class="record-info">
             <div class="record-main">
               <span class="record-weight">{{ record.weightKg }} kg</span>
-              <n-tag v-if="!selectedPetId" size="small" round type="info">
+              <span v-if="!selectedPetId" class="record-pet-badge">
                 🐾 {{ getPetName(record.petId) }}
-              </n-tag>
+              </span>
             </div>
             <div class="record-meta">
               <span class="record-date">{{ formatDate(record.logDate) }}</span>
@@ -277,6 +291,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
             text
             size="small"
             type="primary"
+            class="action-btn"
             @click="handleEdit(record)"
           >
             <template #icon>
@@ -285,7 +300,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
           </n-button>
           <n-popconfirm @positive-click="handleDelete(record)">
             <template #trigger>
-              <n-button text size="small" type="error">
+              <n-button text size="small" type="error" class="action-btn">
                 <template #icon>
                   <n-icon :component="TrashOutline" size="16" />
                 </template>
@@ -314,105 +329,399 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   margin: 0 auto;
 }
 
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+/* ===== Hero Section ===== */
+.weight-hero {
   margin-bottom: 24px;
-  gap: 16px;
-  flex-wrap: wrap;
 }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #2D2D2D;
-  margin: 0;
+.hero-gradient-frame {
+  border-radius: 24px;
+  padding: 3px;
+  background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 30%, #22D3EE 60%, #67E8F9 100%);
+  box-shadow: 0 8px 32px rgba(14, 165, 233, 0.2);
+}
+
+.hero-inner {
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(236, 250, 253, 0.92) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 36px 32px 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+:global(.dark-mode) .hero-gradient-frame {
+  box-shadow: 0 8px 32px rgba(14, 165, 233, 0.12);
+}
+
+:global(.dark-mode) .hero-inner {
+  background: linear-gradient(135deg, rgba(20, 30, 40, 0.95) 0%, rgba(25, 35, 50, 0.92) 100%);
+}
+
+/* Floating decorations */
+.hero-decorations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.hero-shape {
+  position: absolute;
+  font-size: 20px;
+  opacity: 0.35;
+  animation: hero-float 6s ease-in-out infinite;
+}
+
+:global(.dark-mode) .hero-shape {
+  opacity: 0.25;
+}
+
+.shape-1 { top: 12%; left: 8%; animation-delay: 0s; font-size: 22px; }
+.shape-2 { top: 20%; right: 12%; animation-delay: 1.2s; }
+.shape-3 { bottom: 25%; left: 18%; animation-delay: 2.4s; font-size: 16px; }
+.shape-4 { top: 15%; right: 30%; animation-delay: 0.8s; font-size: 18px; }
+.shape-5 { bottom: 20%; right: 8%; animation-delay: 3s; }
+.shape-6 { bottom: 30%; left: 35%; animation-delay: 1.8s; font-size: 16px; }
+
+@keyframes hero-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(5deg); }
+  50% { transform: translateY(-14px) rotate(-3deg); }
+  75% { transform: translateY(-6px) rotate(2deg); }
+}
+
+.hero-content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 24px;
+}
+
+.hero-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-:global(.dark-mode) .page-title {
-  color: #FFFFFF;
-}
-
-.page-title-icon {
+  justify-content: center;
+  gap: 12px;
+  margin: 0 0 8px;
   font-size: 32px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0369A1 0%, #0284C7 50%, #0EA5E9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.page-subtitle {
-  font-size: 14px;
-  color: #9CA3AF;
-  margin: 4px 0 0 42px;
+:global(.dark-mode) .hero-title {
+  background: linear-gradient(135deg, #38BDF8 0%, #67E8F9 50%, #A5F3FC 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
-:global(.dark-mode) .page-subtitle {
-  color: #8888A0;
+.hero-title-icon {
+  font-size: 36px;
+  -webkit-text-fill-color: initial;
+  animation: gentle-bounce 3s ease-in-out infinite;
 }
 
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.hero-subtitle {
+  margin: 0;
+  font-size: 15px;
+  color: #0369A1;
+  font-weight: 500;
+}
+
+:global(.dark-mode) .hero-subtitle {
+  color: #67E8F9;
+}
+
+/* Hero Stats Bar */
+.hero-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 14px 24px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  border: 1px solid rgba(14, 165, 233, 0.15);
+  position: relative;
+  z-index: 1;
+}
+
+:global(.dark-mode) .hero-stats-bar {
+  background: rgba(20, 35, 50, 0.5);
+  border-color: rgba(14, 165, 233, 0.1);
+}
+
+.hero-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-stat-icon {
+  font-size: 18px;
+}
+
+.hero-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0369A1;
+  line-height: 1;
+}
+
+.hero-stat-value small {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+:global(.dark-mode) .hero-stat-value {
+  color: #38BDF8;
+}
+
+.hero-stat-value-min {
+  color: #059669;
+}
+
+:global(.dark-mode) .hero-stat-value-min {
+  color: #34D399;
+}
+
+.hero-stat-value-max {
+  color: #DC2626;
+}
+
+:global(.dark-mode) .hero-stat-value-max {
+  color: #FCA5A5;
+}
+
+.hero-stat-label {
+  font-size: 12px;
+  color: #0369A1;
+  font-weight: 500;
+}
+
+:global(.dark-mode) .hero-stat-label {
+  color: #67E8F9;
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(14, 165, 233, 0.15);
+}
+
+:global(.dark-mode) .hero-stat-divider {
+  background: rgba(56, 189, 248, 0.15);
+}
+
+/* ===== Section Entrance Animation ===== */
+.section-entrance {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.is-mounted .section-entrance {
+  animation: section-rise 0.5s ease forwards;
+  animation-delay: var(--entrance-delay, 0s);
+}
+
+@keyframes section-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Toolbar ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
-.stat-card {
-  border-radius: 16px !important;
-  background: linear-gradient(135deg, rgba(125, 211, 252, 0.08) 0%, rgba(56, 189, 248, 0.06) 100%);
-}
-
-:global(.dark-mode) .stat-card {
-  background: linear-gradient(135deg, rgba(125, 211, 252, 0.12) 0%, rgba(56, 189, 248, 0.08) 100%);
-}
-
-.stat-card-content {
+.toolbar-left {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.stat-card-icon {
-  font-size: 28px;
-}
-
-.stat-card-info {
+.toolbar-right {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
-.stat-card-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: #38BDF8;
-  line-height: 1.2;
+.pet-selector {
+  width: 200px;
 }
 
-.stat-card-value small {
-  font-size: 13px;
+.add-btn {
+  background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%) !important;
+  border: none !important;
+  border-radius: 12px !important;
   font-weight: 600;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+  transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
-.stat-card-label {
-  font-size: 12px;
-  color: #9CA3AF;
+.add-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
 }
 
-:global(.dark-mode) .stat-card-label {
-  color: #8888A0;
-}
-
+/* ===== Chart Section ===== */
 .chart-section {
   margin-bottom: 24px;
 }
 
-.empty-card {
-  border-radius: 20px !important;
-  padding: 60px 20px;
-  text-align: center;
+/* ===== Skeleton Loading ===== */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
+.skeleton-record {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+:global(.dark-mode) .skeleton-record {
+  background: #1A2535;
+}
+
+.skeleton-icon-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .skeleton-icon-circle {
+  background: linear-gradient(90deg, #1A3045 25%, #253D55 50%, #1A3045 75%);
+  background-size: 200% 100%;
+}
+
+.skeleton-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+:global(.dark-mode) .skeleton-line {
+  background: linear-gradient(90deg, #1A3045 25%, #253D55 50%, #1A3045 75%);
+  background-size: 200% 100%;
+}
+
+.skeleton-line-title { width: 40%; }
+.skeleton-line-sub { width: 65%; }
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ===== Empty State ===== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  border: 2px dashed #BAE6FD;
+}
+
+:global(.dark-mode) .empty-state {
+  background: #1A2535;
+  border-color: #1E3A5F;
+}
+
+.empty-icon-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.empty-icon-emoji {
+  font-size: 56px;
+  display: block;
+  animation: empty-bounce 2s ease-in-out infinite;
+}
+
+.empty-icon-sparkle {
+  position: absolute;
+  top: -8px;
+  right: -12px;
+  font-size: 20px;
+  animation: sparkle-twinkle 1.5s ease-in-out infinite;
+}
+
+@keyframes empty-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes sparkle-twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.empty-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2D2D2D;
+  margin-bottom: 8px;
+}
+
+:global(.dark-mode) .empty-title {
+  color: #E8E8E8;
+}
+
+.empty-desc {
+  font-size: 14px;
+  color: #9CA3AF;
+  margin-bottom: 20px;
+}
+
+:global(.dark-mode) .empty-desc {
+  color: #88A8A0;
+}
+
+/* ===== Records List ===== */
 .records-list {
   display: flex;
   flex-direction: column;
@@ -424,38 +733,86 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 0;
   background: #FFFFFF;
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
-}
-
-.record-item:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transform: translateY(-1px);
+  transition: all 0.25s ease;
+  overflow: hidden;
+  position: relative;
+  opacity: 0;
+  transform: translateX(-12px);
+  animation: record-enter 0.4s ease forwards;
+  animation-delay: var(--item-delay, 0s);
 }
 
 :global(.dark-mode) .record-item {
-  background: #2A2A45;
+  background: #1A2535;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+@keyframes record-enter {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.record-item:hover {
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.12);
+  transform: translateX(3px);
+}
+
 :global(.dark-mode) .record-item:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.08);
+}
+
+.record-accent {
+  width: 4px;
+  align-self: stretch;
+  background: linear-gradient(180deg, #0EA5E9 0%, #67E8F9 100%);
+  border-radius: 4px 0 0 4px;
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.25s ease;
+}
+
+.record-item:hover .record-accent {
+  opacity: 1;
 }
 
 .record-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
   flex: 1;
+  padding: 14px 16px 14px 14px;
+}
+
+.record-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(103, 232, 249, 0.1) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+:global(.dark-mode) .record-icon-wrap {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(103, 232, 249, 0.1) 100%);
+}
+
+.record-item:hover .record-icon-wrap {
+  transform: scale(1.08);
 }
 
 .record-icon {
-  font-size: 24px;
-  flex-shrink: 0;
+  font-size: 22px;
+  line-height: 1;
 }
 
 .record-info {
@@ -479,6 +836,23 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   color: #E8E8E8;
 }
 
+.record-pet-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0EA5E9;
+  background: rgba(14, 165, 233, 0.08);
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
+:global(.dark-mode) .record-pet-badge {
+  color: #67E8F9;
+  background: rgba(103, 232, 249, 0.1);
+}
+
 .record-meta {
   font-size: 12px;
   color: #9CA3AF;
@@ -486,7 +860,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
 }
 
 :global(.dark-mode) .record-meta {
-  color: #8888A0;
+  color: #88A8A0;
 }
 
 .record-date {
@@ -494,59 +868,150 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
 }
 
 :global(.dark-mode) .record-date {
-  color: #B8B8CC;
+  color: #7DD3FC;
 }
 
 .record-actions {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
+  padding-right: 12px;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
 }
 
+.record-item:hover .record-actions {
+  opacity: 1;
+}
+
+.action-btn {
+  border-radius: 8px;
+}
+
+/* ===== Pagination ===== */
 .pagination-wrapper {
   display: flex;
   justify-content: center;
   margin-top: 24px;
 }
 
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .page-header {
+  .hero-inner {
+    padding: 28px 20px 20px;
+  }
+
+  .hero-title {
+    font-size: 26px;
+  }
+
+  .hero-title-icon {
+    font-size: 28px;
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+  }
+
+  .hero-stats-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .hero-stat-divider {
+    display: none;
+  }
+
+  .hero-stat {
+    gap: 6px;
+  }
+
+  .hero-stat-value {
+    font-size: 18px;
+  }
+
+  .hero-stat-label {
+    font-size: 11px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .toolbar-left {
+    width: 100%;
+  }
+
+  .pet-selector {
+    width: 100%;
+  }
+
+  .toolbar-right {
+    justify-content: center;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+
+  .record-item {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .page-header-left {
-    text-align: center;
-  }
-
-  .page-subtitle {
-    margin-left: 0;
-  }
-
-  .page-header-right {
-    display: flex;
-    justify-content: center;
-  }
-
-  .stats-row {
-    grid-template-columns: repeat(2, 1fr);
+  .record-left {
+    padding: 12px 10px 8px 10px;
     gap: 10px;
   }
 
-  .stat-card-icon {
-    font-size: 22px;
+  .record-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
   }
 
-  .stat-card-value {
+  .record-icon {
     font-size: 18px;
-  }
-
-  .record-item {
-    padding: 12px;
   }
 
   .record-weight {
     font-size: 15px;
+  }
+
+  .record-actions {
+    align-self: flex-end;
+    padding: 0 10px 10px;
+  }
+
+  .empty-icon-emoji {
+    font-size: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-inner {
+    padding: 22px 16px 18px;
+  }
+
+  .hero-title {
+    font-size: 22px;
+    gap: 8px;
+  }
+
+  .hero-title-icon {
+    font-size: 24px;
+  }
+
+  .hero-stats-bar {
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .hero-stat-value {
+    font-size: 16px;
   }
 }
 </style>
