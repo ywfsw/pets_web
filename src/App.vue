@@ -20,7 +20,7 @@ import {
   NAvatar,
   NDropdown
 } from 'naive-ui';
-import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline } from '@vicons/ionicons5';
+import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline } from '@vicons/ionicons5';
 
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { usePetStore } from '@/stores/petStore.js';
@@ -30,6 +30,7 @@ import DashboardView from '@/views/DashboardView.vue';
 import PetManagement from '@/views/PetManagement.vue';
 import PetAlbum from '@/views/PetAlbum.vue';
 import AdminPage from '@/views/AdminPage.vue';
+import GrowthTimelineView from '@/views/GrowthTimelineView.vue';
 
 import AuthModal from '@/components/AuthModal.vue';
 import PetDetailModal from '@/components/PetDetailModal.vue';
@@ -190,6 +191,11 @@ const menuOptions = computed(() => {
       label: '宠物相册',
       key: 'pet-album',
       icon: () => h(NIcon, null, { default: () => h(Images) })
+    },
+    {
+      label: '成长时间线',
+      key: 'timeline',
+      icon: () => h(NIcon, null, { default: () => h(TimeOutline) })
     }
   ];
 
@@ -366,6 +372,7 @@ onMounted(async () => {
                   <DashboardView v-if="activeKey === 'dashboard'" />
                   <PetManagement v-if="activeKey === 'pets'" />
                   <PetAlbum v-if="activeKey === 'pet-album'" />
+                  <GrowthTimelineView v-if="activeKey === 'timeline'" />
                   <AdminPage v-if="activeKey === 'admin'" />
                 </div>
               </n-layout-content>

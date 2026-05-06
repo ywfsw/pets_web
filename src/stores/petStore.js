@@ -85,6 +85,7 @@ import {
     const activePage = ref('dashboard');
     const albumFilterPetId = ref(null);
     const albumFilterPetName = ref('');
+    const timelinePetId = ref(null);
     const upcomingEvents = ref([]);
     const loadingUpcoming = ref(false);
     const searchKeyword = ref('');
@@ -654,6 +655,11 @@ import {
       activePage.value = 'pet-album';
     }
 
+    function navigateToTimeline(petId = null) {
+      timelinePetId.value = petId;
+      activePage.value = 'timeline';
+    }
+
     function clearAlbumFilter() {
       albumFilterPetId.value = null;
       albumFilterPetName.value = '';
@@ -719,6 +725,7 @@ import {
       activePage,
       albumFilterPetId,
       albumFilterPetName,
+      timelinePetId,
       searchKeyword,
       speciesFilter,
       genderFilter,
@@ -778,6 +785,7 @@ import {
       switchToEditMode,
       handleDeletePet, // (❗)
       navigateToAlbum,
-      clearAlbumFilter
+      clearAlbumFilter,
+      navigateToTimeline
     };
   });

@@ -24,7 +24,7 @@ import {
   NCollapse,
   NCollapseItem
 } from 'naive-ui';
-import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline, ArrowForwardOutline, RestaurantOutline } from '@vicons/ionicons5';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline, ArrowForwardOutline, RestaurantOutline, TimeOutline } from '@vicons/ionicons5';
 import { getPetGalleryByPetId } from '@/api.js';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
@@ -83,6 +83,14 @@ const handleViewAllPhotos = () => {
   if (pet) {
     petStore.closeAllPetModals();
     petStore.navigateToAlbum(pet.id, pet.name);
+  }
+};
+
+const handleViewTimeline = () => {
+  const pet = petStore.detailModal.data;
+  if (pet) {
+    petStore.closeAllPetModals();
+    petStore.navigateToTimeline(pet.id);
   }
 };
 
@@ -819,6 +827,12 @@ const timelineItems = computed(() => {
               <n-icon><RestaurantOutline /></n-icon>
             </template>
             喂食
+          </n-button>
+          <n-button @click="handleViewTimeline" class="action-btn">
+            <template #icon>
+              <n-icon><TimeOutline /></n-icon>
+            </template>
+            时间线
           </n-button>
           <n-button type="primary" @click="petStore.switchToEditMode()" class="edit-btn">
             编辑信息
