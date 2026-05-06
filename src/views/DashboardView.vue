@@ -242,37 +242,43 @@ const computeAge = (birthday) => {
 
       <template v-if="!loading && dashboardData">
         <!-- 统计卡片 -->
-        <div class="stats-row section-entrance" style="--enter-delay: 0s">
-          <n-card class="stat-card stat-pets" :bordered="false">
-            <div class="stat-icon">🐾</div>
+        <div class="stats-row">
+          <div class="stat-card stat-pets" style="--stat-delay: 0s">
+            <div class="stat-icon-wrap"><span class="stat-icon">🐾</span></div>
             <div class="stat-value">{{ dashboardData.totalPets }}</div>
             <div class="stat-label">我的萌宠</div>
-          </n-card>
-          <n-card class="stat-card stat-events" :bordered="false">
-            <div class="stat-icon">📋</div>
+            <div class="stat-glow"></div>
+          </div>
+          <div class="stat-card stat-events" style="--stat-delay: 0.05s">
+            <div class="stat-icon-wrap"><span class="stat-icon">📋</span></div>
             <div class="stat-value">{{ dashboardData.pendingEvents }}</div>
             <div class="stat-label">待处理事件</div>
-          </n-card>
-          <n-card class="stat-card stat-photos" :bordered="false">
-            <div class="stat-icon">📷</div>
+            <div class="stat-glow"></div>
+          </div>
+          <div class="stat-card stat-photos" style="--stat-delay: 0.1s">
+            <div class="stat-icon-wrap"><span class="stat-icon">📷</span></div>
             <div class="stat-value">{{ dashboardData.totalPhotos }}</div>
             <div class="stat-label">相册照片</div>
-          </n-card>
-          <n-card class="stat-card stat-weight" :bordered="false">
-            <div class="stat-icon">⚖️</div>
+            <div class="stat-glow"></div>
+          </div>
+          <div class="stat-card stat-weight" style="--stat-delay: 0.15s">
+            <div class="stat-icon-wrap"><span class="stat-icon">⚖️</span></div>
             <div class="stat-value">{{ dashboardData.totalWeightRecords }}</div>
             <div class="stat-label">体重记录</div>
-          </n-card>
-          <n-card class="stat-card stat-health" :bordered="false">
-            <div class="stat-icon">🩺</div>
+            <div class="stat-glow"></div>
+          </div>
+          <div class="stat-card stat-health" style="--stat-delay: 0.2s">
+            <div class="stat-icon-wrap"><span class="stat-icon">🩺</span></div>
             <div class="stat-value">{{ dashboardData.totalHealthEvents }}</div>
             <div class="stat-label">健康事件</div>
-          </n-card>
-          <n-card class="stat-card stat-feeding" :bordered="false">
-            <div class="stat-icon">🍽️</div>
+            <div class="stat-glow"></div>
+          </div>
+          <div class="stat-card stat-feeding" style="--stat-delay: 0.25s">
+            <div class="stat-icon-wrap"><span class="stat-icon">🍽️</span></div>
             <div class="stat-value">{{ dashboardData.totalFeedings }}</div>
             <div class="stat-label">喂养记录</div>
-          </n-card>
+            <div class="stat-glow"></div>
+          </div>
         </div>
 
         <!-- 快捷操作 -->
@@ -282,12 +288,13 @@ const computeAge = (birthday) => {
             <span class="section-title">快捷操作</span>
           </div>
           <div class="quick-actions-row">
-            <div class="quick-action-card" @click="handleQuickAction('addPet')">
+            <div class="quick-action-card" style="--qa-delay: 0s" @click="handleQuickAction('addPet')">
               <div class="quick-action-icon add-pet-icon">🐾</div>
               <span class="quick-action-label">添加宠物</span>
             </div>
             <div
               class="quick-action-card"
+              style="--qa-delay: 0.04s"
               :class="{ 'quick-action-disabled': !dashboardData.petOverviews?.length }"
               @click="handleQuickAction('addWeight')"
             >
@@ -296,6 +303,7 @@ const computeAge = (birthday) => {
             </div>
             <div
               class="quick-action-card"
+              style="--qa-delay: 0.08s"
               :class="{ 'quick-action-disabled': !dashboardData.petOverviews?.length }"
               @click="handleQuickAction('addHealthEvent')"
             >
@@ -304,17 +312,18 @@ const computeAge = (birthday) => {
             </div>
             <div
               class="quick-action-card"
+              style="--qa-delay: 0.12s"
               :class="{ 'quick-action-disabled': !dashboardData.petOverviews?.length }"
               @click="handleQuickAction('addFeeding')"
             >
               <div class="quick-action-icon add-feeding-icon">🍽️</div>
               <span class="quick-action-label">记录喂养</span>
             </div>
-            <div class="quick-action-card" @click="handleQuickAction('album')">
+            <div class="quick-action-card" style="--qa-delay: 0.16s" @click="handleQuickAction('album')">
               <div class="quick-action-icon album-icon">📷</div>
               <span class="quick-action-label">宠物相册</span>
             </div>
-            <div class="quick-action-card" @click="handleQuickAction('timeline')">
+            <div class="quick-action-card" style="--qa-delay: 0.2s" @click="handleQuickAction('timeline')">
               <div class="quick-action-icon timeline-icon">📈</div>
               <span class="quick-action-label">成长时间线</span>
             </div>
@@ -798,7 +807,7 @@ const computeAge = (birthday) => {
   }
 }
 
-/* 统计卡片 */
+/* 统计卡片 - 毛玻璃版 */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -815,65 +824,130 @@ const computeAge = (birthday) => {
 .stat-card {
   text-align: center;
   border-radius: 20px;
-  padding: 24px 16px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 26px 16px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+  animation: stat-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--stat-delay, 0s);
+}
+
+@keyframes stat-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stat-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px) scale(1.03);
+}
+
+.stat-card:hover .stat-glow {
+  opacity: 1;
 }
 
 .stat-pets {
-  background: linear-gradient(135deg, #FFF5F7 0%, #FFE4E9 100%);
+  background: rgba(255, 240, 243, 0.55);
+  border-color: rgba(255, 200, 210, 0.4);
 }
+.stat-pets .stat-glow { box-shadow: 0 8px 32px rgba(255, 155, 168, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
 
 .stat-events {
-  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  background: rgba(254, 249, 215, 0.55);
+  border-color: rgba(253, 230, 138, 0.4);
 }
+.stat-events .stat-glow { box-shadow: 0 8px 32px rgba(251, 191, 36, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
 
 .stat-photos {
-  background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+  background: rgba(245, 240, 255, 0.55);
+  border-color: rgba(221, 214, 254, 0.4);
 }
+.stat-photos .stat-glow { box-shadow: 0 8px 32px rgba(167, 139, 250, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
 
 .stat-weight {
-  background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+  background: rgba(230, 245, 255, 0.55);
+  border-color: rgba(186, 230, 253, 0.4);
 }
+.stat-weight .stat-glow { box-shadow: 0 8px 32px rgba(56, 189, 248, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
 
 .stat-health {
-  background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%);
+  background: rgba(252, 238, 245, 0.55);
+  border-color: rgba(251, 207, 232, 0.4);
 }
+.stat-health .stat-glow { box-shadow: 0 8px 32px rgba(244, 114, 182, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
 
 .stat-feeding {
-  background: linear-gradient(135deg, #FEF9C3 0%, #FEF08A 100%);
+  background: rgba(255, 248, 220, 0.55);
+  border-color: rgba(254, 240, 138, 0.4);
 }
+.stat-feeding .stat-glow { box-shadow: 0 8px 32px rgba(250, 204, 21, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
 
 :global(.dark-mode) .stat-pets {
-  background: linear-gradient(135deg, #3D2025 0%, #4D2030 100%);
+  background: rgba(61, 32, 37, 0.55);
+  border-color: rgba(120, 60, 70, 0.4);
 }
-
 :global(.dark-mode) .stat-events {
-  background: linear-gradient(135deg, #3D3520 0%, #4D4020 100%);
+  background: rgba(61, 53, 32, 0.55);
+  border-color: rgba(120, 100, 50, 0.4);
 }
-
 :global(.dark-mode) .stat-photos {
-  background: linear-gradient(135deg, #2D2040 0%, #3D2050 100%);
+  background: rgba(45, 32, 64, 0.55);
+  border-color: rgba(100, 70, 140, 0.4);
 }
-
 :global(.dark-mode) .stat-weight {
-  background: linear-gradient(135deg, #1E2A3A 0%, #1E3A4A 100%);
+  background: rgba(30, 42, 58, 0.55);
+  border-color: rgba(56, 100, 140, 0.4);
 }
-
 :global(.dark-mode) .stat-health {
-  background: linear-gradient(135deg, #3A1D2E 0%, #4A1D3E 100%);
+  background: rgba(58, 29, 46, 0.55);
+  border-color: rgba(120, 50, 90, 0.4);
 }
-
 :global(.dark-mode) .stat-feeding {
-  background: linear-gradient(135deg, #3A3520 0%, #4A4020 100%);
+  background: rgba(58, 53, 32, 0.55);
+  border-color: rgba(120, 110, 50, 0.4);
+}
+:global(.dark-mode) .stat-pets .stat-glow { box-shadow: 0 8px 32px rgba(255, 100, 120, 0.15); }
+:global(.dark-mode) .stat-events .stat-glow { box-shadow: 0 8px 32px rgba(251, 191, 36, 0.12); }
+:global(.dark-mode) .stat-photos .stat-glow { box-shadow: 0 8px 32px rgba(167, 139, 250, 0.12); }
+:global(.dark-mode) .stat-weight .stat-glow { box-shadow: 0 8px 32px rgba(56, 189, 248, 0.12); }
+:global(.dark-mode) .stat-health .stat-glow { box-shadow: 0 8px 32px rgba(244, 114, 182, 0.12); }
+:global(.dark-mode) .stat-feeding .stat-glow { box-shadow: 0 8px 32px rgba(250, 204, 21, 0.12); }
+
+.stat-icon-wrap {
+  margin-bottom: 10px;
 }
 
 .stat-icon {
   font-size: 32px;
-  margin-bottom: 8px;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.15);
+  animation: stat-icon-bounce 0.5s ease;
+}
+
+@keyframes stat-icon-bounce {
+  0%, 100% { transform: scale(1.15); }
+  50% { transform: scale(1.3); }
 }
 
 .stat-value {
@@ -881,24 +955,32 @@ const computeAge = (birthday) => {
   font-weight: 800;
   color: #2D2D2D;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  background: linear-gradient(135deg, #2D2D2D 0%, #555 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 :global(.dark-mode) .stat-value {
-  color: #E8E8E8;
+  background: linear-gradient(135deg, #E8E8E8 0%, #B8B8CC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .stat-label {
-  font-size: 14px;
-  color: #6B6B6B;
+  font-size: 13px;
+  color: #7B7B8B;
   font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
 :global(.dark-mode) .stat-label {
-  color: #B8B8CC;
+  color: #A0A0B8;
 }
 
-/* 宠物速览 */
+/* 宠物速览 - 毛玻璃版 */
 .pet-overviews-section {
   margin-bottom: 20px;
 }
@@ -921,31 +1003,55 @@ const computeAge = (birthday) => {
 }
 
 .pet-overview-card {
-  background: white;
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 18px;
   padding: 18px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid #F0E6E0;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.3s ease, background 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   display: flex;
   flex-direction: column;
   gap: 12px;
   position: relative;
+  animation: pet-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.pet-overview-card:nth-child(1) { animation-delay: 0s; }
+.pet-overview-card:nth-child(2) { animation-delay: 0.06s; }
+.pet-overview-card:nth-child(3) { animation-delay: 0.12s; }
+.pet-overview-card:nth-child(4) { animation-delay: 0.18s; }
+.pet-overview-card:nth-child(5) { animation-delay: 0.24s; }
+.pet-overview-card:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes pet-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .pet-overview-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(255, 155, 168, 0.18);
-  border-color: #FFD5DD;
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 32px rgba(255, 155, 168, 0.18);
+  border-color: rgba(255, 200, 215, 0.6);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 :global(.dark-mode) .pet-overview-card {
-  background: #1F1F3A;
-  border-color: #3D3D5C;
+  background: rgba(35, 35, 65, 0.55);
+  border-color: rgba(80, 80, 120, 0.35);
 }
 
 :global(.dark-mode) .pet-overview-card:hover {
-  border-color: #5D5D7C;
+  background: rgba(45, 45, 80, 0.65);
+  border-color: rgba(120, 100, 180, 0.45);
+  box-shadow: 0 10px 32px rgba(120, 100, 200, 0.15);
 }
 
 .pet-overview-header {
@@ -1636,7 +1742,7 @@ const computeAge = (birthday) => {
   background: linear-gradient(90deg, #D97706 0%, #B45309 100%);
 }
 
-/* 快捷操作 */
+/* 快捷操作 - 毛玻璃版 */
 .quick-actions-section {
   margin-bottom: 20px;
 }
@@ -1651,105 +1757,145 @@ const computeAge = (birthday) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 20px 12px;
-  background: white;
-  border-radius: 16px;
-  border: 1px solid #F0E6E0;
+  gap: 10px;
+  padding: 22px 12px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease, border-color 0.3s ease;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: qa-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--qa-delay, 0s);
+}
+
+@keyframes qa-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .quick-action-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(255, 155, 168, 0.18);
-  border-color: #FFD5DD;
+  transform: translateY(-5px) scale(1.04);
+  box-shadow: 0 12px 36px rgba(255, 155, 168, 0.18);
+  border-color: rgba(255, 200, 215, 0.6);
+  background: rgba(255, 255, 255, 0.65);
 }
 
 :global(.dark-mode) .quick-action-card {
-  background: #1F1F3A;
-  border-color: #3D3D5C;
+  background: rgba(35, 35, 65, 0.55);
+  border-color: rgba(80, 80, 120, 0.35);
 }
 
 :global(.dark-mode) .quick-action-card:hover {
-  border-color: #5D5D7C;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  background: rgba(45, 45, 80, 0.65);
+  border-color: rgba(120, 100, 180, 0.45);
+  box-shadow: 0 12px 36px rgba(120, 100, 200, 0.15);
 }
 
 .quick-action-disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
+  filter: grayscale(0.3);
 }
 
 .quick-action-icon {
   font-size: 28px;
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
 }
 
 .quick-action-card:hover .quick-action-icon {
-  transform: scale(1.1);
+  transform: scale(1.12);
+  animation: qa-icon-pop 0.45s ease;
+}
+
+@keyframes qa-icon-pop {
+  0%, 100% { transform: scale(1.12); }
+  50% { transform: scale(1.25); }
 }
 
 .add-pet-icon {
-  background: linear-gradient(135deg, #FFF5F7 0%, #FFE4E9 100%);
+  background: linear-gradient(135deg, rgba(255, 245, 247, 0.8), rgba(255, 228, 233, 0.8));
+  box-shadow: 0 4px 16px rgba(255, 155, 168, 0.15);
 }
 
 .add-weight-icon {
-  background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.8), rgba(186, 230, 253, 0.8));
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.15);
 }
 
 .add-health-icon {
-  background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%);
+  background: linear-gradient(135deg, rgba(252, 231, 243, 0.8), rgba(251, 207, 232, 0.8));
+  box-shadow: 0 4px 16px rgba(244, 114, 182, 0.15);
 }
 
 .add-feeding-icon {
-  background: linear-gradient(135deg, #FEF9C3 0%, #FEF08A 100%);
+  background: linear-gradient(135deg, rgba(254, 249, 195, 0.8), rgba(254, 240, 138, 0.8));
+  box-shadow: 0 4px 16px rgba(250, 204, 21, 0.15);
 }
 
 .album-icon {
-  background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+  background: linear-gradient(135deg, rgba(237, 233, 254, 0.8), rgba(221, 214, 254, 0.8));
+  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.15);
 }
 
 .timeline-icon {
-  background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+  background: linear-gradient(135deg, rgba(209, 250, 229, 0.8), rgba(167, 243, 208, 0.8));
+  box-shadow: 0 4px 16px rgba(52, 211, 153, 0.15);
 }
 
 :global(.dark-mode) .add-pet-icon {
-  background: linear-gradient(135deg, #3D2025 0%, #4D2030 100%);
+  background: linear-gradient(135deg, rgba(61, 32, 37, 0.8), rgba(77, 32, 48, 0.8));
+  box-shadow: 0 4px 16px rgba(255, 100, 120, 0.1);
 }
 
 :global(.dark-mode) .add-weight-icon {
-  background: linear-gradient(135deg, #1E2A3A 0%, #1E3A4A 100%);
+  background: linear-gradient(135deg, rgba(30, 42, 58, 0.8), rgba(30, 58, 74, 0.8));
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.1);
 }
 
 :global(.dark-mode) .add-health-icon {
-  background: linear-gradient(135deg, #3A1D2E 0%, #4A1D3E 100%);
+  background: linear-gradient(135deg, rgba(58, 29, 46, 0.8), rgba(74, 29, 62, 0.8));
+  box-shadow: 0 4px 16px rgba(244, 114, 182, 0.1);
 }
 
 :global(.dark-mode) .add-feeding-icon {
-  background: linear-gradient(135deg, #3A3520 0%, #4A4020 100%);
+  background: linear-gradient(135deg, rgba(58, 53, 32, 0.8), rgba(74, 64, 32, 0.8));
+  box-shadow: 0 4px 16px rgba(250, 204, 21, 0.1);
 }
 
 :global(.dark-mode) .album-icon {
-  background: linear-gradient(135deg, #2D2040 0%, #3D2050 100%);
+  background: linear-gradient(135deg, rgba(45, 32, 64, 0.8), rgba(61, 32, 80, 0.8));
+  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.1);
 }
 
 :global(.dark-mode) .timeline-icon {
-  background: linear-gradient(135deg, #1A3A2A 0%, #2A4A3A 100%);
+  background: linear-gradient(135deg, rgba(26, 58, 42, 0.8), rgba(42, 74, 58, 0.8));
+  box-shadow: 0 4px 16px rgba(52, 211, 153, 0.1);
 }
 
 .quick-action-label {
   font-size: 13px;
   font-weight: 600;
   color: #4A4A4A;
+  letter-spacing: 0.3px;
 }
 
 :global(.dark-mode) .quick-action-label {
