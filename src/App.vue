@@ -504,20 +504,22 @@ onMounted(async () => {
               </header>
 
               <n-layout-content content-style="padding: 96px 24px 24px; max-width: 1400px; margin: 0 auto; width: 100%;">
-                <div class="pet-content">
-                  <DashboardView v-if="activeKey === 'dashboard'" />
-                  <HealthOverviewView v-if="activeKey === 'health-overview'" />
-                  <PetManagement v-if="activeKey === 'pets'" />
-                  <PetAlbum v-if="activeKey === 'pet-album'" />
-                  <GrowthTimelineView v-if="activeKey === 'timeline'" />
-                  <FeedingRecordsView v-if="activeKey === 'feeding'" />
-                  <BathingRecordsView v-if="activeKey === 'bathing'" />
-                  <MedicationRecordsView v-if="activeKey === 'medication'" />
-                  <HealthEventsView v-if="activeKey === 'health-events'" />
-                  <WeightLogsView v-if="activeKey === 'weight-logs'" />
-                  <LeaderboardView v-if="activeKey === 'leaderboard'" />
-                  <AdminPage v-if="activeKey === 'admin'" />
-                </div>
+                <Transition name="page-fade" mode="out-in">
+                  <div class="pet-content" :key="activeKey">
+                    <DashboardView v-if="activeKey === 'dashboard'" />
+                    <HealthOverviewView v-if="activeKey === 'health-overview'" />
+                    <PetManagement v-if="activeKey === 'pets'" />
+                    <PetAlbum v-if="activeKey === 'pet-album'" />
+                    <GrowthTimelineView v-if="activeKey === 'timeline'" />
+                    <FeedingRecordsView v-if="activeKey === 'feeding'" />
+                    <BathingRecordsView v-if="activeKey === 'bathing'" />
+                    <MedicationRecordsView v-if="activeKey === 'medication'" />
+                    <HealthEventsView v-if="activeKey === 'health-events'" />
+                    <WeightLogsView v-if="activeKey === 'weight-logs'" />
+                    <LeaderboardView v-if="activeKey === 'leaderboard'" />
+                    <AdminPage v-if="activeKey === 'admin'" />
+                  </div>
+                </Transition>
               </n-layout-content>
               <n-layout-footer bordered class="pet-footer">
                 <span>Made with ❤️ 萌宠之家</span>
@@ -942,12 +944,7 @@ onMounted(async () => {
 
 /* 内容区域 - 顶部 padding 为导航栏留空间 */
 .pet-content {
-  animation: pet-fade-in 0.3s ease;
-}
-
-@keyframes pet-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  min-height: 60vh;
 }
 
 /* 页脚 */
@@ -975,6 +972,24 @@ onMounted(async () => {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   z-index: 1100;
+}
+
+/* Page transition animation */
+.page-fade-enter-active {
+  transition: opacity 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.page-fade-leave-active {
+  transition: opacity 0.18s cubic-bezier(0.55, 0, 1, 0.45),
+              transform 0.18s cubic-bezier(0.55, 0, 1, 0.45);
+}
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 .drawer-backdrop-enter-active,
