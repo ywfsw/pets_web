@@ -8,9 +8,7 @@ import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
 import PetLeaderboard from '@/components/PetLeaderboard.vue';
 import {
   NCard,
-  NSpace,
   NIcon,
-  NTag,
   NSpin,
   NEmpty,
   NButton,
@@ -18,12 +16,7 @@ import {
   NAvatar,
   useMessage
 } from 'naive-ui';
-import {
-  CalendarOutline,
-  AlertCircleOutline,
-  CheckmarkCircleOutline,
-  TimeOutline
-} from '@vicons/ionicons5';
+import { AlertCircleOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -414,23 +407,33 @@ const computeAge = (birthday) => {
         </div>
 
         <!-- 即将到期事件 -->
-        <n-card class="section-card section-entrance" :bordered="false" style="--enter-delay: 0.24s">
-          <template #header>
-            <n-space align="center">
-              <n-icon :component="CalendarOutline" size="20" color="#FF9BA8" />
-              <span class="section-title">📅 即将到期的事件</span>
-              <n-tag v-if="petStore.upcomingEvents.length" size="small" round type="warning">
-                {{ petStore.upcomingEvents.length }}
-              </n-tag>
-            </n-space>
-          </template>
-          <n-spin :show="petStore.loadingUpcoming">
-            <div v-if="petStore.upcomingEvents.length" class="event-list">
+        <div class="events-section section-entrance" style="--enter-delay: 0.24s">
+          <div class="section-header events-section-header">
+            <span class="section-emoji">📅</span>
+            <span class="section-title">即将到期的事件</span>
+            <span v-if="petStore.upcomingEvents.length" class="section-count-badge events-badge">
+              {{ petStore.upcomingEvents.length }}
+            </span>
+          </div>
+          <div class="events-glass-container">
+            <!-- 骨架屏 -->
+            <div v-if="petStore.loadingUpcoming" class="events-skeleton">
+              <div v-for="i in 3" :key="i" class="event-skeleton-item">
+                <div class="skeleton-days-badge"></div>
+                <div class="skeleton-info">
+                  <div class="skeleton-line skeleton-line-short"></div>
+                  <div class="skeleton-line skeleton-line-long"></div>
+                </div>
+              </div>
+            </div>
+            <!-- 数据 -->
+            <div v-else-if="petStore.upcomingEvents.length" class="event-list">
               <div
-                v-for="event in petStore.upcomingEvents.slice(0, 5)"
+                v-for="(event, idx) in petStore.upcomingEvents.slice(0, 5)"
                 :key="event.id"
                 class="event-item"
                 :class="{ 'event-overdue': event.isOverdue }"
+                :style="{ animationDelay: (idx * 0.06) + 's' }"
                 @click="handleShowDetail(event.petId)"
               >
                 <div class="event-days-badge" :class="getDaysBadgeClass(event.daysLeft)">
@@ -441,9 +444,9 @@ const computeAge = (birthday) => {
                   <div class="event-info-top">
                     <span class="event-pet-name">{{ event.petName }}</span>
                     <span class="event-type-icon">{{ getEventTypeIcon(event.eventTypeLabel) }}</span>
-                    <n-tag :type="getDaysTagType(event.daysLeft)" size="small" round>
+                    <span class="event-type-tag" :class="'tag-' + getDaysTagType(event.daysLeft)">
                       {{ event.eventTypeLabel }}
-                    </n-tag>
+                    </span>
                   </div>
                   <div class="event-info-bottom">
                     <span class="event-notes">{{ event.notes || '待处理' }}</span>
@@ -456,64 +459,61 @@ const computeAge = (birthday) => {
                   :negative-button-props="{ size: 'tiny' }"
                 >
                   <template #trigger>
-                    <n-button
-                      text
-                      type="success"
-                      size="tiny"
+                    <span
                       class="event-complete-btn"
-                      :disabled="!authStore.isAuthenticated"
+                      :class="{ 'btn-disabled': !authStore.isAuthenticated }"
                       @click.stop
                     >
-                      <template #icon>
-                        <n-icon :component="CheckmarkCircleOutline" :size="18" />
-                      </template>
-                    </n-button>
+                      ✓
+                    </span>
                   </template>
                   标记此事件为已完成？
                 </n-popconfirm>
                 <span class="event-arrow">›</span>
               </div>
             </div>
-            <n-empty v-else-if="!petStore.loadingUpcoming" description="太棒了！没有需要提醒的事件～" size="small">
-              <template #icon>
-                <span style="font-size: 40px;">🎉</span>
-              </template>
-            </n-empty>
-          </n-spin>
-        </n-card>
-
-        <!-- 最近活动 -->
-        <n-card class="section-card section-entrance" :bordered="false" style="--enter-delay: 0.28s">
-          <template #header>
-            <n-space align="center">
-              <n-icon :component="TimeOutline" size="20" color="#C084FC" />
-              <span class="section-title">🕐 最近活动</span>
-            </n-space>
-          </template>
-          <div v-if="dashboardData.recentActivities?.length" class="activity-list">
-            <div
-              v-for="item in dashboardData.recentActivities"
-              :key="item.id"
-              class="activity-item"
-            >
-              <div class="activity-dot" :style="{ background: getActivityColor(item.type) }">
-                <span class="activity-icon">{{ item.icon }}</span>
-              </div>
-              <div class="activity-content">
-                <div class="activity-header">
-                  <span class="activity-pet-name">{{ item.petName }}</span>
-                  <span class="activity-date">{{ item.date }}</span>
-                </div>
-                <span class="activity-title">{{ item.title }}</span>
-              </div>
+            <!-- 空状态 -->
+            <div v-else class="events-empty">
+              <span class="empty-emoji">🎉</span>
+              <span class="empty-text">太棒了！没有需要提醒的事件～</span>
+              <span class="empty-stars">✨</span>
             </div>
           </div>
-          <n-empty v-else description="暂无最近活动，快去记录萌宠的生活吧！" size="small">
-            <template #icon>
-              <span style="font-size: 40px;">📝</span>
-            </template>
-          </n-empty>
-        </n-card>
+        </div>
+
+        <!-- 最近活动 -->
+        <div class="activities-section section-entrance" style="--enter-delay: 0.28s">
+          <div class="section-header activities-section-header">
+            <span class="section-emoji">🕐</span>
+            <span class="section-title">最近活动</span>
+          </div>
+          <div class="activities-glass-container">
+            <div v-if="dashboardData.recentActivities?.length" class="activity-list">
+              <div
+                v-for="(item, idx) in dashboardData.recentActivities"
+                :key="item.id"
+                class="activity-item"
+                :style="{ animationDelay: (idx * 0.05) + 's' }"
+              >
+                <div class="activity-dot" :style="{ background: getActivityColor(item.type) }">
+                  <span class="activity-icon">{{ item.icon }}</span>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-header">
+                    <span class="activity-pet-name">{{ item.petName }}</span>
+                    <span class="activity-date">{{ item.date }}</span>
+                  </div>
+                  <span class="activity-title">{{ item.title }}</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="activities-empty">
+              <span class="empty-emoji">📝</span>
+              <span class="empty-text">暂无最近活动，快去记录萌宠的生活吧！</span>
+              <span class="empty-stars">✨</span>
+            </div>
+          </div>
+        </div>
       </template>
 
       <!-- 加载失败 -->
@@ -761,6 +761,11 @@ const computeAge = (birthday) => {
 @keyframes gentle-bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* 移动端 Hero 响应式 */
@@ -1051,53 +1056,87 @@ const computeAge = (birthday) => {
   color: #555;
 }
 
-/* 区块卡片 */
-.section-card {
-  border-radius: 20px;
+/* ===== 事件提醒区域 ===== */
+.events-section,
+.activities-section {
   margin-bottom: 20px;
 }
 
-.section-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #2D2D2D;
+.events-section-header,
+.activities-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
-:global(.dark-mode) .section-title {
-  color: #E8E8E8;
+.section-count-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: white;
+  line-height: 1.4;
+}
+
+.events-badge {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.events-glass-container,
+.activities-glass-container {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+:global(.dark-mode) .events-glass-container,
+:global(.dark-mode) .activities-glass-container {
+  background: rgba(26, 26, 50, 0.72);
+  border-color: rgba(60, 60, 90, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* 事件列表 */
 .event-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .event-item {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px 16px;
-  background: white;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid transparent;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid rgba(255, 155, 168, 0.08);
+  animation: item-slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .event-item:hover {
-  transform: translateX(4px);
-  box-shadow: 0 4px 15px rgba(255, 155, 168, 0.15);
-  border-color: #FFE4E9;
+  transform: translateX(6px);
+  box-shadow: 0 6px 24px rgba(255, 155, 168, 0.18);
+  border-color: rgba(255, 155, 168, 0.25);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 :global(.dark-mode) .event-item {
-  background: #1F1F3A;
+  background: rgba(30, 30, 56, 0.6);
+  border-color: rgba(60, 60, 90, 0.3);
 }
 
 :global(.dark-mode) .event-item:hover {
-  border-color: #3D3D5C;
+  background: rgba(30, 30, 56, 0.85);
+  border-color: rgba(90, 90, 120, 0.5);
 }
 
 .event-days-badge {
@@ -1109,6 +1148,11 @@ const computeAge = (birthday) => {
   height: 52px;
   border-radius: 14px;
   flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.event-item:hover .event-days-badge {
+  transform: scale(1.05);
 }
 
 .event-days-number {
@@ -1148,7 +1192,7 @@ const computeAge = (birthday) => {
 }
 
 .event-overdue:hover {
-  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.15);
+  box-shadow: 0 6px 24px rgba(220, 38, 38, 0.15);
   border-color: #DC2626;
 }
 
@@ -1210,11 +1254,49 @@ const computeAge = (birthday) => {
   flex-shrink: 0;
 }
 
+.event-type-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.tag-success {
+  background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+  color: #059669;
+}
+
+.tag-warning {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  color: #D97706;
+}
+
+.tag-error {
+  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+  color: #DC2626;
+}
+
+:global(.dark-mode) .tag-success {
+  background: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
+  color: #6EE7B7;
+}
+
+:global(.dark-mode) .tag-warning {
+  background: linear-gradient(135deg, #78350F 0%, #92400E 100%);
+  color: #FCD34D;
+}
+
+:global(.dark-mode) .tag-error {
+  background: linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%);
+  color: #FCA5A5;
+}
+
 .event-arrow {
   font-size: 20px;
   color: #D1D5DB;
   font-weight: 300;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .event-item:hover .event-arrow {
@@ -1227,55 +1309,194 @@ const computeAge = (birthday) => {
 }
 
 .event-complete-btn {
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+  color: #059669;
+  font-size: 14px;
+  font-weight: 700;
+  opacity: 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .event-item:hover .event-complete-btn {
   opacity: 1;
 }
 
+.event-complete-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+}
+
+.btn-disabled {
+  opacity: 0 !important;
+  cursor: not-allowed;
+}
+
 :global(.dark-mode) .event-complete-btn {
-  color: #86EFAC !important;
+  background: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
+  color: #6EE7B7;
+}
+
+/* 事件骨架屏 */
+.events-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-skeleton-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
+}
+
+:global(.dark-mode) .event-skeleton-item {
+  background: rgba(30, 30, 56, 0.4);
+}
+
+.skeleton-days-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .skeleton-days-badge {
+  background: linear-gradient(90deg, #2a2a4a 25%, #353560 50%, #2a2a4a 75%);
+  background-size: 200% 100%;
+}
+
+.skeleton-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+:global(.dark-mode) .skeleton-line {
+  background: linear-gradient(90deg, #2a2a4a 25%, #353560 50%, #2a2a4a 75%);
+  background-size: 200% 100%;
+}
+
+.skeleton-line-short {
+  width: 40%;
+}
+
+.skeleton-line-long {
+  width: 70%;
+}
+
+/* 空状态 */
+.events-empty,
+.activities-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 16px;
+  text-align: center;
+}
+
+.empty-emoji {
+  font-size: 40px;
+  animation: gentle-bounce 3s ease-in-out infinite;
+}
+
+.empty-text {
+  font-size: 14px;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+:global(.dark-mode) .empty-text {
+  color: #8888A0;
+}
+
+.empty-stars {
+  font-size: 16px;
+  animation: twinkle 2s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+@keyframes item-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* 活动列表 */
 .activity-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 }
 
 .activity-item {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  padding: 10px 0;
-  border-bottom: 1px dashed #F0E6E0;
+  padding: 12px 10px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: item-slide-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.activity-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.activity-item:hover {
+  background: rgba(255, 155, 168, 0.06);
 }
 
-:global(.dark-mode) .activity-item {
-  border-color: #3D3D5C;
+:global(.dark-mode) .activity-item:hover {
+  background: rgba(192, 132, 252, 0.06);
 }
 
 .activity-dot {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.activity-item:hover .activity-dot {
+  transform: scale(1.08);
 }
 
 .activity-icon {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .activity-content {
@@ -1288,7 +1509,7 @@ const computeAge = (birthday) => {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .activity-pet-name {
