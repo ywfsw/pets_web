@@ -241,6 +241,7 @@ const petStore = usePetStore();
 const authStore = useAuthStore();
 const isAuthModalVisible = ref(false);
 const showMobileMenu = ref(false);
+const showScrollTop = ref(false);
 
 // 抽屉滑动手势关闭
 const drawerRef = ref(null);
@@ -351,7 +352,16 @@ watch(showMobileMenu, (open) => {
 
 onUnmounted(() => {
   detachSwipeListeners();
+  window.removeEventListener('scroll', handleScroll);
 });
+
+const handleScroll = () => {
+  showScrollTop.value = window.scrollY > 400;
+};
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 const handleMobileMenuClick = (key) => {
   handleMenuUpdate(key);
@@ -373,6 +383,7 @@ const handleMenuUpdate = (key) => {
   } else {
     petStore.activePage = key;
   }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 const handleLogout = async () => {
@@ -417,6 +428,7 @@ onMounted(async () => {
   await dictStore.loadAllAppDictionaries();
   petStore.loadPetList();
   petStore.loadUpcomingEvents();
+  window.addEventListener('scroll', handleScroll, { passive: true });
 });
 </script>
 
@@ -525,6 +537,23 @@ onMounted(async () => {
                 <span>Made with ❤️ 萌宠之家</span>
               </n-layout-footer>
             </n-layout>
+
+            <!-- 悬浮返回顶部按钮 -->
+            <Transition name="scroll-top-fade">
+              <button
+                v-if="showScrollTop"
+                class="scroll-to-top-btn"
+                @click="scrollToTop"
+                aria-label="返回顶部"
+              >
+                <span class="scroll-to-top-icon">🐾</span>
+                <span class="scroll-to-top-arrow">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 12V2M7 2L2 7M7 2L12 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </button>
+            </Transition>
 
             <!-- Mobile Drawer - 毛玻璃升级版 -->
             <Transition name="drawer-backdrop">
@@ -1307,6 +1336,132 @@ onMounted(async () => {
 .logout-item .drawer-item-icon {
   background: rgba(252, 165, 165, 0.1);
   color: #FCA5A5;
+}
+
+/* ============================================
+   悬浮返回顶部按钮
+   ============================================ */
+.scroll-to-top-btn {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 1100;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 155, 168, 0.25);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px) saturate(1.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  box-shadow: 0 4px 20px rgba(255, 155, 168, 0.18), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0px;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  animation: scroll-btn-entrance 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes scroll-btn-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.scroll-to-top-btn:hover {
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 8px 30px rgba(255, 155, 168, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  border-color: rgba(255, 155, 168, 0.45);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.scroll-to-top-btn:active {
+  transform: translateY(-1px) scale(0.97);
+  transition-duration: 0.1s;
+}
+
+.scroll-to-top-icon {
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.scroll-to-top-btn:hover .scroll-to-top-icon {
+  transform: scale(1.2);
+  animation: paw-bounce 0.6s ease infinite;
+}
+
+@keyframes paw-bounce {
+  0%, 100% { transform: scale(1.2) translateY(0); }
+  50% { transform: scale(1.2) translateY(-3px); }
+}
+
+.scroll-to-top-arrow {
+  color: #FF9BA8;
+  line-height: 1;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  align-items: center;
+}
+
+.scroll-to-top-btn:hover .scroll-to-top-arrow {
+  transform: translateY(-2px);
+  color: #FF7A8A;
+}
+
+/* 暗色主题 */
+.dark-mode .scroll-to-top-btn {
+  background: rgba(37, 37, 66, 0.75);
+  border-color: rgba(255, 155, 168, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 155, 168, 0.08) inset;
+}
+
+.dark-mode .scroll-to-top-btn:hover {
+  background: rgba(37, 37, 66, 0.92);
+  border-color: rgba(255, 155, 168, 0.3);
+  box-shadow: 0 8px 30px rgba(255, 155, 168, 0.15), 0 0 0 1px rgba(255, 155, 168, 0.12) inset;
+}
+
+/* 过渡动画 */
+.scroll-top-fade-enter-active {
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scroll-top-fade-leave-active {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scroll-top-fade-enter-from {
+  opacity: 0;
+  transform: translateY(16px) scale(0.85);
+}
+.scroll-top-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px) scale(0.9);
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .scroll-to-top-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 46px;
+    height: 46px;
+  }
+  .scroll-to-top-icon {
+    font-size: 12px;
+  }
+  .scroll-to-top-arrow svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 /* ============================================
