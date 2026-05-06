@@ -234,6 +234,10 @@ export const updatePetGalleryImage = (id, payload) => {
 };
 
 // --- 喂养记录 API ---
+export const fetchFeedingRecordsPage = (params = { pageNum: 1, pageSize: 20 }) => {
+  return apiClient.get('/api/feeding-records/page', { params });
+};
+
 export const createFeedingRecord = (payload) => {
   return apiClient.post('/api/feeding-records', payload);
 };

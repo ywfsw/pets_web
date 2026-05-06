@@ -147,20 +147,7 @@ const handleQuickAction = (action) => {
       break;
 
     case 'addFeeding':
-      if (!pets.length) {
-        message.warning('请先添加一只宠物');
-        return;
-      }
-      if (!authStore.isAuthenticated) {
-        message.warning('请先登录后再记录喂养');
-        return;
-      }
-      if (pets.length === 1) {
-        petStore.showFeedingRecordFormModal(pets[0].id);
-      } else {
-        petStore.activePage = 'pets';
-        message.info('请先选择要记录喂养的宠物，点击宠物详情后操作');
-      }
+      petStore.activePage = 'feeding';
       break;
 
     case 'album':
