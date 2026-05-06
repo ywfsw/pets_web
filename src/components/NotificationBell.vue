@@ -33,7 +33,8 @@ const typeConfig = {
   health: { color: '#EF4444', icon: '🩺', label: '健康' },
   medication: { color: '#8B5CF6', icon: '💊', label: '用药' },
   feeding: { color: '#F59E0B', icon: '🍽️', label: '喂养' },
-  bathing: { color: '#06B6D4', icon: '🛁', label: '美容' }
+  bathing: { color: '#06B6D4', icon: '🛁', label: '美容' },
+  birthday: { color: '#EC4899', icon: '🎂', label: '生日' }
 }
 
 function getTypeConfig(type) {
@@ -70,31 +71,43 @@ function handleNotificationClick(notif) {
   }
 }
 
-function getUrgencyBg(urgency) {
-  if (urgency === 0) return 'rgba(239, 68, 68, 0.08)'
-  if (urgency === 1) return 'rgba(245, 158, 11, 0.08)'
-  if (urgency === 2) return 'rgba(249, 115, 22, 0.06)'
+function isBirthday(notif) {
+  return notif.type === 'birthday'
+}
+
+function getUrgencyBg(notif) {
+  if (isBirthday(notif)) return 'linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(244, 114, 182, 0.06))'
+  const u = notif.urgency
+  if (u === 0) return 'rgba(239, 68, 68, 0.08)'
+  if (u === 1) return 'rgba(245, 158, 11, 0.08)'
+  if (u === 2) return 'rgba(249, 115, 22, 0.06)'
   return 'rgba(59, 130, 246, 0.05)'
 }
 
-function getUrgencyBorder(urgency) {
-  if (urgency === 0) return '#EF4444'
-  if (urgency === 1) return '#F59E0B'
-  if (urgency === 2) return '#F97316'
+function getUrgencyBorder(notif) {
+  if (isBirthday(notif)) return '#EC4899'
+  const u = notif.urgency
+  if (u === 0) return '#EF4444'
+  if (u === 1) return '#F59E0B'
+  if (u === 2) return '#F97316'
   return '#3B82F6'
 }
 
-function getUrgencyLabel(urgency) {
-  if (urgency === 0) return '紧急'
-  if (urgency === 1) return '今日'
-  if (urgency === 2) return '提醒'
+function getUrgencyLabel(notif) {
+  if (isBirthday(notif)) return '🎂 生日'
+  const u = notif.urgency
+  if (u === 0) return '紧急'
+  if (u === 1) return '今日'
+  if (u === 2) return '提醒'
   return '信息'
 }
 
-function getUrgencyBadgeBg(urgency) {
-  if (urgency === 0) return 'linear-gradient(135deg, #EF4444, #DC2626)'
-  if (urgency === 1) return 'linear-gradient(135deg, #F59E0B, #D97706)'
-  if (urgency === 2) return 'linear-gradient(135deg, #F97316, #EA580C)'
+function getUrgencyBadgeBg(notif) {
+  if (isBirthday(notif)) return 'linear-gradient(135deg, #EC4899, #F472B6)'
+  const u = notif.urgency
+  if (u === 0) return 'linear-gradient(135deg, #EF4444, #DC2626)'
+  if (u === 1) return 'linear-gradient(135deg, #F59E0B, #D97706)'
+  if (u === 2) return 'linear-gradient(135deg, #F97316, #EA580C)'
   return 'linear-gradient(135deg, #3B82F6, #2563EB)'
 }
 
@@ -179,71 +192,10 @@ onUnmounted(() => {
               v-for="notif in criticalNotifs"
               :key="'c-' + notif.type + '-' + (notif.sourceId || notif.petId)"
               class="notif-item"
+              :class="{ 'notif-item-birthday': isBirthday(notif) }"
               :style="{
-                borderLeftColor: getUrgencyBorder(notif.urgency),
-                background: getUrgencyBg(notif.urgency)
-              }"
-              @click="handleNotificationClick(notif)"
-            >
-              <span class="notif-item-icon" :style="{ background: getTypeConfig(notif.type).color + '18' }">
-                {{ getTypeConfig(notif.type).icon }}
-              </span>
-              <div class="notif-item-content">
-                <span class="notif-item-pet">{{ notif.petName }}</span>
-                <span class="notif-item-event">{{ notif.message }}</span>
-              </div>
-              <span
-                class="notif-item-badge"
-                :style="{ background: getUrgencyBadgeBg(notif.urgency), color: '#fff' }"
-              >
-                {{ getUrgencyLabel(notif.urgency) }}
-              </span>
-            </div>
-          </div>
-
-          <!-- 提醒类 -->
-          <div v-if="warningNotifs.length > 0" class="notif-group">
-            <div class="notif-group-label" style="color: #F97316;">
-              <span>📋</span> 提醒 ({{ warningNotifs.length }})
-            </div>
-            <div
-              v-for="notif in warningNotifs"
-              :key="'w-' + notif.type + '-' + (notif.sourceId || notif.petId)"
-              class="notif-item"
-              :style="{
-                borderLeftColor: getUrgencyBorder(notif.urgency),
-                background: getUrgencyBg(notif.urgency)
-              }"
-              @click="handleNotificationClick(notif)"
-            >
-              <span class="notif-item-icon" :style="{ background: getTypeConfig(notif.type).color + '18' }">
-                {{ getTypeConfig(notif.type).icon }}
-              </span>
-              <div class="notif-item-content">
-                <span class="notif-item-pet">{{ notif.petName }}</span>
-                <span class="notif-item-event">{{ notif.message }}</span>
-              </div>
-              <span
-                class="notif-item-badge"
-                :style="{ background: getUrgencyBadgeBg(notif.urgency), color: '#fff' }"
-              >
-                {{ getUrgencyLabel(notif.urgency) }}
-              </span>
-            </div>
-          </div>
-
-          <!-- 信息类 -->
-          <div v-if="infoNotifs.length > 0" class="notif-group">
-            <div class="notif-group-label" style="color: #3B82F6;">
-              <span>ℹ️</span> 信息 ({{ infoNotifs.length }})
-            </div>
-            <div
-              v-for="notif in infoNotifs"
-              :key="'i-' + notif.type + '-' + (notif.sourceId || notif.petId)"
-              class="notif-item"
-              :style="{
-                borderLeftColor: getUrgencyBorder(notif.urgency),
-                background: getUrgencyBg(notif.urgency)
+                borderLeftColor: getUrgencyBorder(notif),
+                background: getUrgencyBg(notif)
               }"
               @click="handleNotificationClick(notif)"
             >
@@ -257,9 +209,75 @@ onUnmounted(() => {
               </div>
               <span
                 class="notif-item-badge"
-                :style="{ background: getUrgencyBadgeBg(notif.urgency), color: '#fff' }"
+                :style="{ background: getUrgencyBadgeBg(notif), color: '#fff' }"
               >
-                {{ getTypeConfig(notif.type).label }}
+                {{ getUrgencyLabel(notif) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 提醒类 -->
+          <div v-if="warningNotifs.length > 0" class="notif-group">
+            <div class="notif-group-label" style="color: #F97316;">
+              <span>📋</span> 提醒 ({{ warningNotifs.length }})
+            </div>
+            <div
+              v-for="notif in warningNotifs"
+              :key="'w-' + notif.type + '-' + (notif.sourceId || notif.petId)"
+              class="notif-item"
+              :class="{ 'notif-item-birthday': isBirthday(notif) }"
+              :style="{
+                borderLeftColor: getUrgencyBorder(notif),
+                background: getUrgencyBg(notif)
+              }"
+              @click="handleNotificationClick(notif)"
+            >
+              <span class="notif-item-icon" :style="{ background: getTypeConfig(notif.type).color + '18' }">
+                {{ getTypeConfig(notif.type).icon }}
+              </span>
+              <div class="notif-item-content">
+                <span class="notif-item-pet">{{ notif.petName }}</span>
+                <span class="notif-item-event">{{ notif.message }}</span>
+                <span v-if="notif.detail" class="notif-item-detail">{{ notif.detail }}</span>
+              </div>
+              <span
+                class="notif-item-badge"
+                :style="{ background: getUrgencyBadgeBg(notif), color: '#fff' }"
+              >
+                {{ getUrgencyLabel(notif) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 信息类 -->
+          <div v-if="infoNotifs.length > 0" class="notif-group">
+            <div class="notif-group-label" style="color: #3B82F6;">
+              <span>ℹ️</span> 信息 ({{ infoNotifs.length }})
+            </div>
+            <div
+              v-for="notif in infoNotifs"
+              :key="'i-' + notif.type + '-' + (notif.sourceId || notif.petId)"
+              class="notif-item"
+              :class="{ 'notif-item-birthday': isBirthday(notif) }"
+              :style="{
+                borderLeftColor: getUrgencyBorder(notif),
+                background: getUrgencyBg(notif)
+              }"
+              @click="handleNotificationClick(notif)"
+            >
+              <span class="notif-item-icon" :style="{ background: getTypeConfig(notif.type).color + '18' }">
+                {{ getTypeConfig(notif.type).icon }}
+              </span>
+              <div class="notif-item-content">
+                <span class="notif-item-pet">{{ notif.petName }}</span>
+                <span class="notif-item-event">{{ notif.message }}</span>
+                <span v-if="notif.detail" class="notif-item-detail">{{ notif.detail }}</span>
+              </div>
+              <span
+                class="notif-item-badge"
+                :style="{ background: getUrgencyBadgeBg(notif), color: '#fff' }"
+              >
+                {{ getUrgencyLabel(notif) }}
               </span>
             </div>
           </div>
@@ -271,6 +289,7 @@ onUnmounted(() => {
             <span class="notif-type-dot" style="background: #8B5CF6;" title="用药">💊</span>
             <span class="notif-type-dot" style="background: #F59E0B;" title="喂养">🍽️</span>
             <span class="notif-type-dot" style="background: #06B6D4;" title="美容">🛁</span>
+            <span class="notif-type-dot" style="background: #EC4899;" title="生日">🎂</span>
           </span>
           <span class="notif-footer-hint">点击通知查看详情</span>
         </div>
@@ -746,5 +765,50 @@ onUnmounted(() => {
     left: 4px;
     border-radius: 16px;
   }
+}
+
+/* Birthday notification special styling */
+.notif-item-birthday {
+  position: relative;
+  overflow: hidden;
+  border-left-color: #EC4899 !important;
+}
+
+.notif-item-birthday::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.06), transparent);
+  animation: birthday-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes birthday-shimmer {
+  0% { left: -100%; }
+  50% { left: 100%; }
+  100% { left: 100%; }
+}
+
+.notif-item-birthday .notif-item-icon {
+  animation: birthday-icon-bounce 2s ease-in-out infinite;
+}
+
+@keyframes birthday-icon-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.notif-item-birthday .notif-item-event {
+  color: #DB2777;
+}
+
+.dark-mode .notif-item-birthday {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 114, 182, 0.06)) !important;
+}
+
+.dark-mode .notif-item-birthday .notif-item-event {
+  color: #F9A8D4;
 }
 </style>
