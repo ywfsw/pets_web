@@ -4,6 +4,7 @@ import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { fetchDashboardSummary } from '@/api.js';
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
+import PetLeaderboard from '@/components/PetLeaderboard.vue';
 import {
   NCard,
   NSpace,
@@ -279,6 +280,9 @@ const computeAge = (birthday) => {
             </div>
           </div>
         </div>
+
+        <!-- 萌宠点赞榜 -->
+        <PetLeaderboard v-if="dashboardData.totalPets > 0" />
 
         <!-- 宠物速览 -->
         <div v-if="dashboardData.petOverviews?.length" class="pet-overviews-section">
