@@ -20,7 +20,7 @@ import {
   NCollapse,
   NCollapseItem
 } from 'naive-ui';
-import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline, ArrowForwardOutline, RestaurantOutline, TimeOutline, BrushOutline } from '@vicons/ionicons5';
+import { ScaleOutline, HeartOutline, CalendarOutline, PawOutline, TrashOutline, CreateOutline, CheckmarkCircleOutline, ArrowUndoOutline, ImagesOutline, CloseOutline, ArrowForwardOutline, RestaurantOutline, TimeOutline, BrushOutline, MedkitOutline } from '@vicons/ionicons5';
 import { getPetGalleryByPetId } from '@/api.js';
 
 import HealthEventFormModal from './HealthEventFormModal.vue';
@@ -28,6 +28,7 @@ import WeightLogFormModal from '@/components/WeightLogFormModal.vue';
 import WeightTrendChart from '@/components/WeightTrendChart.vue';
 import FeedingRecordFormModal from '@/components/FeedingRecordFormModal.vue';
 import BathingRecordFormModal from '@/components/BathingRecordFormModal.vue';
+import MedicationRecordFormModal from '@/components/MedicationRecordFormModal.vue';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -190,6 +191,33 @@ const handleDeleteBathingRecord = async (recordId) => {
   }
 };
 
+// 用药记录
+const handleShowMedicationForm = () => {
+  if (petStore.detailModal.data?.id) {
+    petStore.showMedicationRecordFormModal(petStore.detailModal.data.id);
+  }
+};
+
+const handleEditMedicationRecord = (record) => {
+  if (petStore.detailModal.data?.id) {
+    petStore.showMedicationRecordFormModal(petStore.detailModal.data.id, record);
+  }
+};
+
+const handleDeleteMedicationRecord = async (recordId) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录后再操作');
+    return;
+  }
+  try {
+    await petStore.handleDeleteMedicationRecord(recordId);
+    message.success('用药记录已删除');
+  } catch (error) {
+    console.error('删除用药记录失败:', error);
+    message.error('删除失败，请重试');
+  }
+};
+
 const handleClose = () => {
   petStore.closeAllPetModals();
 };
@@ -308,12 +336,13 @@ const petStats = computed(() => {
     { icon: '🩺', label: '健康', value: data.healthEvents?.length || 0, color: '#86EFAC' },
     { icon: '🍽️', label: '喂养', value: data.feedingRecords?.length || 0, color: '#FBBF24' },
     { icon: '🛁', label: '美容', value: data.bathingRecords?.length || 0, color: '#06B6D4' },
+    { icon: '💊', label: '用药', value: data.medicationRecords?.length || 0, color: '#8B5CF6' },
     { icon: '📖', label: '时间线', value: timelineItems.value.length, color: '#FF9BA8' }
   ];
 });
 
 // 折叠面板展开状态
-const expandedSections = ref(['timeline', 'photos', 'weight', 'health', 'feeding', 'bathing']);
+const expandedSections = ref(['timeline', 'photos', 'weight', 'health', 'feeding', 'bathing', 'medication']);
 
 // 成长时间线：合并体重记录、健康事件和照片
 const timelineItems = computed(() => {
@@ -390,6 +419,27 @@ const timelineItems = computed(() => {
         title: record.serviceType || '洗澡美容',
         subtitle: record.notes || '',
         color: '#06B6D4'
+      });
+    }
+  }
+
+  // 用药记录
+  if (data.medicationRecords) {
+    for (const record of data.medicationRecords) {
+      const dateStr = record.startDate
+        ? new Date(record.startDate).toISOString().slice(0, 10)
+        : null;
+      const typeIcons = { '口服药': '💊', '外用药': '🩹', '注射药': '💉', '滴剂': '💧', '喷雾': '🌫️', '眼药': '👁️', '耳药': '👂', '保健品': '🌿', '中草药': '🍵' };
+      const title = record.medicationName || '用药';
+      const extra = [record.dosage, record.frequency].filter(Boolean).join(' · ');
+      items.push({
+        id: `m-${record.id}`,
+        type: 'medication',
+        date: dateStr,
+        icon: typeIcons[record.medicationType] || '💊',
+        title,
+        subtitle: [extra, record.notes].filter(Boolean).join(' · ') || '',
+        color: '#8B5CF6'
       });
     }
   }
@@ -558,7 +608,7 @@ const timelineItems = computed(() => {
                       <div v-if="item.showMonth" class="timeline-month">
                         <span class="timeline-month-label">{{ item.monthLabel }}</span>
                       </div>
-                      <div class="timeline-item" :class="{ 'timeline-photo-item': item.type === 'photo', 'timeline-feeding-item': item.type === 'feeding' }">
+                      <div class="timeline-item" :class="{ 'timeline-photo-item': item.type === 'photo', 'timeline-feeding-item': item.type === 'feeding', 'timeline-medication-item': item.type === 'medication' }">
                         <div class="timeline-dot" :style="{ background: item.color }">
                           <span class="timeline-dot-icon">{{ item.icon }}</span>
                         </div>
@@ -931,6 +981,75 @@ const timelineItems = computed(() => {
                   </div>
                 </div>
               </n-collapse-item>
+
+              <!-- 用药记录 -->
+              <n-collapse-item name="medication">
+                <template #header>
+                  <n-space align="center" :size="8">
+                    <n-icon :component="MedkitOutline" size="18" color="#8B5CF6" />
+                    <span class="collapse-header-title">用药记录</span>
+                    <n-tag v-if="petStore.detailModal.data.medicationRecords?.length" size="tiny" round>
+                      {{ petStore.detailModal.data.medicationRecords.length }} 条
+                    </n-tag>
+                  </n-space>
+                </template>
+                <div class="section-card">
+                  <div style="margin-bottom: 12px;">
+                    <n-button size="small" type="primary" @click="handleShowMedicationForm" :disabled="!authStore.isAuthenticated" style="background: linear-gradient(135deg, #7C3AED, #8B5CF6); border: none; border-radius: 10px;">
+                      <template #icon><n-icon :component="MedkitOutline" /></template>
+                      记录用药
+                    </n-button>
+                  </div>
+                  <n-list v-if="petStore.detailModal.data.medicationRecords?.length" hoverable>
+                    <n-list-item v-for="record in petStore.detailModal.data.medicationRecords" :key="record.id">
+                      <n-space vertical :size="4">
+                        <n-space align="center" justify="space-between">
+                          <n-space align="center">
+                            <n-text strong>{{ record.medicationName }}</n-text>
+                            <n-tag v-if="record.medicationType" type="info" size="small" round>💊 {{ record.medicationType }}</n-tag>
+                            <n-text depth="3" v-if="record.dosage">{{ record.dosage }}</n-text>
+                            <n-text depth="3" v-if="record.frequency">{{ record.frequency }}</n-text>
+                          </n-space>
+                          <n-space :size="4">
+                            <n-popconfirm
+                              @positive-click="handleEditMedicationRecord(record)"
+                              :positive-button-props="{ type: 'info', size: 'tiny' }"
+                              :negative-button-props="{ size: 'tiny' }"
+                            >
+                              <template #trigger>
+                                <n-button text type="info" size="tiny" :disabled="!authStore.isAuthenticated">
+                                  <template #icon><n-icon :component="CreateOutline" :size="14" /></template>
+                                </n-button>
+                              </template>
+                              编辑这条记录？
+                            </n-popconfirm>
+                            <n-popconfirm
+                              @positive-click="handleDeleteMedicationRecord(record.id)"
+                              :positive-button-props="{ type: 'error', size: 'tiny' }"
+                              :negative-button-props="{ size: 'tiny' }"
+                            >
+                              <template #trigger>
+                                <n-button text type="error" size="tiny" :disabled="!authStore.isAuthenticated">
+                                  <template #icon><n-icon :component="TrashOutline" :size="14" /></template>
+                                </n-button>
+                              </template>
+                              确定删除这条记录？
+                            </n-popconfirm>
+                          </n-space>
+                        </n-space>
+                        <n-text depth="3" v-if="record.startDate">
+                          {{ record.startDate }} {{ record.endDate ? '→ ' + record.endDate : '(进行中)' }}
+                        </n-text>
+                        <n-text v-if="record.notes" depth="3">{{ record.notes }}</n-text>
+                      </n-space>
+                    </n-list-item>
+                  </n-list>
+                  <div v-else class="detail-empty">
+                    <span class="detail-empty-icon">💊</span>
+                    <span class="detail-empty-text">还没有用药记录哦～</span>
+                  </div>
+                </div>
+              </n-collapse-item>
             </n-collapse>
           </template>
         </div>
@@ -971,6 +1090,10 @@ const timelineItems = computed(() => {
               <template #icon><n-icon><BrushOutline /></n-icon></template>
               <span class="btn-label-text">美容</span>
             </n-button>
+            <n-button @click="handleShowMedicationForm" class="detail-footer-btn" size="small">
+              <template #icon><n-icon><MedkitOutline /></n-icon></template>
+              <span class="btn-label-text">用药</span>
+            </n-button>
             <n-button @click="handleViewTimeline" class="detail-footer-btn" size="small">
               <template #icon><n-icon><TimeOutline /></n-icon></template>
               <span class="btn-label-text">时间线</span>
@@ -988,6 +1111,7 @@ const timelineItems = computed(() => {
   <WeightLogFormModal />
   <FeedingRecordFormModal />
   <BathingRecordFormModal />
+  <MedicationRecordFormModal />
 
   <!-- 照片全屏查看弹窗 -->
   <n-modal
@@ -1850,6 +1974,14 @@ const timelineItems = computed(() => {
 
 :global(.dark-mode) .timeline-feeding-item .timeline-title {
   color: #FBBF24;
+}
+
+.timeline-medication-item .timeline-title {
+  color: #7C3AED;
+}
+
+:global(.dark-mode) .timeline-medication-item .timeline-title {
+  color: #A78BFA;
 }
 
 /* ===== 移动端响应式 ===== */

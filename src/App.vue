@@ -15,7 +15,7 @@ import {
   NAvatar,
   NDropdown
 } from 'naive-ui';
-import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, BrushOutline } from '@vicons/ionicons5';
+import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, BrushOutline, MedkitOutline } from '@vicons/ionicons5';
 
 // 图标组件映射（用于抽屉菜单渲染）
 const iconComponentMap = {
@@ -25,6 +25,7 @@ const iconComponentMap = {
   'timeline': TimeOutline,
   'feeding': RestaurantOutline,
   'bathing': BrushOutline,
+  'medication': MedkitOutline,
   'health-events': MedicalOutline,
   'weight-logs': ScaleOutline,
   'leaderboard': TrophyOutline,
@@ -42,6 +43,7 @@ import AdminPage from '@/views/AdminPage.vue';
 import GrowthTimelineView from '@/views/GrowthTimelineView.vue';
 import FeedingRecordsView from '@/views/FeedingRecordsView.vue';
 import BathingRecordsView from '@/views/BathingRecordsView.vue';
+import MedicationRecordsView from '@/views/MedicationRecordsView.vue';
 import HealthEventsView from '@/views/HealthEventsView.vue';
 import WeightLogsView from '@/views/WeightLogsView.vue';
 import LeaderboardView from '@/views/LeaderboardView.vue';
@@ -197,6 +199,7 @@ const menuOptions = computed(() => {
     { label: '成长时间线', key: 'timeline' },
     { label: '喂养记录', key: 'feeding' },
     { label: '洗澡美容', key: 'bathing' },
+    { label: '用药记录', key: 'medication' },
     { label: '健康事件', key: 'health-events' },
     { label: '体重管理', key: 'weight-logs' },
     { label: '排行榜', key: 'leaderboard' }
@@ -505,6 +508,7 @@ onMounted(async () => {
                   <GrowthTimelineView v-if="activeKey === 'timeline'" />
                   <FeedingRecordsView v-if="activeKey === 'feeding'" />
                   <BathingRecordsView v-if="activeKey === 'bathing'" />
+                  <MedicationRecordsView v-if="activeKey === 'medication'" />
                   <HealthEventsView v-if="activeKey === 'health-events'" />
                   <WeightLogsView v-if="activeKey === 'weight-logs'" />
                   <LeaderboardView v-if="activeKey === 'leaderboard'" />
