@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
+import { useCountUp } from '@/composables/useCountUp.js';
 import { fetchDashboardSummary } from '@/api.js';
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
 import PetLeaderboard from '@/components/PetLeaderboard.vue';
@@ -26,6 +27,16 @@ const { getAvatarUrl } = useCloudinaryImage();
 const dashboardData = ref(null);
 const loading = ref(true);
 const error = ref(false);
+
+// 数字滚动动画
+const statSource = (key) => computed(() => dashboardData.value?.[key] ?? 0)
+const { displayValue: animTotalPets } = useCountUp(statSource('totalPets'), { delay: 200 })
+const { displayValue: animPendingEvents } = useCountUp(statSource('pendingEvents'), { delay: 250 })
+const { displayValue: animTotalPhotos } = useCountUp(statSource('totalPhotos'), { delay: 300 })
+const { displayValue: animTotalWeight } = useCountUp(statSource('totalWeightRecords'), { delay: 350 })
+const { displayValue: animTotalHealth } = useCountUp(statSource('totalHealthEvents'), { delay: 400 })
+const { displayValue: animTotalFeeding } = useCountUp(statSource('totalFeedings'), { delay: 450 })
+const animTotalRecords = computed(() => animTotalHealth.value + animTotalFeeding.value + animTotalWeight.value)
 
 const loadDashboard = async () => {
   loading.value = true;
@@ -217,22 +228,22 @@ const computeAge = (birthday) => {
             <p class="hero-subtitle">记录每一个温暖的瞬间</p>
             <div v-if="!loading && dashboardData" class="hero-stats-strip">
               <div class="hero-stat-pill">
-                <span class="hero-stat-num">{{ dashboardData.totalPets }}</span>
+                <span class="hero-stat-num">{{ animTotalPets }}</span>
                 <span class="hero-stat-lbl">宠物</span>
               </div>
               <span class="hero-stat-divider"></span>
               <div class="hero-stat-pill">
-                <span class="hero-stat-num">{{ dashboardData.totalPhotos }}</span>
+                <span class="hero-stat-num">{{ animTotalPhotos }}</span>
                 <span class="hero-stat-lbl">照片</span>
               </div>
               <span class="hero-stat-divider"></span>
               <div class="hero-stat-pill">
-                <span class="hero-stat-num">{{ dashboardData.totalHealthEvents + dashboardData.totalFeedings + dashboardData.totalWeightRecords }}</span>
+                <span class="hero-stat-num">{{ animTotalRecords }}</span>
                 <span class="hero-stat-lbl">记录</span>
               </div>
               <span v-if="dashboardData.pendingEvents > 0" class="hero-stat-divider"></span>
               <div v-if="dashboardData.pendingEvents > 0" class="hero-stat-pill hero-stat-pending">
-                <span class="hero-stat-num">{{ dashboardData.pendingEvents }}</span>
+                <span class="hero-stat-num">{{ animPendingEvents }}</span>
                 <span class="hero-stat-lbl">待处理</span>
               </div>
             </div>
@@ -245,37 +256,37 @@ const computeAge = (birthday) => {
         <div class="stats-row">
           <div class="stat-card stat-pets" style="--stat-delay: 0s">
             <div class="stat-icon-wrap"><span class="stat-icon">🐾</span></div>
-            <div class="stat-value">{{ dashboardData.totalPets }}</div>
+            <div class="stat-value">{{ animTotalPets }}</div>
             <div class="stat-label">我的萌宠</div>
             <div class="stat-glow"></div>
           </div>
           <div class="stat-card stat-events" style="--stat-delay: 0.05s">
             <div class="stat-icon-wrap"><span class="stat-icon">📋</span></div>
-            <div class="stat-value">{{ dashboardData.pendingEvents }}</div>
+            <div class="stat-value">{{ animPendingEvents }}</div>
             <div class="stat-label">待处理事件</div>
             <div class="stat-glow"></div>
           </div>
           <div class="stat-card stat-photos" style="--stat-delay: 0.1s">
             <div class="stat-icon-wrap"><span class="stat-icon">📷</span></div>
-            <div class="stat-value">{{ dashboardData.totalPhotos }}</div>
+            <div class="stat-value">{{ animTotalPhotos }}</div>
             <div class="stat-label">相册照片</div>
             <div class="stat-glow"></div>
           </div>
           <div class="stat-card stat-weight" style="--stat-delay: 0.15s">
             <div class="stat-icon-wrap"><span class="stat-icon">⚖️</span></div>
-            <div class="stat-value">{{ dashboardData.totalWeightRecords }}</div>
+            <div class="stat-value">{{ animTotalWeight }}</div>
             <div class="stat-label">体重记录</div>
             <div class="stat-glow"></div>
           </div>
           <div class="stat-card stat-health" style="--stat-delay: 0.2s">
             <div class="stat-icon-wrap"><span class="stat-icon">🩺</span></div>
-            <div class="stat-value">{{ dashboardData.totalHealthEvents }}</div>
+            <div class="stat-value">{{ animTotalHealth }}</div>
             <div class="stat-label">健康事件</div>
             <div class="stat-glow"></div>
           </div>
           <div class="stat-card stat-feeding" style="--stat-delay: 0.25s">
             <div class="stat-icon-wrap"><span class="stat-icon">🍽️</span></div>
-            <div class="stat-value">{{ dashboardData.totalFeedings }}</div>
+            <div class="stat-value">{{ animTotalFeeding }}</div>
             <div class="stat-label">喂养记录</div>
             <div class="stat-glow"></div>
           </div>
@@ -690,6 +701,10 @@ const computeAge = (birthday) => {
   font-weight: 800;
   color: #2D2D2D;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
+  min-width: 1.5ch;
+  display: inline-block;
+  text-align: right;
 }
 
 :global(.dark-mode) .hero-stat-num {
@@ -960,6 +975,9 @@ const computeAge = (birthday) => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  font-variant-numeric: tabular-nums;
+  min-width: 2ch;
+  text-align: center;
 }
 
 :global(.dark-mode) .stat-value {
