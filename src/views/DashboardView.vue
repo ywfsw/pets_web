@@ -12,7 +12,8 @@ import {
   NSpin,
   NEmpty,
   NButton,
-  NPopconfirm
+  NPopconfirm,
+  useMessage
 } from 'naive-ui';
 import {
   CalendarOutline,
@@ -23,6 +24,7 @@ import {
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
+const message = useMessage();
 
 const dashboardData = ref(null);
 const loading = ref(true);
@@ -96,6 +98,81 @@ const greeting = computed(() => {
   return '晚上好';
 });
 
+// 快捷操作处理
+const handleQuickAction = (action) => {
+  const pets = dashboardData.value?.petOverviews || [];
+
+  switch (action) {
+    case 'addPet':
+      if (!authStore.isAuthenticated) {
+        message.warning('请先登录后再添加宠物');
+        return;
+      }
+      petStore.activePage = 'pets';
+      setTimeout(() => petStore.showPetFormModal(null), 300);
+      break;
+
+    case 'addWeight':
+      if (!pets.length) {
+        message.warning('请先添加一只宠物');
+        return;
+      }
+      if (!authStore.isAuthenticated) {
+        message.warning('请先登录后再记录体重');
+        return;
+      }
+      if (pets.length === 1) {
+        petStore.showWeightLogFormModal(pets[0].id);
+      } else {
+        petStore.activePage = 'pets';
+        message.info('请先选择要记录体重的宠物，点击宠物详情后操作');
+      }
+      break;
+
+    case 'addHealthEvent':
+      if (!pets.length) {
+        message.warning('请先添加一只宠物');
+        return;
+      }
+      if (!authStore.isAuthenticated) {
+        message.warning('请先登录后再添加健康事件');
+        return;
+      }
+      if (pets.length === 1) {
+        petStore.showHealthEventFormModal(pets[0].id);
+      } else {
+        petStore.activePage = 'pets';
+        message.info('请先选择要记录健康事件的宠物，点击宠物详情后操作');
+      }
+      break;
+
+    case 'addFeeding':
+      if (!pets.length) {
+        message.warning('请先添加一只宠物');
+        return;
+      }
+      if (!authStore.isAuthenticated) {
+        message.warning('请先登录后再记录喂养');
+        return;
+      }
+      if (pets.length === 1) {
+        petStore.showFeedingRecordFormModal(pets[0].id);
+      } else {
+        petStore.activePage = 'pets';
+        message.info('请先选择要记录喂养的宠物，点击宠物详情后操作');
+      }
+      break;
+
+    case 'album':
+      petStore.navigateToAlbum();
+      break;
+
+    case 'timeline':
+      petStore.navigateToTimeline();
+      break;
+  }
+};
+
 const computeAge = (birthday) => {
   if (!birthday) return null;
   const birth = new Date(birthday);
@@ -158,6 +235,52 @@ const computeAge = (birthday) => {
             <div class="stat-value">{{ dashboardData.totalFeedings }}</div>
             <div class="stat-label">喂养记录</div>
           </n-card>
+        </div>
+
+        <!-- 快捷操作 -->
+        <div class="quick-actions-section">
+          <div class="section-header">
+            <span class="section-emoji">⚡</span>
+            <span class="section-title">快捷操作</span>
+          </div>
+          <div class="quick-actions-row">
+            <div class="quick-action-card" @click="handleQuickAction('addPet')">
+              <div class="quick-action-icon add-pet-icon">🐾</div>
+              <span class="quick-action-label">添加宠物</span>
+            </div>
+            <div
+              class="quick-action-card"
+              :class="{ 'quick-action-disabled': !dashboardData.petOverviews?.length }"
+              @click="handleQuickAction('addWeight')"
+            >
+              <div class="quick-action-icon add-weight-icon">⚖️</div>
+              <span class="quick-action-label">记录体重</span>
+            </div>
+            <div
+              class="quick-action-card"
+              :class="{ 'quick-action-disabled': !dashboardData.petOverviews?.length }"
+              @click="handleQuickAction('addHealthEvent')"
+            >
+              <div class="quick-action-icon add-health-icon">🩺</div>
+              <span class="quick-action-label">健康事件</span>
+            </div>
+            <div
+              class="quick-action-card"
+              :class="{ 'quick-action-disabled': !dashboardData.petOverviews?.length }"
+              @click="handleQuickAction('addFeeding')"
+            >
+              <div class="quick-action-icon add-feeding-icon">🍽️</div>
+              <span class="quick-action-label">记录喂养</span>
+            </div>
+            <div class="quick-action-card" @click="handleQuickAction('album')">
+              <div class="quick-action-icon album-icon">📷</div>
+              <span class="quick-action-label">宠物相册</span>
+            </div>
+            <div class="quick-action-card" @click="handleQuickAction('timeline')">
+              <div class="quick-action-icon timeline-icon">📈</div>
+              <span class="quick-action-label">成长时间线</span>
+            </div>
+          </div>
         </div>
 
         <!-- 宠物速览 -->
@@ -883,6 +1006,126 @@ const computeAge = (birthday) => {
   color: #B8B8CC;
 }
 
+/* 快捷操作 */
+.quick-actions-section {
+  margin-bottom: 20px;
+}
+
+.quick-actions-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.quick-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #F0E6E0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.quick-action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 155, 168, 0.18);
+  border-color: #FFD5DD;
+}
+
+:global(.dark-mode) .quick-action-card {
+  background: #1F1F3A;
+  border-color: #3D3D5C;
+}
+
+:global(.dark-mode) .quick-action-card:hover {
+  border-color: #5D5D7C;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.quick-action-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.quick-action-icon {
+  font-size: 28px;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.quick-action-card:hover .quick-action-icon {
+  transform: scale(1.1);
+}
+
+.add-pet-icon {
+  background: linear-gradient(135deg, #FFF5F7 0%, #FFE4E9 100%);
+}
+
+.add-weight-icon {
+  background: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%);
+}
+
+.add-health-icon {
+  background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%);
+}
+
+.add-feeding-icon {
+  background: linear-gradient(135deg, #FEF9C3 0%, #FEF08A 100%);
+}
+
+.album-icon {
+  background: linear-gradient(135deg, #EDE9FE 0%, #DDD6FE 100%);
+}
+
+.timeline-icon {
+  background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+}
+
+:global(.dark-mode) .add-pet-icon {
+  background: linear-gradient(135deg, #3D2025 0%, #4D2030 100%);
+}
+
+:global(.dark-mode) .add-weight-icon {
+  background: linear-gradient(135deg, #1E2A3A 0%, #1E3A4A 100%);
+}
+
+:global(.dark-mode) .add-health-icon {
+  background: linear-gradient(135deg, #3A1D2E 0%, #4A1D3E 100%);
+}
+
+:global(.dark-mode) .add-feeding-icon {
+  background: linear-gradient(135deg, #3A3520 0%, #4A4020 100%);
+}
+
+:global(.dark-mode) .album-icon {
+  background: linear-gradient(135deg, #2D2040 0%, #3D2050 100%);
+}
+
+:global(.dark-mode) .timeline-icon {
+  background: linear-gradient(135deg, #1A3A2A 0%, #2A4A3A 100%);
+}
+
+.quick-action-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4A4A4A;
+}
+
+:global(.dark-mode) .quick-action-label {
+  color: #E8E8E8;
+}
+
 /* 响应式 */
 @media (max-width: 768px) {
   .hero-title {
@@ -909,6 +1152,26 @@ const computeAge = (birthday) => {
 
   .pet-overviews-row {
     grid-template-columns: 1fr;
+  }
+
+  .quick-actions-row {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .quick-action-card {
+    padding: 16px 8px;
+  }
+
+  .quick-action-icon {
+    font-size: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .quick-action-label {
+    font-size: 12px;
   }
 }
 </style>
