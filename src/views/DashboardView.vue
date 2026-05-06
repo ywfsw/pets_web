@@ -10,7 +10,6 @@ import PetLeaderboard from '@/components/PetLeaderboard.vue';
 import {
   NCard,
   NIcon,
-  NSpin,
   NEmpty,
   NButton,
   NPopconfirm,
@@ -234,9 +233,8 @@ const computeAge = (birthday) => {
 
 <template>
   <div class="dashboard">
-    <n-spin :show="loading">
-      <!-- 沉浸式 Hero 区域 -->
-      <div class="dashboard-hero">
+    <!-- 沉浸式 Hero 区域 -->
+    <div class="dashboard-hero">
         <div class="hero-bg-shapes">
           <span class="hero-shape shape-1">🐾</span>
           <span class="hero-shape shape-2">🌸</span>
@@ -253,7 +251,15 @@ const computeAge = (birthday) => {
             </div>
             <h1 class="hero-title">萌宠之家</h1>
             <p class="hero-subtitle">记录每一个温暖的瞬间</p>
-            <div v-if="!loading && dashboardData" class="hero-stats-strip">
+            <!-- Hero 统计条 - 加载骨架 -->
+            <div v-if="loading" class="hero-stats-strip">
+              <div v-for="i in 4" :key="i" class="hero-stat-pill">
+                <span class="dash-skeleton-pill" style="width: 24px; height: 18px;"></span>
+                <span class="dash-skeleton-pill" style="width: 24px; height: 12px; margin-top: 2px;"></span>
+              </div>
+            </div>
+            <!-- Hero 统计条 - 实际数据 -->
+            <div v-else-if="dashboardData" class="hero-stats-strip">
               <div class="hero-stat-pill">
                 <span class="hero-stat-num">{{ animTotalPets }}</span>
                 <span class="hero-stat-lbl">宠物</span>
@@ -278,7 +284,83 @@ const computeAge = (birthday) => {
         </div>
       </div>
 
-      <template v-if="!loading && dashboardData">
+      <!-- ===== 骨架屏 shimmer ===== -->
+      <div v-if="loading" class="dash-skeleton-wrap">
+        <!-- 统计卡片骨架 -->
+        <div class="dash-skel-stats">
+          <div v-for="i in 6" :key="i" class="dash-skel-stat-card" :style="{ animationDelay: (i * 0.04) + 's' }">
+            <div class="dash-skel-stat-icon"></div>
+            <div class="dash-skel-pill" style="width: 36px; height: 22px;"></div>
+            <div class="dash-skel-pill" style="width: 48px; height: 10px;"></div>
+          </div>
+        </div>
+        <!-- 快捷操作骨架 -->
+        <div class="dash-skel-section">
+          <div class="dash-skel-section-header">
+            <div class="dash-skel-pill" style="width: 72px; height: 16px;"></div>
+          </div>
+          <div class="dash-skel-quick-actions">
+            <div v-for="i in 7" :key="i" class="dash-skel-qa-card" :style="{ animationDelay: (i * 0.04) + 's' }">
+              <div class="dash-skel-qa-icon"></div>
+              <div class="dash-skel-pill" style="width: 40px; height: 10px;"></div>
+            </div>
+          </div>
+        </div>
+        <!-- 宠物速览骨架 -->
+        <div class="dash-skel-section">
+          <div class="dash-skel-section-header">
+            <div class="dash-skel-pill" style="width: 60px; height: 16px;"></div>
+          </div>
+          <div class="dash-skel-pets">
+            <div v-for="i in 3" :key="i" class="dash-skel-pet-card" :style="{ animationDelay: (i * 0.06) + 's' }">
+              <div class="dash-skel-pet-header">
+                <div class="dash-skel-avatar"></div>
+                <div class="dash-skel-pet-info">
+                  <div class="dash-skel-pill" style="width: 56px; height: 14px;"></div>
+                  <div class="dash-skel-pill" style="width: 80px; height: 10px; margin-top: 6px;"></div>
+                </div>
+              </div>
+              <div class="dash-skel-pet-meta">
+                <div class="dash-skel-pill" style="width: 64px; height: 10px;"></div>
+                <div class="dash-skel-pill" style="width: 48px; height: 10px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 事件 + 活动双栏骨架 -->
+        <div class="dash-skel-two-col">
+          <div class="dash-skel-section">
+            <div class="dash-skel-section-header">
+              <div class="dash-skel-pill" style="width: 100px; height: 16px;"></div>
+            </div>
+            <div class="dash-skel-events">
+              <div v-for="i in 3" :key="i" class="dash-skel-event-item" :style="{ animationDelay: (i * 0.05) + 's' }">
+                <div class="dash-skel-event-badge"></div>
+                <div class="dash-skel-event-info">
+                  <div class="dash-skel-pill" style="width: 80px; height: 12px;"></div>
+                  <div class="dash-skel-pill" style="width: 120px; height: 10px; margin-top: 6px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="dash-skel-section">
+            <div class="dash-skel-section-header">
+              <div class="dash-skel-pill" style="width: 60px; height: 16px;"></div>
+            </div>
+            <div class="dash-skel-events">
+              <div v-for="i in 4" :key="i" class="dash-skel-event-item" :style="{ animationDelay: (i * 0.05) + 's' }">
+                <div class="dash-skel-dot"></div>
+                <div class="dash-skel-event-info">
+                  <div class="dash-skel-pill" style="width: 100px; height: 12px;"></div>
+                  <div class="dash-skel-pill" style="width: 60px; height: 10px; margin-top: 6px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template v-else-if="dashboardData">
         <!-- 统计卡片 -->
         <div class="stats-row">
           <div class="stat-card stat-pets" style="--stat-delay: 0s">
@@ -587,7 +669,7 @@ const computeAge = (birthday) => {
       </template>
 
       <!-- 加载失败 -->
-      <n-card v-if="!loading && error" class="section-card" :bordered="false">
+      <n-card v-else-if="error" class="section-card" :bordered="false">
         <n-empty description="加载仪表盘数据失败，请稍后重试" size="large">
           <template #icon>
             <n-icon :component="AlertCircleOutline" size="40" color="#FCA5A5" />
@@ -599,7 +681,6 @@ const computeAge = (birthday) => {
           </template>
         </n-empty>
       </n-card>
-    </n-spin>
   </div>
 </template>
 
@@ -2114,6 +2195,328 @@ const computeAge = (birthday) => {
 
   .quick-action-label {
     font-size: 12px;
+  }
+}
+
+/* ===== 仪表盘骨架屏 shimmer ===== */
+.dash-skeleton-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dash-skel-pill {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: dash-shimmer 1.5s ease-in-out infinite;
+}
+
+:global(.dark-mode) .dash-skel-pill {
+  background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
+  background-size: 200% 100%;
+}
+
+/* Hero 统计条骨架 */
+.hero-stats-strip .dash-skeleton-pill {
+  border-radius: 6px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.2) 25%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.2) 75%);
+  background-size: 200% 100%;
+  animation: dash-shimmer 1.5s ease-in-out infinite;
+  display: block;
+}
+
+/* 统计卡片骨架 */
+.dash-skel-stats {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.dash-skel-stat-card {
+  border-radius: 18px;
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: dash-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both, dash-shimmer 1.5s ease-in-out infinite;
+}
+
+:global(.dark-mode) .dash-skel-stat-card {
+  background: rgba(40, 40, 60, 0.5);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dash-skel-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: dash-shimmer 1.5s ease-in-out infinite;
+}
+
+:global(.dark-mode) .dash-skel-stat-icon {
+  background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
+  background-size: 200% 100%;
+}
+
+/* Section 骨架 */
+.dash-skel-section {
+  border-radius: 18px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: dash-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+:global(.dark-mode) .dash-skel-section {
+  background: rgba(40, 40, 60, 0.5);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dash-skel-section-header {
+  margin-bottom: 16px;
+}
+
+/* 快捷操作骨架 */
+.dash-skel-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+}
+
+.dash-skel-qa-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(8px);
+  animation: dash-card-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+:global(.dark-mode) .dash-skel-qa-card {
+  background: rgba(50, 50, 70, 0.3);
+}
+
+.dash-skel-qa-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: dash-shimmer 1.5s ease-in-out infinite;
+}
+
+:global(.dark-mode) .dash-skel-qa-icon {
+  background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
+  background-size: 200% 100%;
+}
+
+/* 宠物速览骨架 */
+.dash-skel-pets {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.dash-skel-pet-card {
+  min-width: 200px;
+  flex: 1;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(8px);
+  animation: dash-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+:global(.dark-mode) .dash-skel-pet-card {
+  background: rgba(50, 50, 70, 0.3);
+}
+
+.dash-skel-pet-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dash-skel-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: dash-shimmer 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .dash-skel-avatar {
+  background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
+  background-size: 200% 100%;
+}
+
+.dash-skel-pet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dash-skel-pet-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+:global(.dark-mode) .dash-skel-pet-meta {
+  border-top-color: rgba(255, 255, 255, 0.04);
+}
+
+/* 事件 + 活动双栏骨架 */
+.dash-skel-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.dash-skel-events {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-skel-event-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  animation: dash-card-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+:global(.dark-mode) .dash-skel-event-item {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dash-skel-event-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: dash-shimmer 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .dash-skel-event-badge {
+  background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
+  background-size: 200% 100%;
+}
+
+.dash-skel-event-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dash-skel-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: dash-shimmer 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .dash-skel-dot {
+  background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
+  background-size: 200% 100%;
+}
+
+/* 骨架动画 */
+@keyframes dash-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes dash-card-in {
+  0% { opacity: 0; transform: translateY(14px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 移动端响应式 */
+@media (max-width: 768px) {
+  .dash-skel-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .dash-skel-stat-card {
+    padding: 14px 10px;
+    border-radius: 14px;
+  }
+
+  .dash-skel-quick-actions {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .dash-skel-pets {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dash-skel-pet-card {
+    min-width: 170px;
+  }
+
+  .dash-skel-two-col {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .dash-skel-section {
+    padding: 16px;
+    border-radius: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-skel-stats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .dash-skel-stat-card {
+    padding: 12px 8px;
+  }
+
+  .dash-skel-stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .dash-skel-quick-actions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dash-skeleton-wrap {
+    gap: 18px;
   }
 }
 </style>
