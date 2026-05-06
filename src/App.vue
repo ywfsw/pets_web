@@ -7,22 +7,15 @@ import {
   NNotificationProvider,
   NLoadingBarProvider,
   NLayout,
-  NLayoutHeader,
   NLayoutContent,
   NLayoutFooter,
-  NPageHeader,
-  NMenu,
-  NSpace,
   NSwitch,
   NIcon,
-  NButton,
   darkTheme,
   NAvatar,
-  NDropdown,
-  NDrawer,
-  NDrawerContent
+  NDropdown
 } from 'naive-ui';
-import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, MenuOutline } from '@vicons/ionicons5';
+import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline } from '@vicons/ionicons5';
 
 // 图标组件映射（用于抽屉菜单渲染）
 const iconComponentMap = {
@@ -196,55 +189,18 @@ watch(isDarkTheme, (dark) => {
 // 菜单选项 - 根据角色动态生成
 const menuOptions = computed(() => {
   const options = [
-    {
-      label: '首页',
-      key: 'dashboard',
-      icon: () => h(NIcon, null, { default: () => h(HomeOutline) })
-    },
-    {
-      label: '宠物管理',
-      key: 'pets',
-      icon: () => h(NIcon, null, { default: () => h(PawOutline) })
-    },
-    {
-      label: '宠物相册',
-      key: 'pet-album',
-      icon: () => h(NIcon, null, { default: () => h(Images) })
-    },
-    {
-      label: '成长时间线',
-      key: 'timeline',
-      icon: () => h(NIcon, null, { default: () => h(TimeOutline) })
-    },
-    {
-      label: '喂养记录',
-      key: 'feeding',
-      icon: () => h(NIcon, null, { default: () => h(RestaurantOutline) })
-    },
-    {
-      label: '健康事件',
-      key: 'health-events',
-      icon: () => h(NIcon, null, { default: () => h(MedicalOutline) })
-    },
-    {
-      label: '体重管理',
-      key: 'weight-logs',
-      icon: () => h(NIcon, null, { default: () => h(ScaleOutline) })
-    },
-    {
-      label: '排行榜',
-      key: 'leaderboard',
-      icon: () => h(NIcon, null, { default: () => h(TrophyOutline) })
-    }
+    { label: '首页', key: 'dashboard' },
+    { label: '宠物管理', key: 'pets' },
+    { label: '宠物相册', key: 'pet-album' },
+    { label: '成长时间线', key: 'timeline' },
+    { label: '喂养记录', key: 'feeding' },
+    { label: '健康事件', key: 'health-events' },
+    { label: '体重管理', key: 'weight-logs' },
+    { label: '排行榜', key: 'leaderboard' }
   ];
 
-  // 只有管理员才能看到后台管理
   if (authStore.isAuthenticated && authStore.isAdmin) {
-    options.push({
-      label: '后台管理',
-      key: 'admin',
-      icon: () => h(NIcon, null, { default: () => h(Settings) })
-    });
+    options.push({ label: '后台管理', key: 'admin' });
   }
 
   return options;
@@ -352,91 +308,82 @@ onMounted(async () => {
           <n-dialog-provider>
             <GlobalNaiveUIServices />
             <n-layout style="min-height: 100vh;" class="pet-layout" :class="{ 'dark-mode': isDarkTheme }">
-              <n-layout-header bordered class="pet-header">
-                <n-page-header>
-                  <template #title>
-                    <a href="/" class="pet-logo">
-                      <span class="pet-logo-icon">🐾</span>
-                      <span class="pet-logo-text">萌宠之家</span>
-                    </a>
-                  </template>
-                  <template #extra>
-                    <!-- 桌面端导航 -->
-                    <n-space align="center" :size="16" class="desktop-nav">
-                      <n-menu
-                        v-model:value="activeKey"
-                        mode="horizontal"
-                        :options="menuOptions"
-                        @update:value="handleMenuUpdate"
-                        class="pet-menu"
-                      />
+              <!-- 毛玻璃浮动导航栏 -->
+              <header class="glass-nav">
+                <div class="glass-nav-inner">
+                  <!-- Logo -->
+                  <a href="/" class="nav-logo" @click.prevent="petStore.activePage = 'dashboard'">
+                    <span class="nav-logo-paw">🐾</span>
+                    <span class="nav-logo-text">萌宠之家</span>
+                  </a>
 
-                      <div v-if="authStore.isAuthenticated" class="pet-user-area">
-                        <n-dropdown
-                          :options="userMenuOptions"
-                          @select="handleUserMenuSelect"
-                          trigger="click"
-                        >
-                          <n-space align="center" class="pet-user-info">
+                  <!-- 桌面端导航菜单 -->
+                  <nav class="nav-pills">
+                    <button
+                      v-for="item in menuOptions"
+                      :key="item.key"
+                      class="nav-pill"
+                      :class="{ active: activeKey === item.key }"
+                      @click="handleMenuUpdate(item.key)"
+                    >
+                      <n-icon :component="iconComponentMap[item.key]" size="16" />
+                      <span class="nav-pill-label">{{ item.label }}</span>
+                    </button>
+                  </nav>
+
+                  <!-- 右侧操作区 -->
+                  <div class="nav-actions">
+                    <!-- 用户区域 -->
+                    <div v-if="authStore.isAuthenticated" class="nav-user" @click="null">
+                      <n-dropdown
+                        :options="userMenuOptions"
+                        @select="handleUserMenuSelect"
+                        trigger="click"
+                      >
+                        <div class="nav-user-trigger">
+                          <div class="nav-avatar-ring">
                             <n-avatar
                               round
-                              size="small"
-                              style="background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%);"
+                              :size="32"
+                              style="background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%); font-weight: 700;"
                             >
                               {{ authStore.userInfo?.username?.charAt(0)?.toUpperCase() || 'U' }}
                             </n-avatar>
-                            <span class="pet-username">{{ authStore.userInfo?.username || '用户' }}</span>
-                            <span v-if="authStore.isAdmin" class="pet-role-badge">管理员</span>
-                          </n-space>
-                        </n-dropdown>
-                      </div>
-
-                      <!-- 未登录时显示登录按钮 -->
-                      <n-button
-                        v-if="!authStore.isAuthenticated"
-                        type="primary"
-                        class="pet-login-btn"
-                        @click="openAuthModal"
-                      >
-                        登录 / 注册
-                      </n-button>
-
-                      <n-switch v-model:value="isDarkTheme" size="large" class="pet-theme-switch">
-                        <template #checked>
-                          <n-icon :component="Moon" size="16" />
-                        </template>
-                        <template #unchecked>
-                          <n-icon :component="Sunny" size="16" />
-                        </template>
-                      </n-switch>
-                    </n-space>
-
-                    <!-- 移动端导航 -->
-                    <div class="mobile-nav">
-                      <n-switch v-model:value="isDarkTheme" size="small" class="pet-theme-switch">
-                        <template #checked>
-                          <n-icon :component="Moon" size="14" />
-                        </template>
-                        <template #unchecked>
-                          <n-icon :component="Sunny" size="14" />
-                        </template>
-                      </n-switch>
-                      <n-button
-                        quaternary
-                        circle
-                        size="large"
-                        class="hamburger-btn"
-                        @click="showMobileMenu = true"
-                      >
-                        <template #icon>
-                          <n-icon :component="MenuOutline" size="24" />
-                        </template>
-                      </n-button>
+                          </div>
+                          <span class="nav-username">{{ authStore.userInfo?.username || '用户' }}</span>
+                          <span v-if="authStore.isAdmin" class="nav-admin-badge">Admin</span>
+                        </div>
+                      </n-dropdown>
                     </div>
-                  </template>
-                </n-page-header>
-              </n-layout-header>
-              <n-layout-content content-style="padding: 24px; max-width: 1400px; margin: 0 auto; width: 100%;">
+
+                    <n-button
+                      v-if="!authStore.isAuthenticated"
+                      type="primary"
+                      class="nav-login-btn"
+                      @click="openAuthModal"
+                    >
+                      登录 / 注册
+                    </n-button>
+
+                    <!-- 主题切换 -->
+                    <button class="nav-theme-toggle" @click="isDarkTheme = !isDarkTheme">
+                      <transition name="theme-icon" mode="out-in">
+                        <n-icon v-if="isDarkTheme" :component="Moon" size="18" key="moon" />
+                        <n-icon v-else :component="Sunny" size="18" key="sun" />
+                      </transition>
+                    </button>
+
+                    <!-- 移动端汉堡按钮 -->
+                    <button class="nav-hamburger" @click="showMobileMenu = true">
+                      <span class="hamburger-line" :class="{ open: showMobileMenu }"></span>
+                      <span class="hamburger-line" :class="{ open: showMobileMenu }"></span>
+                      <span class="hamburger-line" :class="{ open: showMobileMenu }"></span>
+                    </button>
+                  </div>
+                </div>
+              </header>
+
+              <n-layout-content content-style="padding: 96px 24px 24px; max-width: 1400px; margin: 0 auto; width: 100%;">
                 <div class="pet-content">
                   <DashboardView v-if="activeKey === 'dashboard'" />
                   <PetManagement v-if="activeKey === 'pets'" />
@@ -453,85 +400,97 @@ onMounted(async () => {
                 <span>Made with ❤️ 萌宠之家</span>
               </n-layout-footer>
             </n-layout>
-            <!-- Mobile Drawer -->
-            <n-drawer
-              v-model:show="showMobileMenu"
-              placement="right"
-              :width="280"
-              class="mobile-drawer"
-            >
-              <n-drawer-content :native-scrollbar="false">
-                <template #header>
-                  <div class="drawer-header">
-                    <span class="drawer-title">🐾 萌宠之家</span>
-                  </div>
-                </template>
-                <div class="drawer-body">
-                  <!-- 用户信息 -->
-                  <div v-if="authStore.isAuthenticated" class="drawer-user">
+
+            <!-- Mobile Drawer - 毛玻璃升级版 -->
+            <Transition name="drawer-backdrop">
+              <div v-if="showMobileMenu" class="drawer-overlay" @click="showMobileMenu = false"></div>
+            </Transition>
+            <Transition name="drawer-slide">
+              <div v-if="showMobileMenu" class="glass-drawer">
+                <div class="glass-drawer-header">
+                  <span class="glass-drawer-logo">🐾</span>
+                  <span class="glass-drawer-title">萌宠之家</span>
+                  <button class="drawer-close-btn" @click="showMobileMenu = false">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                      <path d="M4 4L14 14M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- 用户信息 -->
+                <div v-if="authStore.isAuthenticated" class="glass-drawer-user">
+                  <div class="drawer-avatar-ring">
                     <n-avatar
                       round
-                      size="large"
-                      style="background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%);"
+                      :size="44"
+                      style="background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%); font-weight: 700; font-size: 18px;"
                     >
                       {{ authStore.userInfo?.username?.charAt(0)?.toUpperCase() || 'U' }}
                     </n-avatar>
-                    <div class="drawer-user-info">
-                      <span class="drawer-username">{{ authStore.userInfo?.username || '用户' }}</span>
-                      <span v-if="authStore.isAdmin" class="pet-role-badge">管理员</span>
-                    </div>
                   </div>
-
-                  <n-button
-                    v-if="!authStore.isAuthenticated"
-                    type="primary"
-                    block
-                    class="pet-login-btn"
-                    @click="showMobileMenu = false; openAuthModal()"
-                    style="margin-bottom: 16px;"
-                  >
-                    登录 / 注册
-                  </n-button>
-
-                  <!-- 导航菜单 -->
-                  <div class="drawer-menu">
-                    <div
-                      v-for="item in menuOptions"
-                      :key="item.key"
-                      class="drawer-menu-item"
-                      :class="{ active: activeKey === item.key }"
-                      @click="handleMobileMenuClick(item.key)"
-                    >
-                      <n-icon :component="iconComponentMap[item.key]" size="20" />
-                      <span>{{ item.label }}</span>
-                    </div>
-                  </div>
-
-                  <!-- 底部操作 -->
-                  <div class="drawer-footer">
-                    <div class="drawer-footer-row">
-                      <span class="drawer-footer-label">深色模式</span>
-                      <n-switch v-model:value="isDarkTheme" size="small">
-                        <template #checked>
-                          <n-icon :component="Moon" size="12" />
-                        </template>
-                        <template #unchecked>
-                          <n-icon :component="Sunny" size="12" />
-                        </template>
-                      </n-switch>
-                    </div>
-                    <div
-                      v-if="authStore.isAuthenticated"
-                      class="drawer-menu-item logout-item"
-                      @click="handleLogout(); showMobileMenu = false"
-                    >
-                      <n-icon :component="LogOutOutline" />
-                      <span>退出登录</span>
-                    </div>
+                  <div class="glass-drawer-user-info">
+                    <span class="glass-drawer-username">{{ authStore.userInfo?.username || '用户' }}</span>
+                    <span v-if="authStore.isAdmin" class="nav-admin-badge">Admin</span>
                   </div>
                 </div>
-              </n-drawer-content>
-            </n-drawer>
+
+                <button
+                  v-if="!authStore.isAuthenticated"
+                  class="glass-drawer-login"
+                  @click="showMobileMenu = false; openAuthModal()"
+                >
+                  登录 / 注册
+                </button>
+
+                <!-- 导航菜单 -->
+                <nav class="glass-drawer-menu">
+                  <button
+                    v-for="(item, idx) in menuOptions"
+                    :key="item.key"
+                    class="glass-drawer-item"
+                    :class="{ active: activeKey === item.key }"
+                    :style="{ animationDelay: `${idx * 0.04}s` }"
+                    @click="handleMobileMenuClick(item.key)"
+                  >
+                    <span class="drawer-item-icon">
+                      <n-icon :component="iconComponentMap[item.key]" size="20" />
+                    </span>
+                    <span class="drawer-item-label">{{ item.label }}</span>
+                    <svg v-if="activeKey === item.key" class="drawer-item-check" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </nav>
+
+                <!-- 底部操作 -->
+                <div class="glass-drawer-footer">
+                  <div class="glass-drawer-footer-row">
+                    <span class="glass-drawer-footer-label">
+                      <n-icon :component="isDarkTheme ? Moon : Sunny" size="16" />
+                      深色模式
+                    </span>
+                    <n-switch v-model:value="isDarkTheme" size="small">
+                      <template #checked>
+                        <n-icon :component="Moon" size="12" />
+                      </template>
+                      <template #unchecked>
+                        <n-icon :component="Sunny" size="12" />
+                      </template>
+                    </n-switch>
+                  </div>
+                  <button
+                    v-if="authStore.isAuthenticated"
+                    class="glass-drawer-item logout-item"
+                    @click="handleLogout(); showMobileMenu = false"
+                  >
+                    <span class="drawer-item-icon">
+                      <n-icon :component="LogOutOutline" size="20" />
+                    </span>
+                    <span class="drawer-item-label">退出登录</span>
+                  </button>
+                </div>
+              </div>
+            </Transition>
 
             <!-- Modals -->
             <AuthModal
@@ -549,120 +508,321 @@ onMounted(async () => {
 </template>
 
 <style>
-/* 全局样式在 main.js 中导入 */
-
-/* 头部样式 - 白天模式 */
-.pet-header {
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(10px);
-  transition: background-color 0.3s ease;
+/* ============================================
+   毛玻璃浮动导航栏
+   ============================================ */
+.glass-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border-bottom: 1px solid rgba(255, 155, 168, 0.15);
+  box-shadow: 0 4px 30px rgba(255, 155, 168, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  animation: nav-glass-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 头部样式 - 夜间模式 */
-.dark-mode .pet-header {
-  background: rgba(37, 37, 66, 0.95) !important;
+@keyframes nav-glass-in {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.pet-logo {
+.dark-mode .glass-nav {
+  background: rgba(26, 26, 46, 0.78);
+  border-bottom-color: rgba(255, 155, 168, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.glass-nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 64px;
+  gap: 16px;
+}
+
+/* Logo */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-decoration: none;
-  color: #FF9BA8;
+  flex-shrink: 0;
+  cursor: pointer;
 }
 
-.pet-logo-icon {
-  font-size: 28px;
+.nav-logo-paw {
+  font-size: 30px;
+  animation: paw-bounce 3s ease-in-out infinite;
+  display: inline-block;
 }
 
-.pet-logo-text {
-  font-size: 22px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%);
+@keyframes paw-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(-5deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-2px) rotate(3deg); }
+}
+
+.nav-logo-text {
+  font-size: 21px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 40%, #E88BA0 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.5px;
 }
 
-.pet-menu {
-  background: transparent !important;
+/* 桌面端 Pill 导航 */
+.nav-pills {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255, 245, 247, 0.6);
+  padding: 4px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 155, 168, 0.1);
+}
+
+.dark-mode .nav-pills {
+  background: rgba(61, 61, 92, 0.4);
+  border-color: rgba(255, 155, 168, 0.08);
+}
+
+.nav-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #6B6B6B;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  position: relative;
+}
+
+.nav-pill:hover {
+  color: #FF7A8A;
+  background: rgba(255, 155, 168, 0.1);
+}
+
+.nav-pill.active {
+  color: #fff;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%);
+  box-shadow: 0 2px 12px rgba(255, 122, 138, 0.35);
+  font-weight: 600;
+}
+
+.dark-mode .nav-pill {
+  color: #B8B8CC;
+}
+
+.dark-mode .nav-pill:hover {
+  color: #FF9BA8;
+  background: rgba(255, 155, 168, 0.08);
+}
+
+.dark-mode .nav-pill.active {
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(255, 122, 138, 0.25);
+}
+
+/* 右侧操作区 */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 /* 用户区域 */
-.pet-user-area {
-  padding: 4px 12px;
-  background: #FFF5F7;
+.nav-user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 4px;
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+  background: rgba(255, 245, 247, 0.5);
+  border: 1px solid rgba(255, 155, 168, 0.12);
 }
 
-.dark-mode .pet-user-area {
-  background: #3D3D5C;
+.nav-user-trigger:hover {
+  background: rgba(255, 155, 168, 0.12);
+  border-color: rgba(255, 155, 168, 0.25);
+  transform: translateY(-1px);
 }
 
-.pet-user-area:hover {
-  background: #FFE4E9;
+.dark-mode .nav-user-trigger {
+  background: rgba(61, 61, 92, 0.5);
+  border-color: rgba(255, 155, 168, 0.08);
 }
 
-.dark-mode .pet-user-area:hover {
-  background: #4D4D6C;
+.dark-mode .nav-user-trigger:hover {
+  background: rgba(255, 155, 168, 0.1);
+  border-color: rgba(255, 155, 168, 0.18);
 }
 
-.pet-user-info {
-  cursor: pointer;
+.nav-avatar-ring {
+  padding: 2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 50%, #FF7A8A 100%);
 }
 
-.pet-username {
+.nav-username {
   font-weight: 600;
+  font-size: 13px;
   color: #4A4A4A;
 }
 
-.dark-mode .pet-username {
+.dark-mode .nav-username {
   color: #E8E8E8;
+}
+
+.nav-admin-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%);
+  color: white;
+  border-radius: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 /* 登录按钮 */
-.pet-login-btn {
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
+.nav-login-btn {
+  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%) !important;
   border: none !important;
-  border-radius: 20px !important;
+  border-radius: 14px !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 15px rgba(255, 155, 168, 0.3) !important;
-  transition: all 0.3s ease !important;
+  font-size: 13px !important;
+  height: 36px !important;
+  padding: 0 18px !important;
+  box-shadow: 0 2px 12px rgba(255, 122, 138, 0.3) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  color: #fff !important;
 }
 
-.pet-login-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 155, 168, 0.4) !important;
+.nav-login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(255, 122, 138, 0.45) !important;
 }
 
-.dark-mode .pet-login-btn {
-  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 100%) !important;
+/* 主题切换按钮 */
+.nav-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 155, 168, 0.15);
+  border-radius: 12px;
+  background: rgba(255, 245, 247, 0.4);
+  color: #FF9BA8;
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
 
-.dark-mode .pet-username {
-  color: #E8E8E8;
+.nav-theme-toggle:hover {
+  background: rgba(255, 155, 168, 0.12);
+  border-color: rgba(255, 155, 168, 0.3);
+  transform: rotate(15deg);
 }
 
-/* 角色徽章 */
-.pet-role-badge {
-  font-size: 10px;
-  padding: 2px 8px;
-  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%);
-  color: white;
-  border-radius: 10px;
-  font-weight: 600;
+.dark-mode .nav-theme-toggle {
+  background: rgba(61, 61, 92, 0.4);
+  border-color: rgba(255, 155, 168, 0.08);
+  color: #FFB4C2;
 }
 
-/* 主题切换 */
-.pet-theme-switch {
-  margin-left: 8px;
+.dark-mode .nav-theme-toggle:hover {
+  background: rgba(255, 155, 168, 0.1);
+  border-color: rgba(255, 155, 168, 0.2);
 }
 
-/* 内容区域 */
+/* 主题图标切换动效 */
+.theme-icon-enter-active,
+.theme-icon-leave-active {
+  transition: all 0.2s ease;
+}
+.theme-icon-enter-from {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+.theme-icon-leave-to {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.6);
+}
+
+/* 汉堡按钮 */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 155, 168, 0.15);
+  border-radius: 12px;
+  background: rgba(255, 245, 247, 0.4);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  padding: 8px;
+}
+
+.nav-hamburger:hover {
+  background: rgba(255, 155, 168, 0.12);
+  border-color: rgba(255, 155, 168, 0.3);
+}
+
+.dark-mode .nav-hamburger {
+  background: rgba(61, 61, 92, 0.4);
+  border-color: rgba(255, 155, 168, 0.08);
+}
+
+.dark-mode .nav-hamburger:hover {
+  background: rgba(255, 155, 168, 0.1);
+}
+
+.hamburger-line {
+  display: block;
+  width: 16px;
+  height: 2px;
+  background: #FF9BA8;
+  border-radius: 2px;
+  transition: all 0.25s ease;
+}
+
+/* 内容区域 - 顶部 padding 为导航栏留空间 */
 .pet-content {
   animation: pet-fade-in 0.3s ease;
+}
+
+@keyframes pet-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* 页脚 */
@@ -680,105 +840,292 @@ onMounted(async () => {
   color: #8888A0;
 }
 
-/* 移动端导航 */
-.mobile-nav {
-  display: none;
-  align-items: center;
-  gap: 8px;
+/* ============================================
+   毛玻璃移动端抽屉
+   ============================================ */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1100;
 }
 
-.hamburger-btn {
-  color: #FF9BA8 !important;
+.drawer-backdrop-enter-active,
+.drawer-backdrop-leave-active {
+  transition: opacity 0.3s ease;
+}
+.drawer-backdrop-enter-from,
+.drawer-backdrop-leave-to {
+  opacity: 0;
 }
 
-/* 抽屉样式 */
-.drawer-header {
+.glass-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  max-width: 85vw;
+  z-index: 1200;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border-left: 1px solid rgba(255, 155, 168, 0.15);
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+  overflow-y: auto;
+}
+
+.dark-mode .glass-drawer {
+  background: rgba(26, 26, 46, 0.92);
+  border-left-color: rgba(255, 155, 168, 0.08);
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.35);
+}
+
+.drawer-slide-enter-active,
+.drawer-slide-leave-active {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.drawer-slide-enter-from,
+.drawer-slide-leave-to {
+  transform: translateX(100%);
+}
+
+.glass-drawer-header {
   display: flex;
   align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 155, 168, 0.12);
 }
 
-.drawer-title {
+.dark-mode .glass-drawer-header {
+  border-bottom-color: rgba(255, 155, 168, 0.08);
+}
+
+.glass-drawer-logo {
+  font-size: 28px;
+  animation: paw-bounce 3s ease-in-out infinite;
+}
+
+.glass-drawer-title {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
   background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  flex: 1;
 }
 
-.drawer-body {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.drawer-user {
+.drawer-close-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 0 20px;
-  border-bottom: 1px solid var(--border-color, #F0E6E0);
-  margin-bottom: 16px;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 155, 168, 0.15);
+  border-radius: 10px;
+  background: rgba(255, 245, 247, 0.4);
+  color: #FF9BA8;
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
 
-.drawer-user-info {
+.drawer-close-btn:hover {
+  background: rgba(255, 155, 168, 0.12);
+  transform: rotate(90deg);
+}
+
+.dark-mode .drawer-close-btn {
+  background: rgba(61, 61, 92, 0.4);
+  border-color: rgba(255, 155, 168, 0.08);
+}
+
+/* 抽屉用户信息 */
+.glass-drawer-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0 24px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 155, 168, 0.12);
+}
+
+.dark-mode .glass-drawer-user {
+  border-bottom-color: rgba(255, 155, 168, 0.08);
+}
+
+.drawer-avatar-ring {
+  padding: 3px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 50%, #FF7A8A 100%);
+}
+
+.glass-drawer-user-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.drawer-username {
-  font-weight: 600;
+.glass-drawer-username {
+  font-weight: 700;
   font-size: 16px;
-  color: var(--text-color-1, #2D2D2D);
+  color: #2D2D2D;
 }
 
-.drawer-menu {
+.dark-mode .glass-drawer-username {
+  color: #E8E8E8;
+}
+
+/* 抽屉登录按钮 */
+.glass-drawer-login {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 122, 138, 0.3);
+  transition: all 0.25s ease;
+  margin-bottom: 20px;
+}
+
+.glass-drawer-login:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 122, 138, 0.45);
+}
+
+/* 抽屉菜单 */
+.glass-drawer-menu {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.drawer-menu-item {
+.glass-drawer-item {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
   padding: 12px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 500;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
   color: #6B6B6B;
-  transition: all 0.2s ease;
-  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  animation: drawer-item-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.drawer-menu-item:hover {
-  background: #FFF5F7;
+@keyframes drawer-item-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.glass-drawer-item:hover {
+  background: rgba(255, 155, 168, 0.08);
   color: #FF7A8A;
+  padding-left: 20px;
 }
 
-.drawer-menu-item.active {
-  background: linear-gradient(135deg, #FFF0F3 0%, #FFE4E9 100%);
+.glass-drawer-item.active {
+  background: linear-gradient(135deg, rgba(255, 155, 168, 0.12) 0%, rgba(255, 122, 138, 0.08) 100%);
   color: #FF7A8A;
   font-weight: 600;
+  border-left: 3px solid #FF9BA8;
+  padding-left: 13px;
 }
 
-.drawer-footer {
+.dark-mode .glass-drawer-item {
+  color: #B8B8CC;
+}
+
+.dark-mode .glass-drawer-item:hover {
+  background: rgba(255, 155, 168, 0.06);
+  color: #FF9BA8;
+}
+
+.dark-mode .glass-drawer-item.active {
+  background: linear-gradient(135deg, rgba(255, 155, 168, 0.08) 0%, rgba(255, 122, 138, 0.05) 100%);
+  color: #FF9BA8;
+  border-left-color: #FF9BA8;
+}
+
+.drawer-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(255, 155, 168, 0.08);
+  color: #FF9BA8;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+
+.glass-drawer-item.active .drawer-item-icon {
+  background: linear-gradient(135deg, #FF9BA8 0%, #FF7A8A 100%);
+  color: white;
+  box-shadow: 0 2px 10px rgba(255, 122, 138, 0.3);
+}
+
+.drawer-item-check {
+  margin-left: auto;
+  color: #FF9BA8;
+}
+
+/* 抽屉底部 */
+.glass-drawer-footer {
   margin-top: auto;
   padding-top: 16px;
-  border-top: 1px solid var(--border-color, #F0E6E0);
+  border-top: 1px solid rgba(255, 155, 168, 0.12);
 }
 
-.drawer-footer-row {
+.dark-mode .glass-drawer-footer {
+  border-top-color: rgba(255, 155, 168, 0.08);
+}
+
+.glass-drawer-footer-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
+  padding: 8px 12px;
   margin-bottom: 8px;
 }
 
-.drawer-footer-label {
+.glass-drawer-footer-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
+  font-weight: 500;
   color: #6B6B6B;
+}
+
+.dark-mode .glass-drawer-footer-label {
+  color: #B8B8CC;
 }
 
 .logout-item {
@@ -786,73 +1133,50 @@ onMounted(async () => {
 }
 
 .logout-item:hover {
-  background: #FFF0F0 !important;
+  background: rgba(252, 165, 165, 0.1) !important;
   color: #EF4444 !important;
 }
 
-/* 深色主题抽屉样式 */
-.dark-mode .drawer-user {
-  border-color: #3D3D5C;
+.logout-item .drawer-item-icon {
+  background: rgba(252, 165, 165, 0.1);
+  color: #FCA5A5;
 }
 
-.dark-mode .drawer-username {
-  color: #E8E8E8;
-}
-
-.dark-mode .drawer-menu-item {
-  color: #B8B8CC;
-}
-
-.dark-mode .drawer-menu-item:hover {
-  background: #2D2D4A;
-  color: #FF9BA8;
-}
-
-.dark-mode .drawer-menu-item.active {
-  background: linear-gradient(135deg, #3D2D3D 0%, #3D2D4A 100%);
-  color: #FF9BA8;
-}
-
-.dark-mode .drawer-footer {
-  border-color: #3D3D5C;
-}
-
-.dark-mode .drawer-footer-label {
-  color: #B8B8CC;
-}
-
-.dark-mode .logout-item {
-  color: #FCA5A5 !important;
-}
-
-.dark-mode .logout-item:hover {
-  background: #3D2D2D !important;
-}
-
-/* 响应式 */
-@media (max-width: 768px) {
-  .pet-logo-text {
+/* ============================================
+   响应式
+   ============================================ */
+@media (max-width: 1100px) {
+  .nav-pills {
     display: none;
   }
-
-  .pet-username {
+  .nav-hamburger {
+    display: flex;
+  }
+  .nav-user-trigger .nav-username,
+  .nav-user-trigger .nav-admin-badge {
     display: none;
   }
-
-  .pet-user-area {
-    padding: 4px 8px;
+  .nav-user-trigger {
+    padding: 4px;
+    border-radius: 50%;
   }
+}
 
-  .pet-role-badge {
+@media (max-width: 480px) {
+  .glass-nav-inner {
+    padding: 0 16px;
+    height: 56px;
+  }
+  .nav-logo-text {
     display: none;
   }
-
-  .desktop-nav {
-    display: none !important;
+  .nav-login-btn {
+    font-size: 12px !important;
+    height: 32px !important;
+    padding: 0 14px !important;
   }
-
-  .mobile-nav {
-    display: flex !important;
+  .glass-drawer {
+    width: 260px;
   }
 }
 </style>
