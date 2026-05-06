@@ -261,7 +261,7 @@ const handleLike = async (petId) => {
         <n-input
           :value="petStore.searchKeyword"
           @update:value="handleSearchInput"
-          placeholder="搜索宠物名称..."
+          placeholder="搜索名称或备注..."
           clearable
           size="small"
           @clear="handleClearSearch"
