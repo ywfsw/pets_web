@@ -3,8 +3,8 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
+import PetAvatarSelector from '@/components/PetAvatarSelector.vue';
 import {
-  NSelect,
   NTag,
   NButton,
   NIcon,
@@ -12,7 +12,6 @@ import {
   NAvatar
 } from 'naive-ui';
 import {
-  PawOutline,
   CloseOutline,
   TimeOutline
 } from '@vicons/ionicons5';
@@ -38,14 +37,6 @@ onMounted(() => {
 // Photo lightbox
 const showPhotoLightbox = ref(false);
 const lightboxPhotoUrl = ref('');
-
-// Pet selector options
-const petOptions = computed(() => {
-  return petStore.petList.map(pet => ({
-    label: pet.name,
-    value: pet.id
-  }));
-});
 
 // Load pet detail + photos
 const loadTimelineData = async (petId) => {
@@ -329,20 +320,14 @@ const closePhotoLightbox = () => {
       </div>
     </div>
 
-    <!-- Pet Selector -->
-    <div class="selector-section section-entrance" style="--entrance-delay: 0.1s;">
-      <n-select
-        v-model:value="selectedPetId"
-        :options="petOptions"
-        placeholder="选择一只宠物查看成长时间线"
-        clearable
-        filterable
-        class="timeline-pet-selector"
-      >
-        <template #prefix>
-          <n-icon :component="PawOutline" size="16" />
-        </template>
-      </n-select>
+    <!-- Pet Avatar Selector -->
+    <div class="pet-selector-section section-entrance" style="--entrance-delay: 0.1s;">
+      <PetAvatarSelector
+        :pets="petStore.petList"
+        :selected-id="selectedPetId"
+        :show-all="false"
+        @select="selectedPetId = $event"
+      />
     </div>
 
     <!-- No pet selected -->
@@ -655,16 +640,9 @@ const closePhotoLightbox = () => {
   transform: translateY(0);
 }
 
-/* ========== Selector Section ========== */
-.selector-section {
+/* ========== Pet Avatar Selector ========== */
+.pet-selector-section {
   margin-bottom: 20px;
-}
-
-.timeline-pet-selector {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  display: block;
 }
 
 /* ========== Empty Choose State ========== */

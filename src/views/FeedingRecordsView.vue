@@ -4,8 +4,8 @@ import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { fetchFeedingRecordsPage, fetchFeedingStats } from '@/api.js';
 import FeedingTrendChart from '@/components/FeedingTrendChart.vue';
+import PetAvatarSelector from '@/components/PetAvatarSelector.vue';
 import {
-  NSelect,
   NTag,
   NSpin,
   NButton,
@@ -14,7 +14,6 @@ import {
   NPopconfirm
 } from 'naive-ui';
 import {
-  PawOutline,
   AddOutline,
   CreateOutline,
   TrashOutline
@@ -38,17 +37,6 @@ const total = ref(0);
 const feedingStats = ref(null);
 const loadingStats = ref(false);
 const statsDays = ref(30);
-
-// Pet selector options
-const petOptions = computed(() => {
-  return [
-    { label: '全部宠物', value: null },
-    ...petStore.petList.map(pet => ({
-      label: pet.name,
-      value: pet.id
-    }))
-  ];
-});
 
 // Load feeding records
 const loadRecords = async () => {
@@ -252,21 +240,25 @@ watch(() => petStore.feedingRecordFormModal.show, (show) => {
       </div>
     </div>
 
-    <!-- Toolbar: Selector + Add -->
+    <!-- Pet Avatar Selector -->
+    <div class="pet-selector-section section-entrance" style="--entrance-delay: 0.08s;">
+      <PetAvatarSelector
+        :pets="petStore.petList"
+        :selected-id="selectedPetId"
+        :show-all="petStore.petList.length >= 2"
+        all-label="全部宠物"
+        @select="selectedPetId = $event"
+      />
+    </div>
+
+    <!-- Toolbar: Selection Hint + Add -->
     <div class="toolbar section-entrance" style="--entrance-delay: 0.1s;">
-      <n-select
-        v-model:value="selectedPetId"
-        :options="petOptions"
-        placeholder="选择宠物筛选"
-        clearable
-        filterable
-        size="medium"
-        class="pet-selector"
-      >
-        <template #prefix>
-          <n-icon :component="PawOutline" size="16" />
-        </template>
-      </n-select>
+      <span v-if="selectedPetId" class="selected-pet-hint">
+        🐾 {{ getPetName(selectedPetId) }}
+      </span>
+      <span v-else class="selected-pet-hint all-pets-hint">
+        🐾 全部宠物
+      </span>
       <n-button
         type="primary"
         class="add-btn"
@@ -608,8 +600,36 @@ watch(() => petStore.feedingRecordFormModal.show, (show) => {
   margin-bottom: 20px;
 }
 
-.pet-selector {
-  width: 220px;
+/* ===== Pet Avatar Selector ===== */
+.pet-selector-section {
+  margin-bottom: 16px;
+}
+
+.selected-pet-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #D97706;
+  background: rgba(217, 119, 6, 0.08);
+  padding: 4px 14px;
+  border-radius: 12px;
+}
+
+.all-pets-hint {
+  color: #6B7280;
+  background: rgba(107, 114, 128, 0.08);
+}
+
+:global(.dark-mode) .selected-pet-hint {
+  color: #FBBF24;
+  background: rgba(217, 119, 6, 0.12);
+}
+
+:global(.dark-mode) .all-pets-hint {
+  color: #9CA3AF;
+  background: rgba(156, 163, 175, 0.1);
 }
 
 .add-btn {
@@ -996,8 +1016,8 @@ watch(() => petStore.feedingRecordFormModal.show, (show) => {
     gap: 12px;
   }
 
-  .pet-selector {
-    width: 100%;
+  .pet-selector-section {
+    margin-bottom: 12px;
   }
 
   .add-btn {

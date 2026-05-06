@@ -1,13 +1,13 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { fetchHealthEventsPage, fetchHealthEventsStats, deleteHealthEvent, completeHealthEvent, uncompleteHealthEvent } from '@/api.js';
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
 import HealthEventTypeChart from '@/components/HealthEventTypeChart.vue';
+import PetAvatarSelector from '@/components/PetAvatarSelector.vue';
 import {
-  NSelect,
   NTag,
   NButton,
   NIcon,
@@ -15,7 +15,6 @@ import {
   NPopconfirm
 } from 'naive-ui';
 import {
-  PawOutline,
   AddOutline,
   CreateOutline,
   TrashOutline,
@@ -44,17 +43,6 @@ const total = ref(0);
 // Stats state
 const stats = ref({ totalCount: 0, pendingCount: 0, completedCount: 0, overdueCount: 0, typeBreakdown: [] });
 const statsLoading = ref(false);
-
-// Pet selector options
-const petOptions = computed(() => {
-  return [
-    { label: '全部宠物', value: null },
-    ...petStore.petList.map(pet => ({
-      label: pet.name,
-      value: pet.id
-    }))
-  ];
-});
 
 // Status tab options
 const statusOptions = [
@@ -287,22 +275,26 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
       </div>
     </div>
 
-    <!-- Toolbar: Selector + Status Tabs + Add -->
+    <!-- Pet Avatar Selector -->
+    <div class="pet-selector-section section-entrance" style="--entrance-delay: 0.08s;">
+      <PetAvatarSelector
+        :pets="petStore.petList"
+        :selected-id="selectedPetId"
+        :show-all="petStore.petList.length >= 2"
+        all-label="全部宠物"
+        @select="selectedPetId = $event"
+      />
+    </div>
+
+    <!-- Toolbar: Status Tabs + Add -->
     <div class="toolbar section-entrance" style="--entrance-delay: 0.1s;">
       <div class="toolbar-left">
-        <n-select
-          v-model:value="selectedPetId"
-          :options="petOptions"
-          placeholder="选择宠物筛选"
-          clearable
-          filterable
-          size="medium"
-          class="pet-selector"
-        >
-          <template #prefix>
-            <n-icon :component="PawOutline" size="16" />
-          </template>
-        </n-select>
+        <span v-if="selectedPetId" class="selected-pet-hint">
+          🐾 {{ petStore.petList.find(p => p.id === selectedPetId)?.name || '已选宠物' }}
+        </span>
+        <span v-else class="selected-pet-hint all-pets-hint">
+          🐾 全部宠物
+        </span>
       </div>
       <div class="toolbar-right">
         <div class="status-tabs">
@@ -706,8 +698,36 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   gap: 12px;
 }
 
-.pet-selector {
-  width: 200px;
+/* ===== Pet Avatar Selector ===== */
+.pet-selector-section {
+  margin-bottom: 16px;
+}
+
+.selected-pet-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.08);
+  padding: 4px 14px;
+  border-radius: 12px;
+}
+
+.all-pets-hint {
+  color: #6B7280;
+  background: rgba(107, 114, 128, 0.08);
+}
+
+:global(.dark-mode) .selected-pet-hint {
+  color: #34D399;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+:global(.dark-mode) .all-pets-hint {
+  color: #9CA3AF;
+  background: rgba(156, 163, 175, 0.1);
 }
 
 .status-tabs {
@@ -1151,8 +1171,8 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
     width: 100%;
   }
 
-  .pet-selector {
-    width: 100%;
+  .pet-selector-section {
+    margin-bottom: 12px;
   }
 
   .toolbar-right {

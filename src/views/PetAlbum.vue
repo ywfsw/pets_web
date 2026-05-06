@@ -16,8 +16,8 @@ import {
   NText,
   useMessage,
   NInput,
-  NTag
 } from 'naive-ui';
+import PetAvatarSelector from '@/components/PetAvatarSelector.vue';
 import { Add, ImageOutline, CloseOutline, TrashOutline, CreateOutline, CheckmarkOutline, PawOutline, ChevronBackOutline, ChevronForwardOutline } from '@vicons/ionicons5';
 
 const petStore = usePetStore();
@@ -229,22 +229,6 @@ const petOptions = computed(() =>
   }))
 );
 
-// 筛选下拉选项：包含当前筛选的宠物（可能不在列表中）+ 全部宠物列表
-const filterPetOptions = computed(() => {
-  const options = petList.value.map(pet => ({
-    label: pet.name,
-    value: pet.id
-  }));
-  // 如果当前筛选的宠物不在列表中，添加它
-  if (albumFilterPetId.value && !options.find(o => o.value === albumFilterPetId.value)) {
-    options.unshift({
-      label: albumFilterPetName.value || '未知宠物',
-      value: albumFilterPetId.value
-    });
-  }
-  return options;
-});
-
 function handleAddClick() {
   if (!authStore.isAuthenticated) {
     message.warning('请先登录后再添加照片');
@@ -352,23 +336,25 @@ async function handleConfirmDescription() {
       </div>
     </div>
 
-    <!-- 工具栏：筛选 + 上传 -->
-    <div class="album-toolbar section-entrance" style="--entrance-delay: 0.1s;">
-      <div class="toolbar-left">
-        <n-select
-          :value="albumFilterPetId"
-          :options="filterPetOptions"
-          placeholder="按宠物筛选"
-          clearable
-          filterable
-          size="medium"
-          class="album-pet-filter"
-          @update:value="handleFilterChange"
-        >
-          <template #prefix>
-            <n-icon :component="PawOutline" size="16" />
-          </template>
-        </n-select>
+    <!-- 宠物头像选择器 -->
+    <div class="pet-selector-section section-entrance" style="--entrance-delay: 0.1s;">
+      <PetAvatarSelector
+        v-if="petList.length >= 2"
+        :pets="petList"
+        :selected-id="albumFilterPetId"
+        :show-all="true"
+        all-label="全部照片"
+        @select="handleFilterChange"
+      />
+    </div>
+
+    <!-- 工具栏：上传 -->
+    <div class="album-toolbar section-entrance" style="--entrance-delay: 0.12s;">
+      <div v-if="albumFilterPetId" class="selected-pet-hint">
+        🐾 正在查看: {{ albumFilterPetName || '未知宠物' }} 的照片
+      </div>
+      <div v-else class="all-pets-hint">
+        📸 查看全部照片
       </div>
       <n-button
         type="primary"
@@ -381,19 +367,6 @@ async function handleConfirmDescription() {
           <n-icon :component="Add" />
         </template>
         上传照片
-      </n-button>
-    </div>
-
-    <!-- 宠物筛选标签 -->
-    <div v-if="albumFilterPetId" class="filter-bar section-entrance" style="--entrance-delay: 0.12s;">
-      <n-tag closable type="primary" round size="medium" @close="petStore.clearAlbumFilter()">
-        <template #icon>
-          <n-icon :component="PawOutline" size="14" />
-        </template>
-        正在查看: {{ albumFilterPetName || '未知宠物' }}
-      </n-tag>
-      <n-button text type="default" size="small" @click="petStore.clearAlbumFilter()">
-        查看全部
       </n-button>
     </div>
 
@@ -852,6 +825,11 @@ async function handleConfirmDescription() {
   }
 }
 
+/* ===== Pet Selector ===== */
+.pet-selector-section {
+  margin-bottom: 16px;
+}
+
 /* ===== Toolbar ===== */
 .album-toolbar {
   display: flex;
@@ -861,14 +839,22 @@ async function handleConfirmDescription() {
   margin-bottom: 20px;
 }
 
-.toolbar-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.selected-pet-hint,
+.all-pets-hint {
+  font-size: 14px;
+  color: var(--pet-text-secondary, #6B7280);
+  font-weight: 500;
+  padding: 6px 14px;
+  background: rgba(236, 72, 153, 0.06);
+  border-radius: 10px;
+  border: 1px solid rgba(236, 72, 153, 0.12);
 }
 
-.album-pet-filter {
-  width: 200px;
+:global(.dark-mode) .selected-pet-hint,
+:global(.dark-mode) .all-pets-hint {
+  background: rgba(244, 114, 182, 0.08);
+  border-color: rgba(244, 114, 182, 0.15);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .upload-btn {
@@ -884,23 +870,6 @@ async function handleConfirmDescription() {
 .upload-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
-}
-
-/* ===== Filter Bar ===== */
-.filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding: 10px 16px;
-  background: var(--pet-bg-secondary, #FFF5F7);
-  border-radius: 12px;
-  border: 1px solid var(--pet-border, #F0E6E0);
-}
-
-:global(.dark-mode) .filter-bar {
-  background: rgba(40, 20, 30, 0.4);
-  border-color: rgba(244, 114, 182, 0.15);
 }
 
 /* ===== Skeleton Loading ===== */
@@ -1298,13 +1267,15 @@ async function handleConfirmDescription() {
   .hero-stats-bar { gap: 14px; padding: 12px 16px; }
   .hero-stat-value { font-size: 20px; }
 
+  .pet-selector-section { margin-bottom: 12px; }
+
   .album-toolbar {
     flex-direction: column;
     gap: 12px;
   }
 
-  .toolbar-left { width: 100%; }
-  .album-pet-filter { width: 100%; }
+  .selected-pet-hint,
+  .all-pets-hint { text-align: center; }
 
   .masonry-grid, .skeleton-grid {
     column-count: 2;
