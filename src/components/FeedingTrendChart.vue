@@ -8,7 +8,22 @@ const props = defineProps({
   }
 });
 
+const emit = defineEmits(['update:days']);
+
 const hoveredIndex = ref(-1);
+const timeRange = ref('30');
+
+const timeRangeOptions = [
+  { label: '7天', value: '7' },
+  { label: '30天', value: '30' },
+  { label: '90天', value: '90' },
+  { label: '全部', value: 'all' }
+];
+
+function onTimeRangeChange(val) {
+  timeRange.value = val;
+  emit('update:days', val === 'all' ? null : Number(val));
+}
 
 function onBarEnter(index) {
   hoveredIndex.value = index;
@@ -105,6 +120,15 @@ const chartData = computed(() => {
             食量
           </span>
         </div>
+      </div>
+      <div class="time-range-selector">
+        <button
+          v-for="opt in timeRangeOptions"
+          :key="opt.value"
+          class="time-range-btn"
+          :class="{ active: timeRange === opt.value }"
+          @click="onTimeRangeChange(opt.value)"
+        >{{ opt.label }}</button>
       </div>
       <svg
         :viewBox="`0 0 ${chartData.width} ${chartData.height}`"
@@ -293,6 +317,53 @@ const chartData = computed(() => {
 
 .legend-amount {
   background: #FCD34D;
+}
+
+.time-range-selector {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  justify-content: flex-end;
+}
+
+.time-range-btn {
+  padding: 3px 10px;
+  font-size: 11px;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  background: transparent;
+  color: #94A3B8;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1.4;
+}
+
+.time-range-btn:hover {
+  color: #64748B;
+  border-color: #CBD5E1;
+}
+
+.time-range-btn.active {
+  background: rgba(251, 146, 60, 0.15);
+  border-color: #FB923C;
+  color: #EA580C;
+  font-weight: 600;
+}
+
+:global(.dark-mode) .time-range-btn {
+  border-color: #44403C;
+  color: #A8A29E;
+}
+
+:global(.dark-mode) .time-range-btn:hover {
+  color: #D6D3D1;
+  border-color: #57534E;
+}
+
+:global(.dark-mode) .time-range-btn.active {
+  background: rgba(251, 146, 60, 0.2);
+  border-color: #FB923C;
+  color: #FB923C;
 }
 
 .trend-svg {

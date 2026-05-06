@@ -35,6 +35,7 @@ const pageSize = ref(20);
 const total = ref(0);
 const feedingStats = ref(null);
 const loadingStats = ref(false);
+const statsDays = ref(30);
 
 // Pet selector options
 const petOptions = computed(() => {
@@ -74,7 +75,10 @@ const loadRecords = async () => {
 const loadStats = async () => {
   loadingStats.value = true;
   try {
-    const params = { days: 30 };
+    const params = {};
+    if (statsDays.value) {
+      params.days = statsDays.value;
+    }
     if (selectedPetId.value) {
       params.petId = selectedPetId.value;
     }
@@ -86,6 +90,12 @@ const loadStats = async () => {
   } finally {
     loadingStats.value = false;
   }
+};
+
+// Handle time range change from chart
+const handleTimeRangeChange = (days) => {
+  statsDays.value = days || null;
+  loadStats();
 };
 
 // Watch pet selection
@@ -273,7 +283,7 @@ watch(() => petStore.feedingRecordFormModal.show, (show) => {
       <div v-if="loadingStats" class="chart-loading">
         <n-spin size="small" />
       </div>
-      <feeding-trend-chart v-else :stats="feedingStats" />
+      <feeding-trend-chart v-else :stats="feedingStats" @update:days="handleTimeRangeChange" />
     </div>
 
     <!-- Loading -->
