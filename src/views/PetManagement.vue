@@ -42,6 +42,16 @@ const ageOptions = [
 // 年龄 key → 标签映射
 const ageLabelMap = { baby: '🍼 幼崽', young: '🐾 青年', adult: '🐕 成年', senior: '🧓 老年' };
 
+// 排序选项
+const sortOptions = [
+  { label: '📋 默认排序', value: 'default' },
+  { label: '🔤 名称 A-Z', value: 'name_asc' },
+  { label: '❤️ 点赞最多', value: 'likes_desc' },
+  { label: '🐣 年龄最小', value: 'age_asc' },
+  { label: '🧓 年龄最大', value: 'age_desc' },
+  { label: '🆕 最近添加', value: 'newest' }
+];
+
 // 物种选项（从字典中获取）
 const speciesFilterOptions = computed(() => {
   return dictStore.species.map(s => ({ label: s.itemLabel, value: s.id }));
@@ -365,6 +375,14 @@ const handleLike = async (petId) => {
             class="pet-filter-select"
             @update:value="petStore.setAgeFilter"
           />
+          <n-select
+            :value="petStore.sortOption"
+            :options="sortOptions"
+            placeholder="排序"
+            size="small"
+            class="pet-sort-select"
+            @update:value="petStore.setSortOption"
+          />
           <n-button
             @click="handleCreatePet"
             type="primary"
@@ -376,7 +394,7 @@ const handleLike = async (petId) => {
             添加新萌宠
           </n-button>
         </div>
-        <div v-if="petStore.searchKeyword || petStore.speciesFilter || petStore.genderFilter || petStore.ageFilter" class="active-filters">
+        <div v-if="petStore.searchKeyword || petStore.speciesFilter || petStore.genderFilter || petStore.ageFilter || petStore.sortOption !== 'default'" class="active-filters">
           <n-tag v-if="petStore.searchKeyword" size="small" round closable @close="handleClearSearch" class="filter-tag">
             🔍 {{ petStore.searchKeyword }}
           </n-tag>
@@ -388,6 +406,9 @@ const handleLike = async (petId) => {
           </n-tag>
           <n-tag v-if="petStore.ageFilter" size="small" round type="success" closable @close="petStore.clearAgeFilter" class="filter-tag">
             {{ ageLabelMap[petStore.ageFilter] || petStore.ageFilter }}
+          </n-tag>
+          <n-tag v-if="petStore.sortOption !== 'default'" size="small" round type="info" closable @close="petStore.setSortOption('default')" class="filter-tag sort-filter-tag">
+            ↕️ {{ sortOptions.find(s => s.value === petStore.sortOption)?.label?.replace(/^[^\s]+\s/, '') || '排序' }}
           </n-tag>
         </div>
       </div>
@@ -962,6 +983,11 @@ const handleLike = async (petId) => {
   max-width: 140px;
 }
 
+.pet-sort-select {
+  min-width: 130px;
+  max-width: 160px;
+}
+
 .add-pet-btn {
   background: linear-gradient(135deg, #FF6B8A 0%, #FF9BA8 100%) !important;
   border: none !important;
@@ -987,6 +1013,11 @@ const handleLike = async (petId) => {
 
 .filter-tag {
   transition: all 0.2s ease;
+}
+
+.sort-filter-tag {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
 }
 
 /* ===== 宠物骨架屏 ===== */
@@ -1388,6 +1419,12 @@ const handleLike = async (petId) => {
   color: #6EE7B7;
 }
 
+:global(.dark-mode) .sort-filter-tag {
+  background: rgba(165, 180, 252, 0.1) !important;
+  border-color: rgba(165, 180, 252, 0.25) !important;
+  color: #A5B4FC !important;
+}
+
 :global(.dark-mode) .pet-grid-total {
   color: #7777A0;
 }
@@ -1450,6 +1487,10 @@ const handleLike = async (petId) => {
   }
 
   .pet-filter-select {
+    max-width: 100%;
+  }
+
+  .pet-sort-select {
     max-width: 100%;
   }
 
