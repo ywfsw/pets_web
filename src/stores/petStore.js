@@ -111,10 +111,28 @@ import {
     notes: ''
   });
   
+  // localStorage 读写辅助
+  const STORAGE_KEY = 'pets_preferences';
+  function loadPreferences() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  }
+  function savePreferences(patch) {
+    try {
+      const current = loadPreferences();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...current, ...patch }));
+    } catch { /* 忽略存储异常 */ }
+  }
+
   export const usePetStore = defineStore('pet', () => {
     const dictStore = useDictionaryStore(); // Get instance of dictionary store
     const authStore = useAuthStore();
-  
+
+    // 恢复持久化的筛选/排序偏好
+    const saved = loadPreferences();
+
     // --- 1. State ---
     const activePage = ref('dashboard');
     const albumFilterPetId = ref(null);
@@ -123,10 +141,10 @@ import {
     const upcomingEvents = ref([]);
     const loadingUpcoming = ref(false);
     const searchKeyword = ref('');
-    const speciesFilter = ref(null);
-    const genderFilter = ref(null);
-    const ageFilter = ref(null);
-    const sortOption = ref('default');
+    const speciesFilter = ref(saved.speciesFilter ?? null);
+    const genderFilter = ref(saved.genderFilter ?? null);
+    const ageFilter = ref(saved.ageFilter ?? null);
+    const sortOption = ref(saved.sortOption ?? 'default');
 
     // (❗) 分页状态
     const pagination = ref(defaultPagination());
@@ -834,21 +852,25 @@ import {
 
     function setSpeciesFilter(value) {
       speciesFilter.value = value;
+      savePreferences({ speciesFilter: value });
       loadPetList(1);
     }
 
     function clearSpeciesFilter() {
       speciesFilter.value = null;
+      savePreferences({ speciesFilter: null });
       loadPetList(1);
     }
 
     function setGenderFilter(value) {
       genderFilter.value = value;
+      savePreferences({ genderFilter: value });
       loadPetList(1);
     }
 
     function clearGenderFilter() {
       genderFilter.value = null;
+      savePreferences({ genderFilter: null });
       loadPetList(1);
     }
 
@@ -862,16 +884,19 @@ import {
 
     function setAgeFilter(value) {
       ageFilter.value = value;
+      savePreferences({ ageFilter: value });
       loadPetList(1);
     }
 
     function clearAgeFilter() {
       ageFilter.value = null;
+      savePreferences({ ageFilter: null });
       loadPetList(1);
     }
 
     function setSortOption(value) {
       sortOption.value = value || 'default';
+      savePreferences({ sortOption: sortOption.value });
       loadPetList(1);
     }
 

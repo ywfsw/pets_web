@@ -27,8 +27,15 @@ const dashboardData = ref(null);
 const loading = ref(true);
 const error = ref(false);
 
-// 宠物速览排序
-const petSortOption = ref('default');
+// 宠物速览排序（从 localStorage 恢复偏好）
+const DASH_SORT_KEY = 'pets_dash_pet_sort';
+let _initSort = 'default';
+try { _initSort = localStorage.getItem(DASH_SORT_KEY) || 'default'; } catch { /* ignore */ }
+const petSortOption = ref(_initSort);
+const setDashSortOption = (val) => {
+  petSortOption.value = val;
+  try { localStorage.setItem(DASH_SORT_KEY, val); } catch { /* ignore */ }
+};
 const sortedPetOverviews = computed(() => {
   const pets = dashboardData.value?.petOverviews || [];
   if (!pets.length) return [];
@@ -476,7 +483,7 @@ const computeAge = (birthday) => {
                 ]"
                 :key="opt.key"
                 :class="['pet-sort-pill', { active: petSortOption === opt.key }]"
-                @click="petSortOption = opt.key"
+                @click="setDashSortOption(opt.key)"
               >{{ opt.label }}</button>
             </div>
           </div>
