@@ -112,6 +112,33 @@ const handleEditPet = (pet) => {
   petStore.showPetFormModal(pet);
 };
 
+// 快捷操作：记录体重
+const handleQuickWeight = (pet) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录');
+    return;
+  }
+  petStore.showWeightLogFormModal(pet.id);
+};
+
+// 快捷操作：记录喂养
+const handleQuickFeeding = (pet) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录');
+    return;
+  }
+  petStore.showFeedingRecordFormModal(pet.id);
+};
+
+// 快捷操作：记录健康事件
+const handleQuickHealth = (pet) => {
+  if (!authStore.isAuthenticated) {
+    message.warning('请先登录');
+    return;
+  }
+  petStore.showHealthEventFormModal(pet.id);
+};
+
 // 搜索防抖
 let searchTimer = null;
 const handleSearchInput = (value) => {
@@ -476,6 +503,21 @@ const handleLike = async (petId) => {
               <n-icon :component="CreateOutline" :size="16" />
             </template>
           </n-button>
+          <!-- 快捷操作栏 -->
+          <div v-if="authStore.isAuthenticated" class="pet-quick-actions">
+            <button class="quick-action-btn weight-btn" @click.stop="handleQuickWeight(pet)" title="记录体重">
+              <span class="qa-icon">⚖️</span>
+              <span class="qa-label">体重</span>
+            </button>
+            <button class="quick-action-btn feeding-btn" @click.stop="handleQuickFeeding(pet)" title="记录喂养">
+              <span class="qa-icon">🍽️</span>
+              <span class="qa-label">喂养</span>
+            </button>
+            <button class="quick-action-btn health-btn" @click.stop="handleQuickHealth(pet)" title="记录健康事件">
+              <span class="qa-icon">🩺</span>
+              <span class="qa-label">健康</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1256,6 +1298,78 @@ const handleLike = async (petId) => {
   opacity: 1 !important;
 }
 
+/* 快捷操作栏 */
+.pet-quick-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--pet-border, rgba(240, 230, 224, 0.6));
+  opacity: 0;
+  transform: translateY(6px);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.pet-card:hover .pet-quick-actions {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.quick-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 155, 168, 0.08);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 11px;
+  color: var(--pet-text2, #6B6B6B);
+  font-weight: 600;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.quick-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.quick-action-btn.weight-btn:hover {
+  background: rgba(125, 211, 252, 0.2);
+  color: #0EA5E9;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+}
+
+.quick-action-btn.feeding-btn:hover {
+  background: rgba(252, 211, 77, 0.2);
+  color: #D97706;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.15);
+}
+
+.quick-action-btn.health-btn:hover {
+  background: rgba(134, 239, 172, 0.2);
+  color: #059669;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+}
+
+.qa-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.qa-label {
+  font-size: 11px;
+  line-height: 1;
+}
+
 /* 分页 */
 .pet-grid-pagination {
   display: flex;
@@ -1409,6 +1523,33 @@ const handleLike = async (petId) => {
   color: #7777A0;
 }
 
+:global(.dark-mode) .pet-quick-actions {
+  border-top-color: rgba(61, 61, 92, 0.6);
+}
+
+:global(.dark-mode) .quick-action-btn {
+  background: rgba(139, 58, 94, 0.12);
+  color: #B0B0C8;
+}
+
+:global(.dark-mode) .quick-action-btn.weight-btn:hover {
+  background: rgba(14, 165, 233, 0.18);
+  color: #38BDF8;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+:global(.dark-mode) .quick-action-btn.feeding-btn:hover {
+  background: rgba(217, 119, 6, 0.18);
+  color: #FBBF24;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+}
+
+:global(.dark-mode) .quick-action-btn.health-btn:hover {
+  background: rgba(5, 150, 105, 0.18);
+  color: #34D399;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+}
+
 :global(.dark-mode) .species-tag {
   background: rgba(99, 102, 241, 0.15);
   color: #A5B4FC;
@@ -1514,6 +1655,29 @@ const handleLike = async (petId) => {
 
   .pet-card-avatar .n-avatar {
     --n-size: 56px !important;
+  }
+
+  /* 移动端快捷操作栏始终可见 */
+  .pet-quick-actions {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    gap: 4px;
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .quick-action-btn {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  .qa-icon {
+    font-size: 12px;
+  }
+
+  .qa-label {
+    font-size: 10px;
   }
 }
 
