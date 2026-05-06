@@ -1,5 +1,5 @@
 <script setup>
-import { h, computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
@@ -9,20 +9,17 @@ import PetLeaderboard from '@/components/PetLeaderboard.vue';
 
 import {
   NCard,
-  NDataTable,
   NButton,
   NAvatar,
-  NThing,
   NSpace,
-  NH5,
-  NText,
   NEmpty,
   NSpin,
   NTag,
   NPopconfirm,
   NIcon,
   NInput,
-  NSelect
+  NSelect,
+  NPagination
 } from 'naive-ui';
 import { PawOutline, CalendarOutline, CreateOutline, CheckmarkCircleOutline, SearchOutline } from '@vicons/ionicons5';
 
@@ -112,19 +109,6 @@ const computeAge = (birthday) => {
   return `${years}岁${months}个月`;
 };
 
-// 获取物种标签类型
-const getSpeciesTagType = (species) => {
-  const typeMap = {
-    'dog': 'warning',
-    'cat': 'success',
-    'bird': 'info',
-    'fish': 'info',
-    'rabbit': 'warning',
-    'hamster': 'warning'
-  };
-  return typeMap[species?.toLowerCase()] || 'default';
-};
-
 // 事件提醒：获取剩余天数徽章样式
 const getDaysBadgeClass = (daysLeft) => {
   if (daysLeft < 0) return 'days-overdue';
@@ -169,142 +153,14 @@ const handleCompleteEvent = async (eventId) => {
   }
 };
 
-const createColumns = ({ handleShowDetail, handleEditPet, isMobile }) => {
-  const baseColumns = [
-    {
-      title: '萌宠',
-      key: 'name',
-      render(row) {
-        const genderIcon = row.gender === 'male' ? '♂' : row.gender === 'female' ? '♀' : '';
-        const genderColor = row.gender === 'male' ? '#7DD3FC' : row.gender === 'female' ? '#FCA5A5' : '';
-        return h(
-          NThing,
-          {
-            title: () => h('span', null, [
-              h('span', null, row.name),
-              genderIcon ? h('span', {
-                style: `margin-left: 4px; font-size: 14px; color: ${genderColor}; font-weight: 700;`
-              }, genderIcon) : null
-            ]),
-            description: row.breedLabel || '未知品种',
-            style: 'cursor: pointer;',
-            onClick: () => handleShowDetail(row.id)
-          },
-          {
-            avatar: () => h(NAvatar, {
-              size: 'large',
-              src: getAvatarUrl(row.profileImageUrl),
-              round: true,
-              style: {
-                border: '3px solid #FFE4E9',
-                boxShadow: '0 2px 10px rgba(255, 155, 168, 0.2)'
-              }
-            }),
-          }
-        );
-      }
-    },
-    {
-      title: '生日',
-      key: 'birthday',
-      width: 180,
-      render(row) {
-        const age = computeAge(row.birthday);
-        return h(NSpace, { align: 'center', size: 4 }, () => [
-          h('span', null, row.birthday || '未知'),
-          age ? h(NTag, { type: 'success', size: 'small', round: true }, () => `🎂 ${age}`) : null
-        ]);
-      }
-    },
-    {
-      title: '物种',
-      key: 'speciesLabel',
-      width: 100,
-      render(row) {
-        return h(NTag, {
-          type: getSpeciesTagType(row.species),
-          size: 'small',
-          round: true
-        }, () => row.speciesLabel || '未知');
-      }
-    },
-    {
-      title: '点赞',
-      key: 'likeCount',
-      width: 110,
-      render(row) {
-        return h(
-          'div',
-          {
-            class: 'like-button-wrapper',
-            onClick: async () => {
-              try {
-                await petStore.handleLike(row.id);
-              } catch (error) {
-                console.error('Failed to like pet:', error);
-              }
-            }
-          },
-          [
-            h('span', { class: 'like-icon' }, '❤️'),
-            h('span', { class: 'like-count' }, row.likeCount)
-          ]
-        );
-      }
-    },
-    {
-      title: '操作',
-      key: 'actions',
-      width: 80,
-      render(row) {
-        return h(
-          NPopconfirm,
-          {
-            onPositiveClick: () => handleEditPet(row),
-            positiveButtonProps: { type: 'info', size: 'small' },
-            negativeButtonProps: { size: 'small' }
-          },
-          {
-            trigger: () => h(
-              NButton,
-              {
-                text: true,
-                type: 'info',
-                size: 'tiny',
-                disabled: !authStore.isAuthenticated,
-                style: { padding: '4px 8px' }
-              },
-              {
-                icon: () => h(NIcon, { component: CreateOutline, size: 16 })
-              }
-            ),
-            default: () => `编辑 ${row.name} 的信息？`
-          }
-        );
-      }
-    }
-  ];
-
-  if (isMobile) {
-    return baseColumns.filter(col => ['name', 'likeCount'].includes(col.key));
+// 处理点赞
+const handleLike = async (petId) => {
+  try {
+    await petStore.handleLike(petId);
+  } catch (error) {
+    console.error('Failed to like pet:', error);
   }
-  return baseColumns;
 };
-
-const responsiveColumns = computed(() => createColumns({
-  handleLike: petStore.handleLike,
-  handleShowDetail: handleShowDetail,
-  handleEditPet: handleEditPet,
-  isMobile: isMobile.value
-}));
-
-const pagination = computed(() => ({
-  page: petStore.currentPage,
-  pageCount: petStore.totalPages,
-  itemCount: petStore.pagination.total,
-  onUpdatePage: handlePageChange,
-  prefix: ({ itemCount }) => `共 ${itemCount} 只萌宠`
-}));
 
 </script>
 
@@ -445,15 +301,73 @@ const pagination = computed(() => ({
       </div>
 
       <n-spin :show="petStore.loadingList">
-        <n-data-table
-          :columns="responsiveColumns"
-          :data="petStore.petList"
-          :pagination="pagination"
-          :remote="true"
-          :row-key="row => row.id"
-          :bordered="false"
-          class="pet-table"
-        />
+        <div v-if="petStore.petList.length" class="pet-grid">
+          <div
+            v-for="pet in petStore.petList"
+            :key="pet.id"
+            class="pet-card"
+            @click="handleShowDetail(pet.id)"
+          >
+            <div class="pet-card-avatar">
+              <n-avatar
+                :size="72"
+                :src="getAvatarUrl(pet.profileImageUrl)"
+                round
+                class="pet-avatar-img"
+              />
+              <div class="pet-card-like" @click.stop="handleLike(pet.id)">
+                <span class="pet-card-like-icon">❤️</span>
+                <span class="pet-card-like-count">{{ pet.likeCount }}</span>
+              </div>
+            </div>
+            <div class="pet-card-info">
+              <div class="pet-card-name">
+                {{ pet.name }}
+                <span v-if="pet.gender === 'male'" class="gender-icon male">♂</span>
+                <span v-else-if="pet.gender === 'female'" class="gender-icon female">♀</span>
+              </div>
+              <div class="pet-card-breed">{{ pet.breedLabel || '未知品种' }}</div>
+              <div class="pet-card-tags">
+                <n-tag v-if="pet.speciesLabel" size="small" round type="info" class="pet-species-tag">
+                  {{ pet.speciesLabel }}
+                </n-tag>
+                <n-tag v-if="computeAge(pet.birthday)" size="small" round type="success" class="pet-age-tag">
+                  🎂 {{ computeAge(pet.birthday) }}
+                </n-tag>
+              </div>
+              <div class="pet-card-birthday">{{ pet.birthday || '生日未知' }}</div>
+            </div>
+            <n-button
+              v-if="authStore.isAuthenticated"
+              text
+              type="info"
+              size="tiny"
+              class="pet-card-edit-btn"
+              @click.stop="handleEditPet(pet)"
+            >
+              <template #icon>
+                <n-icon :component="CreateOutline" :size="16" />
+              </template>
+            </n-button>
+          </div>
+        </div>
+        <n-empty v-else-if="!petStore.loadingList" description="还没有萌宠，快去添加一只吧～" size="large">
+          <template #icon>
+            <span style="font-size: 48px;">🐾</span>
+          </template>
+        </n-empty>
+
+        <!-- 分页 -->
+        <div v-if="petStore.pagination.total > 0" class="pet-grid-pagination">
+          <n-pagination
+            :page="petStore.currentPage"
+            :page-count="petStore.totalPages"
+            :item-count="petStore.pagination.total"
+            @update:page="handlePageChange"
+            :page-slot="isMobile ? 5 : 7"
+          />
+          <span class="pet-grid-total">共 {{ petStore.pagination.total }} 只萌宠</span>
+        </div>
       </n-spin>
     </n-card>
   </n-space>
@@ -708,24 +622,215 @@ const pagination = computed(() => ({
   flex-shrink: 0;
 }
 
-/* 表格样式 */
-.pet-table :deep(.n-data-table-th) {
-  background: var(--pet-bg-secondary) !important;
-  font-weight: 600;
+/* 卡片网格 */
+.pet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
-.pet-table :deep(.n-data-table-tr:hover) {
-  background: var(--pet-bg) !important;
+.pet-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 16px;
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid var(--pet-border, #F0F0F0);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pet-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(255, 155, 168, 0.18);
+  border-color: var(--pet-primary, #FF9BA8);
+}
+
+/* 头像区域 */
+.pet-card-avatar {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.pet-avatar-img {
+  border: 3px solid #FFE4E9 !important;
+  box-shadow: 0 4px 14px rgba(255, 155, 168, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.pet-card:hover .pet-avatar-img {
+  transform: scale(1.05);
+}
+
+.pet-card-like {
+  position: absolute;
+  bottom: -4px;
+  right: -8px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  font-size: 12px;
+}
+
+.pet-card-like:hover {
+  transform: scale(1.15);
+}
+
+.pet-card-like-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.pet-card-like-count {
+  font-weight: 700;
+  color: #EF4444;
+  font-size: 13px;
+}
+
+/* 信息区域 */
+.pet-card-info {
+  text-align: center;
+  width: 100%;
+}
+
+.pet-card-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #2D2D2D;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.gender-icon {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.gender-icon.male {
+  color: #7DD3FC;
+}
+
+.gender-icon.female {
+  color: #FCA5A5;
+}
+
+.pet-card-breed {
+  font-size: 13px;
+  color: #9CA3AF;
+  margin-bottom: 10px;
+}
+
+.pet-card-tags {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.pet-card-birthday {
+  font-size: 12px;
+  color: #B0B0B0;
+}
+
+/* 编辑按钮 */
+.pet-card-edit-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.pet-card:hover .pet-card-edit-btn {
+  opacity: 0.7;
+}
+
+.pet-card-edit-btn:hover {
+  opacity: 1 !important;
+}
+
+/* 分页 */
+.pet-grid-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+
+.pet-grid-total {
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+/* 暗色主题 */
+:global(.dark-mode) .pet-card {
+  background: var(--pet-bg-secondary, #1F1F3A);
+  border-color: var(--pet-border, #3D3D5C);
+}
+
+:global(.dark-mode) .pet-card:hover {
+  box-shadow: 0 8px 30px rgba(255, 155, 168, 0.12);
+  border-color: var(--pet-primary, #FF9BA8);
+}
+
+:global(.dark-mode) .pet-card-name {
+  color: #E8E8E8;
+}
+
+:global(.dark-mode) .pet-card-like {
+  background: var(--pet-bg-secondary, #2A2A4A);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dark-mode) .pet-list-title {
+  color: #E8E8E8;
 }
 
 /* 响应式 */
 @media (max-width: 768px) {
+  .pet-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .pet-card {
+    padding: 16px 10px 12px;
+  }
+
   .pet-list-title {
     font-size: 16px;
   }
 
   .add-pet-btn span {
     display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .pet-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .pet-card {
+    padding: 14px 8px 10px;
+    border-radius: 14px;
   }
 }
 </style>
