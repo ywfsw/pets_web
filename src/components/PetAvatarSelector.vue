@@ -39,12 +39,12 @@ function handleSelect(id) {
         :style="{ '--card-delay': (idx * 0.05) + 's' }"
         @click="handleSelect(pet.id)"
       >
-        <div class="avatar-ring" :class="{ 'has-img': pet.avatarUrl }">
-          <img v-if="pet.avatarUrl" :src="pet.avatarUrl" :alt="pet.name" class="avatar-img" />
+        <div class="avatar-ring" :class="{ 'has-img': pet.avatarUrl || pet.profileImageUrl }">
+          <img v-if="pet.avatarUrl || pet.profileImageUrl" :src="pet.avatarUrl || pet.profileImageUrl" :alt="pet.name" class="avatar-img" />
           <span v-else class="avatar-emoji">{{ pet.gender === 'female' ? '♀' : '♂' }}</span>
         </div>
         <span class="avatar-name">{{ pet.name }}</span>
-        <span v-if="pet.speciesName" class="avatar-species">{{ pet.speciesName }}</span>
+        <span v-if="pet.speciesName || pet.speciesLabel" class="avatar-species">{{ pet.speciesName || pet.speciesLabel }}</span>
       </button>
     </div>
   </div>

@@ -4,15 +4,14 @@ import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { fetchWeightLogsPage } from '@/api.js';
 import WeightTrendChart from '@/components/WeightTrendChart.vue';
+import PetAvatarSelector from '@/components/PetAvatarSelector.vue';
 import {
-  NSelect,
   NButton,
   NIcon,
   NPagination,
   NPopconfirm
 } from 'naive-ui';
 import {
-  PawOutline,
   AddOutline,
   CreateOutline,
   TrashOutline
@@ -36,16 +35,6 @@ const loading = ref(false);
 const pageNum = ref(1);
 const pageSize = ref(20);
 const total = ref(0);
-
-const petOptions = computed(() => {
-  return [
-    { label: '全部宠物', value: null },
-    ...petStore.petList.map(pet => ({
-      label: pet.name,
-      value: pet.id
-    }))
-  ];
-});
 
 const loadRecords = async () => {
   loading.value = true;
@@ -196,22 +185,26 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
       </div>
     </div>
 
+    <!-- Pet Avatar Selector -->
+    <div class="pet-selector-section section-entrance" style="--entrance-delay: 0.08s;">
+      <PetAvatarSelector
+        :pets="petStore.petList"
+        :selected-id="selectedPetId"
+        :show-all="petStore.petList.length >= 2"
+        all-label="全部宠物"
+        @select="selectedPetId = $event"
+      />
+    </div>
+
     <!-- Toolbar -->
     <div class="toolbar section-entrance" style="--entrance-delay: 0.1s;">
       <div class="toolbar-left">
-        <n-select
-          v-model:value="selectedPetId"
-          :options="petOptions"
-          placeholder="选择宠物筛选"
-          clearable
-          filterable
-          size="medium"
-          class="pet-selector"
-        >
-          <template #prefix>
-            <n-icon :component="PawOutline" size="16" />
-          </template>
-        </n-select>
+        <span v-if="selectedPetId" class="selected-pet-hint">
+          🐾 {{ getPetName(selectedPetId) }}
+        </span>
+        <span v-else class="selected-pet-hint all-pets-hint">
+          🐾 全部宠物
+        </span>
       </div>
       <div class="toolbar-right">
         <n-button
@@ -543,6 +536,11 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   }
 }
 
+/* ===== Pet Avatar Selector ===== */
+.pet-selector-section {
+  margin-bottom: 16px;
+}
+
 /* ===== Toolbar ===== */
 .toolbar {
   display: flex;
@@ -564,8 +562,31 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   gap: 12px;
 }
 
-.pet-selector {
-  width: 200px;
+.selected-pet-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0369A1;
+  background: rgba(14, 165, 233, 0.08);
+  padding: 4px 14px;
+  border-radius: 12px;
+}
+
+.all-pets-hint {
+  color: #6B7280;
+  background: rgba(107, 114, 128, 0.08);
+}
+
+:global(.dark-mode) .selected-pet-hint {
+  color: #7DD3FC;
+  background: rgba(14, 165, 233, 0.12);
+}
+
+:global(.dark-mode) .all-pets-hint {
+  color: #9CA3AF;
+  background: rgba(156, 163, 175, 0.1);
 }
 
 .add-btn {
@@ -944,10 +965,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
 
   .toolbar-left {
     width: 100%;
-  }
-
-  .pet-selector {
-    width: 100%;
+    justify-content: center;
   }
 
   .toolbar-right {
