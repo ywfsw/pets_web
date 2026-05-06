@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { NSelect, NSpin } from 'naive-ui';
+import { NSelect } from 'naive-ui';
 import { usePetStore } from '@/stores/petStore.js';
 import { fetchPetDetail } from '@/api.js';
 import WeightTrendChart from '@/components/WeightTrendChart.vue';
@@ -229,13 +229,80 @@ const navigateTo = (page) => {
       </div>
     </div>
 
-    <!-- Loading -->
-    <div v-if="loading" class="loading-wrapper section-entrance" style="--entrance-delay: 0.1s;">
-      <div class="loading-spinner">
-        <n-spin size="large" />
-        <p class="loading-text">加载健康数据中...</p>
+    <!-- Loading skeleton -->
+    <template v-if="loading">
+      <!-- Skeleton: Pet info card -->
+      <div class="skeleton-card pet-info-skeleton section-entrance" style="--entrance-delay: 0.05s;">
+        <div class="skel-circle skel-shimmer" style="width:56px;height:56px;" />
+        <div class="skel-text-group">
+          <div class="skel-line skel-shimmer" style="width:120px;height:20px;" />
+          <div class="skel-tags-row">
+            <div class="skel-line skel-shimmer" style="width:48px;height:20px;border-radius:10px;" />
+            <div class="skel-line skel-shimmer" style="width:56px;height:20px;border-radius:10px;" />
+            <div class="skel-line skel-shimmer" style="width:64px;height:20px;border-radius:10px;" />
+          </div>
+        </div>
       </div>
-    </div>
+      <!-- Skeleton: Score + Stats -->
+      <div class="score-stats-section section-entrance" style="--entrance-delay: 0.1s;">
+        <div class="skeleton-card score-skeleton">
+          <div class="skel-circle skel-shimmer" style="width:80px;height:80px;" />
+          <div class="skel-line skel-shimmer" style="width:60px;height:12px;margin:10px auto 0;" />
+          <div class="skel-line skel-shimmer" style="width:40px;height:14px;margin:4px auto 0;" />
+        </div>
+        <div class="stats-grid">
+          <div v-for="i in 4" :key="i" class="skeleton-card stat-skeleton">
+            <div class="skel-line skel-shimmer" style="width:24px;height:24px;border-radius:50%;" />
+            <div class="skel-line skel-shimmer" style="width:48px;height:18px;margin-top:6px;" />
+            <div class="skel-line skel-shimmer" style="width:56px;height:10px;margin-top:4px;" />
+          </div>
+        </div>
+      </div>
+      <!-- Skeleton: Weight chart -->
+      <div class="skeleton-card chart-skeleton section-entrance" style="--entrance-delay: 0.15s;">
+        <div class="skel-header-row">
+          <div class="skel-line skel-shimmer" style="width:16px;height:16px;" />
+          <div class="skel-line skel-shimmer" style="width:80px;height:16px;" />
+          <div class="skel-line skel-shimmer" style="width:56px;height:20px;border-radius:10px;" />
+        </div>
+        <div class="skel-line skel-shimmer" style="width:100%;height:180px;border-radius:12px;margin-top:12px;" />
+      </div>
+      <!-- Skeleton: Dual section -->
+      <div class="dual-section section-entrance" style="--entrance-delay: 0.2s;">
+        <div v-for="i in 2" :key="'dual'+i" class="skeleton-card sub-skeleton">
+          <div class="skel-header-row">
+            <div class="skel-line skel-shimmer" style="width:16px;height:16px;" />
+            <div class="skel-line skel-shimmer" style="width:80px;height:16px;" />
+            <div class="skel-line skel-shimmer" style="width:28px;height:20px;border-radius:10px;" />
+          </div>
+          <div v-for="j in 3" :key="j" class="skel-line skel-shimmer" style="width:100%;height:36px;border-radius:10px;margin-top:10px;" />
+        </div>
+      </div>
+      <!-- Skeleton: Upcoming events -->
+      <div class="skeleton-card section-entrance" style="--entrance-delay: 0.25s;padding:20px;">
+        <div class="skel-header-row">
+          <div class="skel-line skel-shimmer" style="width:16px;height:16px;" />
+          <div class="skel-line skel-shimmer" style="width:80px;height:16px;" />
+          <div class="skel-line skel-shimmer" style="width:28px;height:20px;border-radius:10px;" />
+        </div>
+        <div v-for="i in 3" :key="'up'+i" class="skel-line skel-shimmer" style="width:100%;height:42px;border-radius:12px;margin-top:10px;" />
+      </div>
+      <!-- Skeleton: Activity + Quick Actions -->
+      <div class="skeleton-card section-entrance" style="--entrance-delay: 0.3s;padding:20px;">
+        <div class="skel-header-row">
+          <div class="skel-line skel-shimmer" style="width:16px;height:16px;" />
+          <div class="skel-line skel-shimmer" style="width:80px;height:16px;" />
+          <div class="skel-line skel-shimmer" style="width:28px;height:20px;border-radius:10px;" />
+        </div>
+        <div v-for="i in 4" :key="'act'+i" class="skel-line skel-shimmer" style="width:100%;height:32px;border-radius:10px;margin-top:8px;" />
+      </div>
+      <div class="quick-actions section-entrance" style="--entrance-delay: 0.35s;">
+        <div v-for="i in 4" :key="'qa'+i" class="skeleton-card qa-skeleton">
+          <div class="skel-line skel-shimmer" style="width:28px;height:28px;border-radius:50%;" />
+          <div class="skel-line skel-shimmer" style="width:56px;height:12px;margin-top:6px;" />
+        </div>
+      </div>
+    </template>
 
     <!-- No pet selected -->
     <div v-else-if="!selectedPetId" class="empty-state section-entrance" style="--entrance-delay: 0.1s;">
@@ -421,16 +488,20 @@ const navigateTo = (page) => {
       <!-- Quick Actions -->
       <div class="quick-actions section-entrance" style="--entrance-delay: 0.35s;">
         <button class="qa-btn" @click="navigateTo('health-events')">
-          <span class="qa-icon">🩺</span>健康事件
+          <div class="qa-icon-wrap"><span class="qa-icon">🩺</span></div>
+          <span class="qa-label">健康事件</span>
         </button>
         <button class="qa-btn" @click="navigateTo('weight-logs')">
-          <span class="qa-icon">⚖️</span>体重管理
+          <div class="qa-icon-wrap"><span class="qa-icon">⚖️</span></div>
+          <span class="qa-label">体重管理</span>
         </button>
         <button class="qa-btn" @click="navigateTo('medication')">
-          <span class="qa-icon">💊</span>用药记录
+          <div class="qa-icon-wrap"><span class="qa-icon">💊</span></div>
+          <span class="qa-label">用药记录</span>
         </button>
         <button class="qa-btn" @click="navigateTo('bathing')">
-          <span class="qa-icon">🛁</span>洗澡美容
+          <div class="qa-icon-wrap"><span class="qa-icon">🛁</span></div>
+          <span class="qa-label">洗澡美容</span>
         </button>
       </div>
     </template>
@@ -541,21 +612,92 @@ const navigateTo = (page) => {
   50% { transform: translateY(-4px); }
 }
 
-/* Loading */
-.loading-wrapper {
+/* Skeleton shimmer */
+.skeleton-card {
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(16, 185, 129, 0.08);
+}
+
+.pet-info-skeleton {
   display: flex;
-  justify-content: center;
-  padding: 60px 0;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
 }
 
-.loading-spinner {
+.score-skeleton {
+  flex-shrink: 0;
+  width: 140px;
+  padding: 20px 16px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.loading-text {
-  margin-top: 12px;
-  color: var(--text-color-3, #9ca3af);
-  font-size: 14px;
+.stat-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 12px;
+}
+
+.chart-skeleton, .sub-skeleton {
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.skel-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skel-text-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skel-tags-row {
+  display: flex;
+  gap: 6px;
+}
+
+.qa-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px;
+  gap: 6px;
+}
+
+.skel-circle {
+  border-radius: 50%;
+}
+
+.skel-line {
+  border-radius: 6px;
+}
+
+.skel-shimmer {
+  background: linear-gradient(90deg,
+    rgba(16, 185, 129, 0.06) 25%,
+    rgba(16, 185, 129, 0.12) 50%,
+    rgba(16, 185, 129, 0.06) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* Empty state */
@@ -768,6 +910,17 @@ const navigateTo = (page) => {
 .stat-item:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.18);
+}
+
+.stat-item:hover .stat-icon {
+  animation: statIconBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes statIconBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
 .stat-icon {
@@ -1129,35 +1282,97 @@ const navigateTo = (page) => {
 .quick-actions {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 14px;
+  position: relative;
+}
+
+.quick-actions::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.04), rgba(6, 182, 212, 0.03));
+  z-index: 0;
 }
 
 .qa-btn {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 16px 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.5);
+  gap: 10px;
+  padding: 20px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(16, 185, 129, 0.1);
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
   color: var(--text-color-2, #6b6b6b);
   transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+
+.qa-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.12), transparent 70%);
+  transition: opacity 0.3s;
 }
 
 .qa-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.12);
-  background: rgba(255, 255, 255, 0.7);
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 8px 28px rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.2);
   color: var(--text-color-1, #2d2d2d);
+}
+
+.qa-btn:hover::after {
+  opacity: 1;
+}
+
+.qa-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.08);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.06);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qa-btn:hover .qa-icon-wrap {
+  transform: scale(1.1);
+  background: rgba(16, 185, 129, 0.14);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.1);
 }
 
 .qa-icon {
   font-size: 22px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.qa-btn:hover .qa-icon {
+  animation: qaIconPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes qaIconPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.qa-label {
+  font-size: 13px;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
 }
 
 /* Section entrance animation */
@@ -1255,9 +1470,44 @@ const navigateTo = (page) => {
   background: rgba(16, 185, 129, 0.08);
 }
 
+:global(.dark-mode) .qa-btn {
+  background: rgba(40, 40, 60, 0.45);
+}
+
 :global(.dark-mode) .qa-btn:hover {
   background: rgba(50, 50, 70, 0.7);
   color: #e5e5e5;
+}
+
+:global(.dark-mode) .qa-icon-wrap {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+:global(.dark-mode) .qa-btn:hover .qa-icon-wrap {
+  background: rgba(16, 185, 129, 0.18);
+}
+
+:global(.dark-mode) .skeleton-card,
+:global(.dark-mode) .score-skeleton,
+:global(.dark-mode) .stat-skeleton,
+:global(.dark-mode) .chart-skeleton,
+:global(.dark-mode) .sub-skeleton,
+:global(.dark-mode) .qa-skeleton {
+  background: rgba(40, 40, 60, 0.5);
+  border-color: rgba(16, 185, 129, 0.1);
+}
+
+:global(.dark-mode) .skel-shimmer {
+  background: linear-gradient(90deg,
+    rgba(16, 185, 129, 0.04) 25%,
+    rgba(16, 185, 129, 0.08) 50%,
+    rgba(16, 185, 129, 0.04) 75%
+  );
+  background-size: 200% 100%;
+}
+
+:global(.dark-mode) .quick-actions::before {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(6, 182, 212, 0.04));
 }
 
 /* Mobile */
@@ -1297,6 +1547,20 @@ const navigateTo = (page) => {
   .quick-actions {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .qa-btn {
+    padding: 16px 10px;
+  }
+
+  .qa-icon-wrap {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .qa-icon {
+    font-size: 20px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1308,7 +1572,7 @@ const navigateTo = (page) => {
     font-size: 26px;
   }
 
-  .pet-info-card {
+  .pet-info-card, .pet-info-skeleton {
     padding: 14px 16px;
   }
 
@@ -1331,8 +1595,21 @@ const navigateTo = (page) => {
   }
 
   .qa-btn {
-    padding: 12px 8px;
+    padding: 14px 8px;
+  }
+
+  .qa-label {
     font-size: 12px;
+  }
+
+  .qa-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .qa-icon {
+    font-size: 18px;
   }
 
   .type-bar-label {
