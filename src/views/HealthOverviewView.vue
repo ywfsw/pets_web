@@ -5,6 +5,7 @@ import PetAvatarSelector from '@/components/PetAvatarSelector.vue';
 import { fetchPetDetail, fetchHealthReport } from '@/api.js';
 import WeightTrendChart from '@/components/WeightTrendChart.vue';
 import HealthReportChart from '@/components/HealthReportChart.vue';
+import html2canvas from 'html2canvas';
 
 const petStore = usePetStore();
 
@@ -215,6 +216,61 @@ onMounted(async () => {
 const navigateTo = (page) => {
   petStore.activePage = page;
 };
+
+// ---- Export Report ----
+const exporting = ref(false);
+const reportRef = ref(null);
+
+async function exportReport() {
+  if (exporting.value || !reportRef.value) return;
+  exporting.value = true;
+  try {
+    // Create a wrapper with header for export
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:fixed;left:-9999px;top:0;width:720px;padding:32px;background:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
+    wrapper.style.color = '#2D2D2D';
+
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = 'text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #F3F4F6;';
+    const petName = petDetail.value?.name || '宠物';
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+    header.innerHTML = `
+      <div style="font-size:28px;margin-bottom:8px;">🐾</div>
+      <h1 style="font-size:22px;font-weight:800;margin:0 0 6px;color:#2D2D2D;">${petName} · 月度健康报告</h1>
+      <p style="font-size:13px;color:#9CA3AF;margin:0;">统计周期：${reportMonths.value}个月 · 导出时间：${dateStr}</p>
+    `;
+    wrapper.appendChild(header);
+
+    // Clone report content
+    const clone = reportRef.value.cloneNode(true);
+    // Remove interactive elements and hover effects
+    clone.querySelectorAll('button,.month-pill,.export-btn').forEach(el => el.remove());
+    wrapper.appendChild(clone);
+
+    document.body.appendChild(wrapper);
+
+    const canvas = await html2canvas(wrapper, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
+
+    document.body.removeChild(wrapper);
+
+    // Download
+    const link = document.createElement('a');
+    link.download = `${petName}_健康报告_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (err) {
+    console.error('导出报告失败:', err);
+  } finally {
+    exporting.value = false;
+  }
+}
 
 // ---- Pet Health Comparison ----
 const comparisonData = ref([]);
@@ -644,8 +700,15 @@ onMounted(() => {
               {{ m }}个月
             </button>
           </div>
+          <button class="export-btn" :class="{ exporting }" @click="exportReport"
+            :disabled="exporting || !healthReport">
+            <span class="export-icon">{{ exporting ? '⏳' : '📥' }}</span>
+            <span class="export-text">{{ exporting ? '生成中...' : '导出报告' }}</span>
+          </button>
         </div>
-        <HealthReportChart :report="healthReport" :loading="loadingReport" />
+        <div ref="reportRef">
+          <HealthReportChart :report="healthReport" :loading="loadingReport" />
+        </div>
       </div>
     </template>
 
@@ -1687,6 +1750,58 @@ onMounted(() => {
   box-shadow: 0 3px 12px rgba(16, 185, 129, 0.25);
 }
 
+/* Export button */
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.06);
+  backdrop-filter: blur(8px);
+  font-size: 12px;
+  font-weight: 600;
+  color: #10B981;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  flex-shrink: 0;
+}
+
+.export-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.08));
+  border-color: rgba(16, 185, 129, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
+}
+
+.export-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+.export-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.export-btn.exporting {
+  animation: exportPulse 1.2s ease-in-out infinite;
+}
+
+.export-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.export-text {
+  white-space: nowrap;
+}
+
+@keyframes exportPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.2); }
+  50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+}
+
 html.dark .month-pill {
   background: rgba(30, 30, 40, 0.5);
   border-color: rgba(255, 255, 255, 0.08);
@@ -1696,6 +1811,17 @@ html.dark .month-pill {
 html.dark .month-pill:hover {
   background: rgba(16, 185, 129, 0.1);
   color: #34D399;
+}
+
+html.dark .export-btn {
+  background: rgba(30, 30, 40, 0.5);
+  border-color: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+}
+
+html.dark .export-btn:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
 }
 
 /* Section entrance animation */
