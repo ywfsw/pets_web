@@ -270,6 +270,19 @@ const filteredHealthEvents = computed(() => {
   return events;
 });
 
+// 宠物统计数据
+const petStats = computed(() => {
+  const data = petStore.detailModal.data;
+  if (!data) return [];
+  return [
+    { icon: '📷', label: '照片', value: recentPhotos.value.length, color: '#C084FC' },
+    { icon: '⚖️', label: '体重', value: data.weightLogs?.length || 0, color: '#7DD3FC' },
+    { icon: '🩺', label: '健康', value: data.healthEvents?.length || 0, color: '#86EFAC' },
+    { icon: '🍽️', label: '喂养', value: data.feedingRecords?.length || 0, color: '#FBBF24' },
+    { icon: '📖', label: '时间线', value: timelineItems.value.length, color: '#FF9BA8' }
+  ];
+});
+
 // 折叠面板展开状态
 const expandedSections = ref(['timeline', 'photos', 'weight', 'health', 'feeding']);
 
@@ -461,6 +474,19 @@ const timelineItems = computed(() => {
               <div v-if="petStore.detailModal.data.notes" class="detail-notes">
                 <span class="detail-notes-icon">📝</span>
                 <span class="detail-notes-text">{{ petStore.detailModal.data.notes }}</span>
+              </div>
+            </div>
+
+            <!-- 统计概览条 -->
+            <div class="detail-stats-bar">
+              <div
+                v-for="stat in petStats"
+                :key="stat.label"
+                class="detail-stat-item"
+              >
+                <span class="detail-stat-icon">{{ stat.icon }}</span>
+                <span class="detail-stat-value" :style="{ color: stat.color }">{{ stat.value }}</span>
+                <span class="detail-stat-label">{{ stat.label }}</span>
               </div>
             </div>
 
@@ -1245,6 +1271,92 @@ const timelineItems = computed(() => {
   color: #9CA3AF;
 }
 
+/* ===== 统计概览条 ===== */
+.detail-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 6px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, rgba(255, 240, 243, 0.6), rgba(240, 235, 255, 0.4));
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 200, 210, 0.3);
+  animation: statsBarIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+:global(.dark-mode) .detail-stats-bar {
+  background: linear-gradient(135deg, rgba(50, 40, 70, 0.6), rgba(35, 35, 60, 0.5));
+  border-color: rgba(255, 155, 168, 0.12);
+}
+
+@keyframes statsBarIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detail-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 8px;
+  border-radius: 12px;
+  transition: all 0.25s ease;
+  cursor: default;
+  min-width: 52px;
+}
+
+.detail-stat-item:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+:global(.dark-mode) .detail-stat-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.detail-stat-icon {
+  font-size: 18px;
+  line-height: 1;
+  animation: statIconPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.detail-stat-item:nth-child(1) .detail-stat-icon { animation-delay: 0.25s; }
+.detail-stat-item:nth-child(2) .detail-stat-icon { animation-delay: 0.3s; }
+.detail-stat-item:nth-child(3) .detail-stat-icon { animation-delay: 0.35s; }
+.detail-stat-item:nth-child(4) .detail-stat-icon { animation-delay: 0.4s; }
+.detail-stat-item:nth-child(5) .detail-stat-icon { animation-delay: 0.45s; }
+
+@keyframes statIconPop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+.detail-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.detail-stat-label {
+  font-size: 11px;
+  color: #9CA3AF;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+:global(.dark-mode) .detail-stat-label {
+  color: #8888A0;
+}
+
 /* ===== 折叠面板 ===== */
 .detail-collapse {
   margin-top: 4px;
@@ -1657,6 +1769,24 @@ const timelineItems = computed(() => {
     flex-direction: column;
     gap: 8px;
   }
+
+  .detail-stats-bar {
+    padding: 10px 10px;
+    gap: 4px;
+  }
+
+  .detail-stat-item {
+    padding: 4px 4px;
+    min-width: 44px;
+  }
+
+  .detail-stat-icon {
+    font-size: 16px;
+  }
+
+  .detail-stat-value {
+    font-size: 16px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1695,6 +1825,29 @@ const timelineItems = computed(() => {
 
   .detail-pet-name {
     font-size: 18px;
+  }
+
+  .detail-stats-bar {
+    padding: 8px 6px;
+    gap: 2px;
+    border-radius: 14px;
+  }
+
+  .detail-stat-item {
+    padding: 4px 2px;
+    min-width: 38px;
+  }
+
+  .detail-stat-icon {
+    font-size: 14px;
+  }
+
+  .detail-stat-value {
+    font-size: 14px;
+  }
+
+  .detail-stat-label {
+    font-size: 10px;
   }
 }
 </style>
