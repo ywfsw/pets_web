@@ -104,9 +104,13 @@ import {
     const pagination = ref(defaultPagination());
     const loadingList = ref(false);
   
-    // (❗) 排行榜状态
+    // (❗) 排行榜状态（仪表盘用 Top 3）
     const petLeaderboard = ref([]);
     const loadingLeaderboard = ref(false);
+
+    // (❗) 完整排行榜状态（排行榜页面用）
+    const fullLeaderboard = ref([]);
+    const loadingFullLeaderboard = ref(false);
 
     // (❗) 相册状态
     const petGallery = ref([]);
@@ -243,6 +247,25 @@ import {
         console.error("加载宠物排行榜失败:", err);
       } finally {
         loadingLeaderboard.value = false;
+      }
+    }
+
+    /**
+     * 加载完整排行榜（排行榜页面用）
+     */
+    async function loadFullLeaderboard() {
+      if (loadingFullLeaderboard.value) return;
+      loadingFullLeaderboard.value = true;
+      try {
+        const response = await fetchPetLeaderboard(50);
+        fullLeaderboard.value = response.data.map(pet => ({
+          ...pet,
+          profileImageUrl: pet.profileImageUrl
+        }));
+      } catch (err) {
+        console.error("加载完整排行榜失败:", err);
+      } finally {
+        loadingFullLeaderboard.value = false;
       }
     }
 
@@ -744,6 +767,8 @@ import {
       pagination,
       petLeaderboard, // (❗)
       loadingLeaderboard, // (❗)
+      fullLeaderboard,
+      loadingFullLeaderboard,
       petGallery,
       loadingGallery,
 
@@ -756,6 +781,7 @@ import {
       loadUpcomingEvents,
       loadPetList,
       loadPetLeaderboard, // (❗)
+      loadFullLeaderboard,
       loadAllPetGallery,
       loadPetGalleryByPetId,
       addPetGallery,
