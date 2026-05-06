@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
   weightLogs: {
@@ -10,11 +10,15 @@ const props = defineProps({
 
 const hoveredIndex = ref(-1);
 const timeRange = ref('all');
+const customStartDate = ref('');
+const customEndDate = ref('');
+const showCustomRange = ref(false);
 
 const timeRangeOptions = [
   { label: '30天', value: '30d' },
   { label: '3个月', value: '3m' },
-  { label: '全部', value: 'all' }
+  { label: '全部', value: 'all' },
+  { label: '自定义', value: 'custom' }
 ];
 
 function onPointEnter(index) {
@@ -25,6 +29,36 @@ function onPointLeave() {
   hoveredIndex.value = -1;
 }
 
+function handleRangeChange(value) {
+  timeRange.value = value;
+  if (value === 'custom') {
+    showCustomRange.value = true;
+    if (!customStartDate.value && !customEndDate.value && props.weightLogs?.length) {
+      const sorted = [...props.weightLogs]
+        .filter(l => l.logDate)
+        .sort((a, b) => new Date(a.logDate) - new Date(b.logDate));
+      if (sorted.length >= 2) {
+        customStartDate.value = sorted[0].logDate.slice(0, 10);
+        customEndDate.value = sorted[sorted.length - 1].logDate.slice(0, 10);
+      }
+    }
+  } else {
+    showCustomRange.value = false;
+  }
+}
+
+watch(customStartDate, (val) => {
+  if (val && customEndDate.value && val > customEndDate.value) {
+    customEndDate.value = val;
+  }
+});
+
+watch(customEndDate, (val) => {
+  if (val && customStartDate.value && val < customStartDate.value) {
+    customStartDate.value = val;
+  }
+});
+
 const chartData = computed(() => {
   if (!props.weightLogs?.length) return null;
 
@@ -32,15 +66,22 @@ const chartData = computed(() => {
 
   if (timeRange.value !== 'all') {
     const now = new Date();
-    let cutoff;
     if (timeRange.value === '30d') {
-      cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    } else if (timeRange.value === '3m') {
-      cutoff = new Date(now);
-      cutoff.setMonth(cutoff.getMonth() - 3);
-    }
-    if (cutoff) {
+      const cutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       filtered = filtered.filter(l => new Date(l.logDate) >= cutoff);
+    } else if (timeRange.value === '3m') {
+      const cutoff = new Date(now);
+      cutoff.setMonth(cutoff.getMonth() - 3);
+      filtered = filtered.filter(l => new Date(l.logDate) >= cutoff);
+    } else if (timeRange.value === 'custom') {
+      if (customStartDate.value) {
+        const start = new Date(customStartDate.value + 'T00:00:00');
+        filtered = filtered.filter(l => new Date(l.logDate) >= start);
+      }
+      if (customEndDate.value) {
+        const end = new Date(customEndDate.value + 'T23:59:59');
+        filtered = filtered.filter(l => new Date(l.logDate) <= end);
+      }
     }
   }
 
@@ -153,10 +194,30 @@ const chartData = computed(() => {
             :key="opt.value"
             class="range-btn"
             :class="{ active: timeRange === opt.value }"
-            @click="timeRange = opt.value"
+            @click="handleRangeChange(opt.value)"
           >{{ opt.label }}</button>
         </div>
       </div>
+      <Transition name="custom-range-fade">
+        <div v-if="showCustomRange" class="custom-date-range">
+          <span class="custom-range-label">📅</span>
+          <div class="custom-range-inputs">
+            <input
+              v-model="customStartDate"
+              type="date"
+              class="custom-date-input"
+              :max="customEndDate || undefined"
+            />
+            <span class="custom-range-sep">至</span>
+            <input
+              v-model="customEndDate"
+              type="date"
+              class="custom-date-input"
+              :min="customStartDate || undefined"
+            />
+          </div>
+        </div>
+      </Transition>
       <svg
         :viewBox="`0 0 ${chartData.width} ${chartData.height}`"
         class="trend-svg"
@@ -296,7 +357,8 @@ const chartData = computed(() => {
     </div>
     <div v-else class="chart-empty">
       <span class="chart-empty-icon">📊</span>
-      <span class="chart-empty-text" v-if="timeRange !== 'all' && props.weightLogs?.length >= 2">该时间段内记录不足 2 次</span>
+      <span class="chart-empty-text" v-if="timeRange === 'custom' && props.weightLogs?.length >= 2">该日期范围内记录不足 2 次</span>
+      <span class="chart-empty-text" v-else-if="timeRange !== 'all' && props.weightLogs?.length >= 2">该时间段内记录不足 2 次</span>
       <span class="chart-empty-text" v-else>记录 2 次以上体重后将显示趋势图</span>
     </div>
   </div>
@@ -438,5 +500,94 @@ const chartData = computed(() => {
   background: #334155;
   color: #E2E8F0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.custom-date-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 6px;
+  padding: 10px 14px;
+  background: rgba(125, 211, 252, 0.06);
+  border: 1px solid rgba(125, 211, 252, 0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+:global(.dark-mode) .custom-date-range {
+  background: rgba(125, 211, 252, 0.05);
+  border-color: rgba(125, 211, 252, 0.1);
+}
+
+.custom-range-label {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.custom-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.custom-date-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid rgba(125, 211, 252, 0.25);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #334155;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+.custom-date-input:focus {
+  border-color: #7DD3FC;
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.15);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.custom-date-input:hover {
+  border-color: rgba(125, 211, 252, 0.4);
+}
+
+:global(.dark-mode) .custom-date-input {
+  background: rgba(30, 41, 59, 0.8);
+  color: #E2E8F0;
+  border-color: rgba(125, 211, 252, 0.15);
+}
+
+:global(.dark-mode) .custom-date-input:focus {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #7DD3FC;
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.1);
+}
+
+.custom-range-sep {
+  color: #94A3B8;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+:global(.dark-mode) .custom-range-sep {
+  color: #64748B;
+}
+
+.custom-range-fade-enter-active {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.custom-range-fade-leave-active {
+  transition: all 0.18s ease;
+}
+
+.custom-range-fade-enter-from,
+.custom-range-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 </style>
