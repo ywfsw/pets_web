@@ -283,6 +283,10 @@ export const deleteBathingRecord = (id) => {
   return apiClient.delete(`/api/bathing-records/${id}`);
 };
 
+export const fetchBathingStats = (params = { days: 30 }) => {
+  return apiClient.get('/api/bathing-records/stats', { params });
+};
+
 // --- Auth API ---
 export const login = (payload) => {
   return apiClient.post('/api/auth/login', payload);

@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
-import { fetchBathingRecordsPage } from '@/api.js';
+import { fetchBathingRecordsPage, fetchBathingStats } from '@/api.js';
 import {
   NSelect,
   NTag,
@@ -17,6 +17,7 @@ import {
   CreateOutline,
   TrashOutline
 } from '@vicons/ionicons5';
+import BathingServiceChart from '@/components/BathingServiceChart.vue';
 
 const petStore = usePetStore();
 const authStore = useAuthStore();
@@ -32,6 +33,9 @@ const loading = ref(false);
 const pageNum = ref(1);
 const pageSize = ref(20);
 const total = ref(0);
+const bathingStats = ref(null);
+const loadingStats = ref(false);
+const statsDays = ref(30);
 
 const serviceTypeIcons = {
   '洗澡': '🛁',
@@ -76,9 +80,32 @@ const loadRecords = async () => {
   }
 };
 
+const loadStats = async () => {
+  loadingStats.value = true;
+  try {
+    const params = { days: statsDays.value };
+    if (selectedPetId.value) {
+      params.petId = selectedPetId.value;
+    }
+    const res = await fetchBathingStats(params);
+    bathingStats.value = res.data;
+  } catch (err) {
+    console.error('加载洗澡美容统计失败:', err);
+    bathingStats.value = null;
+  } finally {
+    loadingStats.value = false;
+  }
+};
+
+const handleStatsDaysChange = (days) => {
+  statsDays.value = days;
+  loadStats();
+};
+
 watch(selectedPetId, () => {
   pageNum.value = 1;
   loadRecords();
+  loadStats();
 });
 
 onMounted(async () => {
@@ -86,6 +113,7 @@ onMounted(async () => {
     await petStore.loadPetList();
   }
   loadRecords();
+  loadStats();
 });
 
 const stats = computed(() => {
@@ -156,6 +184,7 @@ const handleDelete = async (record) => {
     await petStore.handleDeleteBathingRecord(record.id);
     window.$message.success('记录已删除');
     loadRecords();
+    loadStats();
   } catch {
     window.$message.error('删除失败，请重试');
   }
@@ -164,6 +193,7 @@ const handleDelete = async (record) => {
 watch(() => petStore.bathingRecordFormModal.show, (show) => {
   if (!show) {
     loadRecords();
+    loadStats();
   }
 });
 </script>
@@ -238,6 +268,14 @@ watch(() => petStore.bathingRecordFormModal.show, (show) => {
         </template>
         添加记录
       </n-button>
+    </div>
+
+    <!-- Stats Chart -->
+    <div class="chart-section section-entrance" style="--entrance-delay: 0.15s;">
+      <BathingServiceChart
+        :stats="bathingStats"
+        @update:days="handleStatsDaysChange"
+      />
     </div>
 
     <!-- Loading Skeleton -->
@@ -573,6 +611,11 @@ watch(() => petStore.bathingRecordFormModal.show, (show) => {
 .add-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+}
+
+/* ===== Chart Section ===== */
+.chart-section {
+  margin-bottom: 20px;
 }
 
 /* ===== Skeleton Loading ===== */
