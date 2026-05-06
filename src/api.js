@@ -168,6 +168,14 @@ export const uncompleteHealthEvent = (id) => {
   return apiClient.patch(`/api/health-events/${id}/uncomplete`);
 };
 
+export const fetchHealthEventsPage = (params = { pageNum: 1, pageSize: 20 }) => {
+  return apiClient.get('/api/health-events/page', { params });
+};
+
+export const fetchHealthEventsStats = (params = {}) => {
+  return apiClient.get('/api/health-events/stats', { params });
+};
+
 
 // --- 字典 API ---
 export const fetchDictTypeList = () => {
