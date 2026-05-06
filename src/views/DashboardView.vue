@@ -173,6 +173,16 @@ const handleQuickAction = (action) => {
   }
 };
 
+const maxFeedingCount = computed(() => {
+  const stats = dashboardData.value?.feedingStats || [];
+  if (!stats.length) return 1;
+  return Math.max(...stats.map(s => s.count), 1);
+});
+
+const getFeedingBarWidth = (count) => {
+  return Math.round((count / maxFeedingCount.value) * 100);
+};
+
 const computeAge = (birthday) => {
   if (!birthday) return null;
   const birth = new Date(birthday);
@@ -322,6 +332,38 @@ const computeAge = (birthday) => {
               <div class="pet-overview-arrow">›</div>
             </div>
           </div>
+        </div>
+
+        <!-- 近期喂养概况 -->
+        <div v-if="dashboardData.feedingStats?.length" class="feeding-stats-section">
+          <div class="section-header">
+            <span class="section-emoji">🍽️</span>
+            <span class="section-title">近期喂养概况</span>
+            <span class="section-subtitle">最近 30 天</span>
+          </div>
+          <n-card :bordered="false" class="feeding-stats-card">
+            <div class="feeding-stats-list">
+              <div
+                v-for="stat in dashboardData.feedingStats"
+                :key="stat.foodType"
+                class="feeding-stat-item"
+              >
+                <div class="feeding-stat-header">
+                  <span class="feeding-stat-name">{{ stat.foodType }}</span>
+                  <span class="feeding-stat-count">
+                    {{ stat.count }} 次
+                    <span v-if="stat.avgAmount" class="feeding-stat-avg">· 均 {{ stat.avgAmount }}g</span>
+                  </span>
+                </div>
+                <div class="feeding-stat-bar-bg">
+                  <div
+                    class="feeding-stat-bar"
+                    :style="{ width: getFeedingBarWidth(stat.count) + '%' }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </n-card>
         </div>
 
         <!-- 即将到期事件 -->
@@ -1004,6 +1046,97 @@ const computeAge = (birthday) => {
 
 :global(.dark-mode) .activity-title {
   color: #B8B8CC;
+}
+
+/* 喂养统计 */
+.feeding-stats-section {
+  margin-bottom: 20px;
+}
+
+.section-subtitle {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-left: 4px;
+}
+
+:global(.dark-mode) .section-subtitle {
+  color: #8888A0;
+}
+
+.feeding-stats-card {
+  border-radius: 20px;
+}
+
+.feeding-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.feeding-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.feeding-stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.feeding-stat-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #2D2D2D;
+}
+
+:global(.dark-mode) .feeding-stat-name {
+  color: #E8E8E8;
+}
+
+.feeding-stat-count {
+  font-size: 13px;
+  color: #6B6B6B;
+  font-weight: 600;
+}
+
+:global(.dark-mode) .feeding-stat-count {
+  color: #B8B8CC;
+}
+
+.feeding-stat-avg {
+  font-weight: 400;
+  color: #9CA3AF;
+  font-size: 12px;
+}
+
+:global(.dark-mode) .feeding-stat-avg {
+  color: #8888A0;
+}
+
+.feeding-stat-bar-bg {
+  height: 10px;
+  background: #F0E6E0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+:global(.dark-mode) .feeding-stat-bar-bg {
+  background: #3D3D5C;
+}
+
+.feeding-stat-bar {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #FBBF24 0%, #F59E0B 100%);
+  transition: width 0.6s ease;
+  min-width: 8px;
+}
+
+:global(.dark-mode) .feeding-stat-bar {
+  background: linear-gradient(90deg, #D97706 0%, #B45309 100%);
 }
 
 /* 快捷操作 */

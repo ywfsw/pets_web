@@ -62,10 +62,18 @@ import {
   });
 
   // (❗) 体重记录表单的默认值
+  const formatDate = (date) => {
+    const d = date instanceof Date ? date : new Date(date);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
   const defaultWeightLogForm = (petId) => ({
     petId: petId,
     weightKg: null,
-    logDate: Date.now() // Default to today
+    logDate: formatDate(new Date())
   });
 
   // 喂养记录表单的默认值
@@ -452,7 +460,7 @@ import {
           id: logToEdit.id,
           petId: petId,
           weightKg: logToEdit.weightKg,
-          logDate: logToEdit.logDate ? new Date(logToEdit.logDate).getTime() : Date.now()
+          logDate: logToEdit.logDate ? formatDate(logToEdit.logDate) : formatDate(new Date())
         };
         weightLogFormModal.value.isEdit = true;
       } else {
@@ -466,10 +474,7 @@ import {
       weightLogFormModal.value.loading = true;
       const payload = { ...weightLogFormModal.value.data };
 
-      // Convert logDate timestamp to ISO 8601 string
-      if (typeof payload.logDate === 'number') {
-        payload.logDate = new Date(payload.logDate).toISOString();
-      }
+      // logDate is already a yyyy-MM-dd string, compatible with backend LocalDate
 
       try {
         if (weightLogFormModal.value.isEdit && payload.id) {

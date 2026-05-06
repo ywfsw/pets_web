@@ -56,7 +56,7 @@ const handleClose = () => {
     :loading="petStore.weightLogFormModal.loading"
   >
     <div v-if="petStore.weightLogFormModal.data">
-      <n-form ref="formRef" @submit.prevent="handleSubmit" label-placement="top" :rules="rules">
+      <n-form ref="formRef" :model="petStore.weightLogFormModal.data" @submit.prevent="handleSubmit" label-placement="top" :rules="rules">
         <n-form-item label="体重 (kg)" path="weightKg" required>
           <n-input-number
             v-model:value="petStore.weightLogFormModal.data.weightKg"
