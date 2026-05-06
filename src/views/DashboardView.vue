@@ -102,6 +102,15 @@ const greeting = computed(() => {
   return '晚上好';
 });
 
+const timeEmoji = computed(() => {
+  const hour = new Date().getHours();
+  if (hour < 6) return '🌙';
+  if (hour < 12) return '☀️';
+  if (hour < 14) return '🌤️';
+  if (hour < 18) return '🌅';
+  return '🌆';
+});
+
 // 快捷操作处理
 const handleQuickAction = (action) => {
   const pets = dashboardData.value?.petOverviews || [];
@@ -195,17 +204,52 @@ const computeAge = (birthday) => {
 <template>
   <div class="dashboard">
     <n-spin :show="loading">
-      <!-- 欢迎区域 -->
+      <!-- 沉浸式 Hero 区域 -->
       <div class="dashboard-hero">
-        <div class="hero-content">
-          <h1 class="hero-title">{{ greeting }}{{ authStore.userInfo?.username ? '，' + authStore.userInfo.username : '' }} 🐾</h1>
-          <p class="hero-subtitle">欢迎回到萌宠之家</p>
+        <div class="hero-bg-shapes">
+          <span class="hero-shape shape-1">🐾</span>
+          <span class="hero-shape shape-2">🌸</span>
+          <span class="hero-shape shape-3">💫</span>
+          <span class="hero-shape shape-4">🐾</span>
+          <span class="hero-shape shape-5">✨</span>
+          <span class="hero-shape shape-6">🦋</span>
+        </div>
+        <div class="hero-glass-card">
+          <div class="hero-content">
+            <div class="hero-greeting-row">
+              <span class="hero-time-icon">{{ timeEmoji }}</span>
+              <span class="hero-greeting">{{ greeting }}{{ authStore.userInfo?.username ? '，' + authStore.userInfo.username : '' }}</span>
+            </div>
+            <h1 class="hero-title">萌宠之家</h1>
+            <p class="hero-subtitle">记录每一个温暖的瞬间</p>
+            <div v-if="!loading && dashboardData" class="hero-stats-strip">
+              <div class="hero-stat-pill">
+                <span class="hero-stat-num">{{ dashboardData.totalPets }}</span>
+                <span class="hero-stat-lbl">宠物</span>
+              </div>
+              <span class="hero-stat-divider"></span>
+              <div class="hero-stat-pill">
+                <span class="hero-stat-num">{{ dashboardData.totalPhotos }}</span>
+                <span class="hero-stat-lbl">照片</span>
+              </div>
+              <span class="hero-stat-divider"></span>
+              <div class="hero-stat-pill">
+                <span class="hero-stat-num">{{ dashboardData.totalHealthEvents + dashboardData.totalFeedings + dashboardData.totalWeightRecords }}</span>
+                <span class="hero-stat-lbl">记录</span>
+              </div>
+              <span v-if="dashboardData.pendingEvents > 0" class="hero-stat-divider"></span>
+              <div v-if="dashboardData.pendingEvents > 0" class="hero-stat-pill hero-stat-pending">
+                <span class="hero-stat-num">{{ dashboardData.pendingEvents }}</span>
+                <span class="hero-stat-lbl">待处理</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <template v-if="!loading && dashboardData">
         <!-- 统计卡片 -->
-        <div class="stats-row">
+        <div class="stats-row section-entrance" style="--enter-delay: 0s">
           <n-card class="stat-card stat-pets" :bordered="false">
             <div class="stat-icon">🐾</div>
             <div class="stat-value">{{ dashboardData.totalPets }}</div>
@@ -239,7 +283,7 @@ const computeAge = (birthday) => {
         </div>
 
         <!-- 快捷操作 -->
-        <div class="quick-actions-section">
+        <div class="quick-actions-section section-entrance" style="--enter-delay: 0.08s">
           <div class="section-header">
             <span class="section-emoji">⚡</span>
             <span class="section-title">快捷操作</span>
@@ -285,10 +329,12 @@ const computeAge = (birthday) => {
         </div>
 
         <!-- 萌宠点赞榜 -->
-        <PetLeaderboard v-if="dashboardData.totalPets > 0" />
+        <div class="section-entrance" style="--enter-delay: 0.12s">
+          <PetLeaderboard v-if="dashboardData.totalPets > 0" />
+        </div>
 
         <!-- 宠物速览 -->
-        <div v-if="dashboardData.petOverviews?.length" class="pet-overviews-section">
+        <div v-if="dashboardData.petOverviews?.length" class="pet-overviews-section section-entrance" style="--enter-delay: 0.16s">
           <div class="section-header">
             <span class="section-emoji">🐾</span>
             <span class="section-title">我的宠物</span>
@@ -336,7 +382,7 @@ const computeAge = (birthday) => {
         </div>
 
         <!-- 近期喂养概况 -->
-        <div v-if="dashboardData.feedingStats?.length" class="feeding-stats-section">
+        <div v-if="dashboardData.feedingStats?.length" class="feeding-stats-section section-entrance" style="--enter-delay: 0.2s">
           <div class="section-header">
             <span class="section-emoji">🍽️</span>
             <span class="section-title">近期喂养概况</span>
@@ -368,7 +414,7 @@ const computeAge = (birthday) => {
         </div>
 
         <!-- 即将到期事件 -->
-        <n-card class="section-card" :bordered="false">
+        <n-card class="section-card section-entrance" :bordered="false" style="--enter-delay: 0.24s">
           <template #header>
             <n-space align="center">
               <n-icon :component="CalendarOutline" size="20" color="#FF9BA8" />
@@ -437,7 +483,7 @@ const computeAge = (birthday) => {
         </n-card>
 
         <!-- 最近活动 -->
-        <n-card class="section-card" :bordered="false">
+        <n-card class="section-card section-entrance" :bordered="false" style="--enter-delay: 0.28s">
           <template #header>
             <n-space align="center">
               <n-icon :component="TimeOutline" size="20" color="#C084FC" />
@@ -493,27 +539,101 @@ const computeAge = (birthday) => {
   margin: 0 auto;
 }
 
-/* 欢迎区域 */
+/* ===== 沉浸式 Hero 区域 ===== */
 .dashboard-hero {
+  position: relative;
+  margin-bottom: 28px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #FF9BA8 0%, #FFB4C2 30%, #D8B4FE 60%, #C084FC 100%);
+  padding: 3px;
+  animation: hero-entrance 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+:global(.dark-mode) .dashboard-hero {
+  background: linear-gradient(135deg, #FF7A8A 0%, #C084FC 50%, #7DD3FC 100%);
+}
+
+.hero-bg-shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 24px;
+  z-index: 1;
+}
+
+.hero-shape {
+  position: absolute;
+  opacity: 0.15;
+  animation: float-shape 8s ease-in-out infinite;
+  font-size: 24px;
+  user-select: none;
+}
+
+:global(.dark-mode) .hero-shape {
+  opacity: 0.2;
+}
+
+.shape-1 { top: 10%; left: 5%; animation-delay: 0s; font-size: 28px; }
+.shape-2 { top: 20%; right: 12%; animation-delay: -2s; font-size: 20px; }
+.shape-3 { bottom: 15%; left: 20%; animation-delay: -4s; font-size: 18px; }
+.shape-4 { bottom: 25%; right: 6%; animation-delay: -1s; font-size: 22px; }
+.shape-5 { top: 50%; left: 45%; animation-delay: -3s; font-size: 16px; }
+.shape-6 { top: 8%; left: 55%; animation-delay: -5s; font-size: 14px; }
+
+.hero-glass-card {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 22px;
+  padding: 40px 36px 32px;
+}
+
+:global(.dark-mode) .hero-glass-card {
+  background: rgba(30, 30, 56, 0.88);
+}
+
+.hero-content {
   text-align: center;
-  padding: 32px 0 24px;
+}
+
+.hero-greeting-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.hero-time-icon {
+  font-size: 22px;
+  animation: gentle-bounce 3s ease-in-out infinite;
+}
+
+.hero-greeting {
+  font-size: 15px;
+  font-weight: 600;
+  color: #9CA3AF;
+  letter-spacing: 0.02em;
+}
+
+:global(.dark-mode) .hero-greeting {
+  color: #8888A0;
 }
 
 .hero-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: #2D2D2D;
+  font-size: 36px;
+  font-weight: 900;
   margin: 0 0 8px;
-  background: linear-gradient(135deg, #FF9BA8 0%, #C084FC 100%);
+  background: linear-gradient(135deg, #FF7A8A 0%, #C084FC 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-.hero-subtitle {
-  font-size: 15px;
-  color: #9CA3AF;
-  margin: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 :global(.dark-mode) .hero-title {
@@ -523,8 +643,154 @@ const computeAge = (birthday) => {
   background-clip: text;
 }
 
+.hero-subtitle {
+  font-size: 15px;
+  color: #9CA3AF;
+  margin: 0 0 20px;
+  font-weight: 500;
+}
+
 :global(.dark-mode) .hero-subtitle {
   color: #8888A0;
+}
+
+.hero-stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(255, 155, 168, 0.08);
+  border-radius: 16px;
+  margin-top: 4px;
+  animation: strip-fade-in 0.6s 0.4s ease both;
+}
+
+:global(.dark-mode) .hero-stats-strip {
+  background: rgba(255, 155, 168, 0.06);
+}
+
+.hero-stat-pill {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.hero-stat-num {
+  font-size: 20px;
+  font-weight: 800;
+  color: #2D2D2D;
+  line-height: 1;
+}
+
+:global(.dark-mode) .hero-stat-num {
+  color: #F0F0F0;
+}
+
+.hero-stat-lbl {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9CA3AF;
+}
+
+:global(.dark-mode) .hero-stat-lbl {
+  color: #8888A0;
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 1px;
+}
+
+.hero-stat-pending .hero-stat-num {
+  color: #D97706;
+}
+
+:global(.dark-mode) .hero-stat-pending .hero-stat-num {
+  color: #FCD34D;
+}
+
+/* ===== 区块入场动画 ===== */
+.section-entrance {
+  animation: section-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--enter-delay, 0s);
+}
+
+@keyframes hero-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes strip-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes section-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float-shape {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(5deg); }
+  50% { transform: translateY(-4px) rotate(-3deg); }
+  75% { transform: translateY(-10px) rotate(2deg); }
+}
+
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* 移动端 Hero 响应式 */
+@media (max-width: 768px) {
+  .dashboard-hero {
+    border-radius: 20px;
+  }
+
+  .hero-glass-card {
+    padding: 28px 20px 24px;
+  }
+
+  .hero-title {
+    font-size: 28px;
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .hero-stats-strip {
+    gap: 8px;
+    padding: 10px 12px;
+    flex-wrap: wrap;
+  }
+
+  .hero-stat-num {
+    font-size: 18px;
+  }
 }
 
 /* 统计卡片 */
