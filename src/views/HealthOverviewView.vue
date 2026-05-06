@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { NSelect } from 'naive-ui';
 import { usePetStore } from '@/stores/petStore.js';
+import PetAvatarSelector from '@/components/PetAvatarSelector.vue';
 import { fetchPetDetail, fetchHealthReport } from '@/api.js';
 import WeightTrendChart from '@/components/WeightTrendChart.vue';
 import HealthReportChart from '@/components/HealthReportChart.vue';
@@ -11,13 +11,6 @@ const petStore = usePetStore();
 const selectedPetId = ref(petStore.getPageSelectedPet('health-overview'));
 const petDetail = ref(null);
 const loading = ref(false);
-
-const petOptions = computed(() =>
-  petStore.petList.map(p => ({
-    label: p.name,
-    value: p.id,
-  }))
-);
 
 const weightLogs = computed(() => petDetail.value?.weightLogs || []);
 const healthEvents = computed(() => petDetail.value?.healthEvents || []);
@@ -343,14 +336,12 @@ onMounted(() => {
           </div>
           <p class="hero-subtitle">全面了解宠物的健康状况</p>
           <div class="hero-pet-selector">
-            <n-select
-              :value="selectedPetId"
-              :options="petOptions"
-              placeholder="选择一只宠物..."
-              clearable
-              size="medium"
-              class="pet-selector"
-              @update:value="selectedPetId = $event"
+            <PetAvatarSelector
+              :pets="petStore.petList"
+              :selected-id="selectedPetId"
+              :show-all="petStore.petList.length >= 2"
+              all-label="对比视图"
+              @select="selectedPetId = $event"
             />
           </div>
         </div>
@@ -432,7 +423,15 @@ onMounted(() => {
       </div>
     </template>
 
-    <!-- No pet selected -->
+    <!-- No pet selected: comparison view when 2+ pets -->
+    <template v-else-if="!selectedPetId && petStore.petList.length >= 2">
+      <div class="comparison-hint section-entrance" style="--entrance-delay: 0.05s;">
+        <span class="hint-emoji">📊</span>
+        <p class="hint-text">点击上方宠物头像查看详细健康概览</p>
+      </div>
+    </template>
+
+    <!-- No pet selected: single pet hint -->
     <div v-else-if="!selectedPetId" class="empty-state section-entrance" style="--entrance-delay: 0.1s;">
       <div class="empty-card">
         <span class="empty-emoji bounce-anim">🐾</span>
@@ -817,12 +816,9 @@ onMounted(() => {
 }
 
 .hero-pet-selector {
-  max-width: 320px;
+  max-width: 100%;
   margin: 0 auto;
-}
-
-.pet-selector :deep(.n-base-selection) {
-  border-radius: 14px !important;
+  padding: 0 4px;
 }
 
 /* Floating decorations */
@@ -936,6 +932,40 @@ onMounted(() => {
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* Comparison hint (when no pet selected but 2+ pets) */
+.comparison-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px 28px;
+  margin-bottom: 8px;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.06);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+}
+
+.hint-emoji {
+  font-size: 22px;
+  animation: gentleBounce 2s ease-in-out infinite;
+}
+
+.hint-text {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+:root.dark .comparison-hint {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+
+:root.dark .hint-text {
+  color: #9ca3af;
 }
 
 /* Empty state */
