@@ -238,6 +238,10 @@ export const fetchFeedingRecordsPage = (params = { pageNum: 1, pageSize: 20 }) =
   return apiClient.get('/api/feeding-records/page', { params });
 };
 
+export const fetchFeedingStats = (params = { days: 30 }) => {
+  return apiClient.get('/api/feeding-records/stats', { params });
+};
+
 export const createFeedingRecord = (payload) => {
   return apiClient.post('/api/feeding-records', payload);
 };

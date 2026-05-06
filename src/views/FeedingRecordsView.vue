@@ -2,7 +2,8 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { usePetStore } from '@/stores/petStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
-import { fetchFeedingRecordsPage } from '@/api.js';
+import { fetchFeedingRecordsPage, fetchFeedingStats } from '@/api.js';
+import FeedingTrendChart from '@/components/FeedingTrendChart.vue';
 import {
   NSelect,
   NCard,
@@ -32,6 +33,8 @@ const loading = ref(false);
 const pageNum = ref(1);
 const pageSize = ref(20);
 const total = ref(0);
+const feedingStats = ref(null);
+const loadingStats = ref(false);
 
 // Pet selector options
 const petOptions = computed(() => {
@@ -67,10 +70,29 @@ const loadRecords = async () => {
   }
 };
 
+// Load feeding stats
+const loadStats = async () => {
+  loadingStats.value = true;
+  try {
+    const params = { days: 30 };
+    if (selectedPetId.value) {
+      params.petId = selectedPetId.value;
+    }
+    const res = await fetchFeedingStats(params);
+    feedingStats.value = res.data;
+  } catch (err) {
+    console.error('加载喂养统计失败:', err);
+    feedingStats.value = null;
+  } finally {
+    loadingStats.value = false;
+  }
+};
+
 // Watch pet selection
 watch(selectedPetId, () => {
   pageNum.value = 1;
   loadRecords();
+  loadStats();
 });
 
 // Pre-select from store
@@ -79,6 +101,7 @@ onMounted(async () => {
     await petStore.loadPetList();
   }
   loadRecords();
+  loadStats();
 });
 
 // Stats
@@ -169,6 +192,7 @@ const handleDelete = async (record) => {
 watch(() => petStore.feedingRecordFormModal.show, (show) => {
   if (!show) {
     loadRecords();
+    loadStats();
   }
 });
 </script>
@@ -242,6 +266,14 @@ watch(() => petStore.feedingRecordFormModal.show, (show) => {
           </div>
         </div>
       </n-card>
+    </div>
+
+    <!-- Feeding Trend Chart -->
+    <div class="chart-section">
+      <div v-if="loadingStats" class="chart-loading">
+        <n-spin size="small" />
+      </div>
+      <feeding-trend-chart v-else :stats="feedingStats" />
     </div>
 
     <!-- Loading -->
@@ -429,6 +461,17 @@ watch(() => petStore.feedingRecordFormModal.show, (show) => {
 
 :global(.dark-mode) .stat-card-label {
   color: #8888A0;
+}
+
+/* Chart Section */
+.chart-section {
+  margin-bottom: 24px;
+}
+
+.chart-loading {
+  display: flex;
+  justify-content: center;
+  padding: 30px;
 }
 
 /* Empty Card */
