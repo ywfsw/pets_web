@@ -368,6 +368,55 @@ const computeAge = (birthday) => {
       </div>
 
       <template v-else-if="dashboardData">
+        <!-- 新手欢迎引导（无宠物时） -->
+        <div v-if="!dashboardData.totalPets" class="welcome-section">
+          <div class="welcome-shapes">
+            <span class="welcome-shape ws-1">🐾</span>
+            <span class="welcome-shape ws-2">🐱</span>
+            <span class="welcome-shape ws-3">🐶</span>
+            <span class="welcome-shape ws-4">✨</span>
+            <span class="welcome-shape ws-5">💕</span>
+            <span class="welcome-shape ws-6">🐾</span>
+            <span class="welcome-shape ws-7">🌸</span>
+            <span class="welcome-shape ws-8">🦋</span>
+          </div>
+          <div class="welcome-card">
+            <div class="welcome-icon-wrap">
+              <span class="welcome-paw">🐾</span>
+            </div>
+            <h2 class="welcome-title">开始记录你的萌宠生活</h2>
+            <p class="welcome-desc">添加你的第一只宠物，开启专属的宠物管理之旅<br>记录成长瞬间、健康数据、喂养日志和美好回忆</p>
+            <button class="welcome-cta" @click="handleQuickAction('addPet')">
+              <span class="welcome-cta-icon">➕</span>
+              添加我的第一只宠物
+            </button>
+            <div class="welcome-tips">
+              <div class="welcome-tip-item">
+                <span class="welcome-tip-icon">📋</span>
+                <span>健康事件管理</span>
+              </div>
+              <div class="welcome-tip-item">
+                <span class="welcome-tip-icon">⚖️</span>
+                <span>体重趋势追踪</span>
+              </div>
+              <div class="welcome-tip-item">
+                <span class="welcome-tip-icon">📷</span>
+                <span>宠物相册记录</span>
+              </div>
+              <div class="welcome-tip-item">
+                <span class="welcome-tip-icon">💊</span>
+                <span>用药记录提醒</span>
+              </div>
+            </div>
+            <p class="welcome-hint">
+              <span class="welcome-hint-icon">💡</span>
+              登录后点击上方按钮即可添加你的宠物
+            </p>
+          </div>
+        </div>
+
+        <!-- 主内容（有宠物时） -->
+        <div v-else>
         <!-- 统计卡片 -->
         <div class="stats-row">
           <div class="stat-card stat-pets" style="--stat-delay: 0s">
@@ -673,6 +722,7 @@ const computeAge = (birthday) => {
             </div>
           </div>
         </div>
+        </div><!-- end v-else (has pets) -->
       </template>
 
       <!-- 加载失败 -->
@@ -695,6 +745,337 @@ const computeAge = (birthday) => {
 .dashboard {
   max-width: 900px;
   margin: 0 auto;
+}
+
+/* ===== 新手欢迎引导 ===== */
+.welcome-section {
+  position: relative;
+  margin-bottom: 28px;
+}
+
+.welcome-shapes {
+  position: absolute;
+  inset: -20px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.welcome-shape {
+  position: absolute;
+  opacity: 0.12;
+  animation: welcome-float 10s ease-in-out infinite;
+  font-size: 28px;
+  user-select: none;
+}
+
+:global(.dark-mode) .welcome-shape {
+  opacity: 0.18;
+}
+
+.ws-1 { top: 8%; left: 4%; font-size: 32px; animation-delay: 0s; animation-duration: 9s; }
+.ws-2 { top: 15%; right: 8%; font-size: 26px; animation-delay: -2s; animation-duration: 11s; }
+.ws-3 { bottom: 20%; left: 10%; font-size: 24px; animation-delay: -4s; animation-duration: 10s; }
+.ws-4 { top: 40%; right: 5%; font-size: 20px; animation-delay: -1s; animation-duration: 8s; }
+.ws-5 { bottom: 10%; right: 15%; font-size: 22px; animation-delay: -3s; animation-duration: 12s; }
+.ws-6 { top: 55%; left: 3%; font-size: 20px; animation-delay: -5s; animation-duration: 9.5s; }
+.ws-7 { top: 5%; left: 50%; font-size: 18px; animation-delay: -6s; animation-duration: 11.5s; }
+.ws-8 { bottom: 30%; left: 45%; font-size: 16px; animation-delay: -7s; animation-duration: 10.5s; }
+
+.welcome-card {
+  position: relative;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 180, 194, 0.25);
+  border-radius: 28px;
+  padding: 52px 40px 40px;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(255, 122, 138, 0.1), 0 1px 3px rgba(0, 0, 0, 0.04);
+  animation: welcome-card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+:global(.dark-mode) .welcome-card {
+  background: rgba(30, 30, 56, 0.82);
+  border-color: rgba(192, 132, 252, 0.2);
+  box-shadow: 0 8px 40px rgba(192, 132, 252, 0.08), 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.welcome-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFB4C2 0%, #D8B4FE 100%);
+  box-shadow: 0 4px 20px rgba(255, 122, 138, 0.25);
+  margin-bottom: 28px;
+  animation: welcome-paw-pulse 3s ease-in-out infinite, welcome-card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+:global(.dark-mode) .welcome-icon-wrap {
+  background: linear-gradient(135deg, #FF7A8A 0%, #A78BFA 100%);
+  box-shadow: 0 4px 20px rgba(192, 132, 252, 0.2);
+}
+
+.welcome-paw {
+  font-size: 42px;
+  animation: gentle-bounce 3s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.welcome-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 16px;
+  background: linear-gradient(135deg, #FF7A8A 0%, #C084FC 50%, #818CF8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+:global(.dark-mode) .welcome-title {
+  background: linear-gradient(135deg, #FF9BA8 0%, #D8B4FE 50%, #93C5FD 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.welcome-desc {
+  font-size: 15px;
+  color: #6B7280;
+  line-height: 1.7;
+  margin: 0 auto 32px;
+  max-width: 380px;
+}
+
+:global(.dark-mode) .welcome-desc {
+  color: #9CA3AF;
+}
+
+.welcome-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 36px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #FF7A8A 0%, #C084FC 100%);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255, 122, 138, 0.3);
+  transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.02em;
+  animation: welcome-card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both;
+}
+
+.welcome-cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: welcome-shimmer 3s ease-in-out infinite;
+}
+
+.welcome-cta:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 8px 30px rgba(255, 122, 138, 0.4);
+}
+
+.welcome-cta:active {
+  transform: translateY(-1px) scale(1.01);
+}
+
+:global(.dark-mode) .welcome-cta {
+  box-shadow: 0 4px 20px rgba(192, 132, 252, 0.3);
+}
+
+:global(.dark-mode) .welcome-cta:hover {
+  box-shadow: 0 8px 30px rgba(192, 132, 252, 0.45);
+}
+
+.welcome-cta-icon {
+  font-size: 18px;
+}
+
+.welcome-tips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 36px;
+  animation: welcome-card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+.welcome-tip-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.welcome-tip-item:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+:global(.dark-mode) .welcome-tip-item {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+:global(.dark-mode) .welcome-tip-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.welcome-tip-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.welcome-tip-item span:last-child {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B7280;
+  white-space: nowrap;
+}
+
+:global(.dark-mode) .welcome-tip-item span:last-child {
+  color: #9CA3AF;
+}
+
+.welcome-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 24px;
+  font-size: 13px;
+  color: #9CA3AF;
+  animation: welcome-card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+}
+
+:global(.dark-mode) .welcome-hint {
+  color: #6B7280;
+}
+
+.welcome-hint-icon {
+  font-size: 14px;
+}
+
+@keyframes welcome-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-18px) rotate(5deg); }
+  50% { transform: translateY(-8px) rotate(-3deg); }
+  75% { transform: translateY(-22px) rotate(2deg); }
+}
+
+@keyframes welcome-paw-pulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(255, 122, 138, 0.25); }
+  50% { box-shadow: 0 4px 30px rgba(255, 122, 138, 0.4), 0 0 60px rgba(255, 122, 138, 0.15); }
+}
+
+:global(.dark-mode) .welcome-icon-wrap {
+  animation-name: welcome-paw-pulse-dark, welcome-card-in;
+}
+
+@keyframes welcome-paw-pulse-dark {
+  0%, 100% { box-shadow: 0 4px 20px rgba(192, 132, 252, 0.2); }
+  50% { box-shadow: 0 4px 30px rgba(192, 132, 252, 0.35), 0 0 60px rgba(192, 132, 252, 0.12); }
+}
+
+@keyframes welcome-card-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes welcome-shimmer {
+  0% { left: -100%; }
+  50%, 100% { left: 100%; }
+}
+
+@media (max-width: 768px) {
+  .welcome-card {
+    padding: 40px 24px 32px;
+    border-radius: 22px;
+  }
+  .welcome-icon-wrap {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 22px;
+  }
+  .welcome-paw {
+    font-size: 34px;
+  }
+  .welcome-title {
+    font-size: 22px;
+  }
+  .welcome-desc {
+    font-size: 14px;
+    margin-bottom: 26px;
+  }
+  .welcome-cta {
+    padding: 14px 28px;
+    font-size: 15px;
+  }
+  .welcome-tips {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .welcome-tip-item {
+    padding: 12px 8px;
+  }
+  .welcome-tip-icon {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-card {
+    padding: 32px 18px 24px;
+  }
+  .welcome-icon-wrap {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 18px;
+  }
+  .welcome-paw {
+    font-size: 30px;
+  }
+  .welcome-title {
+    font-size: 20px;
+  }
+  .welcome-desc br {
+    display: none;
+  }
+  .welcome-cta {
+    padding: 12px 24px;
+    font-size: 14px;
+    border-radius: 14px;
+  }
+  .welcome-tips {
+    gap: 8px;
+    margin-top: 28px;
+  }
+  .welcome-tip-item {
+    padding: 10px 6px;
+    border-radius: 12px;
+  }
 }
 
 /* ===== 沉浸式 Hero 区域 ===== */
