@@ -319,6 +319,8 @@ async function loadComparisonData() {
             const today = new Date().toISOString().slice(0, 10);
             return !m.endDate || m.endDate >= today;
           });
+          const fRecords = detail.feedingRecords || [];
+          const bRecords = detail.bathingRecords || [];
           const latestW = wLogs.length
             ? [...wLogs].sort((a, b) => new Date(b.logDate) - new Date(a.logDate))[0]
             : null;
@@ -332,11 +334,14 @@ async function loadComparisonData() {
             pendingCount: pending.length,
             activeMedsCount: activeMeds.length,
             totalEvents: hEvents.length,
+            feedingCount: fRecords.length,
+            bathingCount: bRecords.length,
           };
         } catch {
           return {
             id: pet.id, name: pet.name, avatarUrl: pet.avatarUrl, gender: pet.gender,
             score: 0, latestWeight: null, pendingCount: 0, activeMedsCount: 0, totalEvents: 0,
+            feedingCount: 0, bathingCount: 0,
           };
         }
       })
@@ -798,6 +803,14 @@ onMounted(() => {
               <div class="comp-metric">
                 <span class="comp-metric-icon">💊</span>
                 <span class="comp-metric-val">{{ p.activeMedsCount }} 用药</span>
+              </div>
+              <div class="comp-metric">
+                <span class="comp-metric-icon">🍽️</span>
+                <span class="comp-metric-val">{{ p.feedingCount }} 喂养</span>
+              </div>
+              <div class="comp-metric">
+                <span class="comp-metric-icon">🛁</span>
+                <span class="comp-metric-val">{{ p.bathingCount }} 美容</span>
               </div>
             </div>
             <div class="comp-card-hint">点击查看详情 →</div>
@@ -2097,16 +2110,16 @@ html.dark .export-btn:hover:not(:disabled) {
 
 .comp-card-metrics {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 10px;
   margin-top: 4px;
 }
 
 .comp-metric {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-size: 12px;
 }
 
