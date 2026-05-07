@@ -14,7 +14,7 @@ import {
   NAvatar,
   NDropdown
 } from 'naive-ui';
-import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, BrushOutline, MedkitOutline, HeartOutline, PersonCircleOutline } from '@vicons/ionicons5';
+import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, BrushOutline, MedkitOutline, HeartOutline, PersonCircleOutline, DocumentTextOutline } from '@vicons/ionicons5';
 
 // 图标组件映射（用于抽屉菜单渲染）
 const iconComponentMap = {
@@ -29,6 +29,7 @@ const iconComponentMap = {
   'health-events': MedicalOutline,
   'weight-logs': ScaleOutline,
   'leaderboard': TrophyOutline,
+  'activity-log': DocumentTextOutline,
   'settings': PersonCircleOutline,
   'admin': Settings,
 };
@@ -50,6 +51,7 @@ import WeightLogsView from '@/views/WeightLogsView.vue';
 import LeaderboardView from '@/views/LeaderboardView.vue';
 import HealthOverviewView from '@/views/HealthOverviewView.vue';
 import SettingsView from '@/views/SettingsView.vue';
+import ActivityLogView from '@/views/ActivityLogView.vue';
 
 import AuthModal from '@/components/AuthModal.vue';
 import PetDetailModal from '@/components/PetDetailModal.vue';
@@ -207,7 +209,8 @@ const menuOptions = computed(() => {
     { label: '用药记录', key: 'medication' },
     { label: '健康事件', key: 'health-events' },
     { label: '体重管理', key: 'weight-logs' },
-    { label: '排行榜', key: 'leaderboard' }
+    { label: '排行榜', key: 'leaderboard' },
+    { label: '活动日志', key: 'activity-log' }
   ];
 
   if (authStore.isAuthenticated) {
@@ -545,6 +548,7 @@ onMounted(async () => {
                     <HealthEventsView v-if="activeKey === 'health-events'" />
                     <WeightLogsView v-if="activeKey === 'weight-logs'" />
                     <LeaderboardView v-if="activeKey === 'leaderboard'" />
+                    <ActivityLogView v-if="activeKey === 'activity-log'" />
                     <SettingsView v-if="activeKey === 'settings'" />
                     <AdminPage v-if="activeKey === 'admin'" />
                   </div>

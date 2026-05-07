@@ -152,6 +152,11 @@ export const saveNotificationPrefs = (prefs) => {
   return apiClient.put('/api/notifications/prefs', prefs);
 };
 
+// --- 活动日志 API ---
+export const fetchActivityLog = (params = {}) => {
+  return apiClient.get('/api/activity-log', { params });
+};
+
 export const fetchWeightLogsPage = (params = { pageNum: 1, pageSize: 20 }) => {
   return apiClient.get('/api/weight-logs/page', { params });
 };
