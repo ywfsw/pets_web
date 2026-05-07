@@ -2,7 +2,7 @@
 
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { login as apiLogin, register as apiRegister, getUserInfo as apiGetUserInfo, logout as apiLogout } from '@/api.js';
+import { login as apiLogin, register as apiRegister, getUserInfo as apiGetUserInfo, logout as apiLogout, changePassword as apiChangePassword } from '@/api.js';
 
 // (❗) 定义一个叫 'auth' 的 store (仓库)
 export const useAuthStore = defineStore('auth', () => {
@@ -94,6 +94,27 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function changePassword(oldPassword, newPassword) {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      await apiChangePassword({ oldPassword, newPassword });
+      loading.value = false;
+      // 密码修改成功后自动登出
+      isAuthenticated.value = false;
+      userInfo.value = null;
+      isAdmin.value = false;
+      localStorage.removeItem('token');
+      localStorage.removeItem('tokenName');
+      return true;
+    } catch (err) {
+      error.value = err.response?.data?.error || '修改密码失败';
+      loading.value = false;
+      return false;
+    }
+  }
+
   // 处理token过期/无效的回调（供api.js调用）
   function handleTokenInvalid() {
     logout();
@@ -114,6 +135,7 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     register,
     logout,
+    changePassword,
     handleTokenInvalid
   };
 });

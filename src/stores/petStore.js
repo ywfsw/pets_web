@@ -10,6 +10,8 @@ import {
   fetchPetPage,
     fetchUpcomingEvents,
     fetchNotificationSummary,
+    fetchNotificationPrefs,
+    saveNotificationPrefs as saveNotificationPrefsApi,
     likePet,
     fetchPetDetail,
     createPet,
@@ -264,6 +266,21 @@ import {
         notificationSummary.value = response.data || [];
       } catch (err) { console.error("加载通知汇总失败:", err); }
       finally { loadingNotificationSummary.value = false; }
+    }
+
+    const notificationPrefs = ref(null);
+    async function loadNotificationPrefs() {
+      try {
+        const response = await fetchNotificationPrefs();
+        notificationPrefs.value = response.data;
+      } catch (err) { console.error("加载通知偏好失败:", err); }
+    }
+    async function updateNotificationPrefs(prefs) {
+      try {
+        await saveNotificationPrefsApi(prefs);
+        notificationPrefs.value = prefs;
+        await loadNotificationSummary();
+      } catch (err) { console.error("保存通知偏好失败:", err); throw err; }
     }
   
     /**
@@ -1009,7 +1026,7 @@ import {
       sortOption,
       pageSelectedPets,
       upcomingEvents, loadingUpcoming,
-      notificationSummary, loadingNotificationSummary,
+      notificationSummary, loadingNotificationSummary, notificationPrefs,
       loadingList,
       detailModal,
       petFormModal,
@@ -1033,7 +1050,7 @@ import {
 
       // Actions
       loadUpcomingEvents,
-      loadNotificationSummary,
+      loadNotificationSummary, loadNotificationPrefs, updateNotificationPrefs,
       loadPetList,
       loadPetLeaderboard, // (❗)
       loadFullLeaderboard,

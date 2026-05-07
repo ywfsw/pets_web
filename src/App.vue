@@ -14,7 +14,7 @@ import {
   NAvatar,
   NDropdown
 } from 'naive-ui';
-import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, BrushOutline, MedkitOutline, HeartOutline } from '@vicons/ionicons5';
+import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, BrushOutline, MedkitOutline, HeartOutline, PersonCircleOutline } from '@vicons/ionicons5';
 
 // 图标组件映射（用于抽屉菜单渲染）
 const iconComponentMap = {
@@ -29,6 +29,7 @@ const iconComponentMap = {
   'health-events': MedicalOutline,
   'weight-logs': ScaleOutline,
   'leaderboard': TrophyOutline,
+  'settings': PersonCircleOutline,
   'admin': Settings,
 };
 
@@ -48,6 +49,7 @@ import HealthEventsView from '@/views/HealthEventsView.vue';
 import WeightLogsView from '@/views/WeightLogsView.vue';
 import LeaderboardView from '@/views/LeaderboardView.vue';
 import HealthOverviewView from '@/views/HealthOverviewView.vue';
+import SettingsView from '@/views/SettingsView.vue';
 
 import AuthModal from '@/components/AuthModal.vue';
 import PetDetailModal from '@/components/PetDetailModal.vue';
@@ -208,6 +210,10 @@ const menuOptions = computed(() => {
     { label: '排行榜', key: 'leaderboard' }
   ];
 
+  if (authStore.isAuthenticated) {
+    options.push({ label: '账号设置', key: 'settings' });
+  }
+
   if (authStore.isAuthenticated && authStore.isAdmin) {
     options.push({ label: '后台管理', key: 'admin' });
   }
@@ -217,6 +223,11 @@ const menuOptions = computed(() => {
 
 // 用户下拉菜单
 const userMenuOptions = [
+  {
+    label: '账号设置',
+    key: 'settings',
+    icon: () => h(NIcon, null, { default: () => h(PersonCircleOutline) })
+  },
   {
     label: '退出登录',
     key: 'logout',
@@ -396,6 +407,8 @@ const handleLogout = async () => {
 const handleUserMenuSelect = (key) => {
   if (key === 'logout') {
     handleLogout();
+  } else if (key === 'settings') {
+    handleMenuUpdate('settings');
   }
 };
 
@@ -532,6 +545,7 @@ onMounted(async () => {
                     <HealthEventsView v-if="activeKey === 'health-events'" />
                     <WeightLogsView v-if="activeKey === 'weight-logs'" />
                     <LeaderboardView v-if="activeKey === 'leaderboard'" />
+                    <SettingsView v-if="activeKey === 'settings'" />
                     <AdminPage v-if="activeKey === 'admin'" />
                   </div>
                 </Transition>

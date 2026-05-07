@@ -144,6 +144,14 @@ export const fetchNotificationSummary = () => {
   return apiClient.get('/api/notifications/summary');
 };
 
+export const fetchNotificationPrefs = () => {
+  return apiClient.get('/api/notifications/prefs');
+};
+
+export const saveNotificationPrefs = (prefs) => {
+  return apiClient.put('/api/notifications/prefs', prefs);
+};
+
 export const fetchWeightLogsPage = (params = { pageNum: 1, pageSize: 20 }) => {
   return apiClient.get('/api/weight-logs/page', { params });
 };
@@ -331,4 +339,8 @@ export const getUserInfo = () => {
 
 export const logout = () => {
   return apiClient.post('/api/auth/logout');
+};
+
+export const changePassword = (payload) => {
+  return apiClient.post('/api/auth/change-password', payload);
 };

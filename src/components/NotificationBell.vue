@@ -12,6 +12,54 @@ const isRefreshing = ref(false)
 let refreshTimer = null
 const REFRESH_INTERVAL = 5 * 60 * 1000
 
+const showSettings = ref(false)
+const savingPrefs = ref(false)
+const localPrefs = ref({
+  healthEnabled: true,
+  medicationEnabled: true,
+  feedingEnabled: true,
+  bathingEnabled: true,
+  birthdayEnabled: true,
+  healthDaysBefore: 7,
+  birthdayDaysBefore: 7
+})
+
+const settingTypes = [
+  { key: 'healthEnabled', icon: '🩺', label: '健康事件提醒', color: '#EF4444' },
+  { key: 'medicationEnabled', icon: '💊', label: '用药记录提醒', color: '#8B5CF6' },
+  { key: 'feedingEnabled', icon: '🍽️', label: '喂养提醒', color: '#F59E0B' },
+  { key: 'bathingEnabled', icon: '🛁', label: '美容提醒', color: '#06B6D4' },
+  { key: 'birthdayEnabled', icon: '🎂', label: '生日提醒', color: '#EC4899' }
+]
+
+function openSettings() {
+  if (petStore.notificationPrefs) {
+    localPrefs.value = { ...petStore.notificationPrefs }
+  }
+  showSettings.value = true
+}
+
+function closeSettings() {
+  showSettings.value = false
+}
+
+async function savePrefs() {
+  savingPrefs.value = true
+  try {
+    await petStore.updateNotificationPrefs({ ...localPrefs.value })
+    showSettings.value = false
+  } finally {
+    savingPrefs.value = false
+  }
+}
+
+function onDaysChange(key, val) {
+  const num = parseInt(val, 10)
+  if (!isNaN(num) && num >= 1 && num <= 90) {
+    localPrefs.value[key] = num
+  }
+}
+
 const allNotifications = computed(() => petStore.notificationSummary || [])
 
 const criticalNotifs = computed(() =>
@@ -54,7 +102,11 @@ async function refreshNotifications() {
 function togglePanel() {
   isOpen.value = !isOpen.value
   if (isOpen.value) {
+    showSettings.value = false
     refreshNotifications()
+    if (!petStore.notificationPrefs) {
+      petStore.loadNotificationPrefs()
+    }
   }
 }
 
@@ -162,29 +214,65 @@ onUnmounted(() => {
         <div class="notif-panel-header">
           <span class="notif-panel-title">🔔 通知中心</span>
           <div class="notif-header-right">
-            <span v-if="isRefreshing" class="notif-refresh-dot"></span>
-            <span v-if="allNotifications.length > 0" class="notif-panel-count">
+            <button class="notif-settings-btn" :class="{ active: showSettings }" @click.stop="showSettings ? closeSettings() : openSettings()" title="通知设置">⚙️</button>
+            <span v-if="isRefreshing && !showSettings" class="notif-refresh-dot"></span>
+            <span v-if="!showSettings && allNotifications.length > 0" class="notif-panel-count">
               {{ allNotifications.length }} 条提醒
             </span>
           </div>
         </div>
 
         <div class="notif-panel-body">
+          <!-- 设置面板 -->
+          <div v-if="showSettings" class="notif-settings">
+            <div class="notif-settings-title">📋 通知类型开关</div>
+            <div v-for="st in settingTypes" :key="st.key" class="notif-setting-row">
+              <span class="notif-setting-icon" :style="{ background: st.color + '18' }">{{ st.icon }}</span>
+              <span class="notif-setting-label">{{ st.label }}</span>
+              <label class="notif-toggle">
+                <input type="checkbox" v-model="localPrefs[st.key]" />
+                <span class="notif-toggle-slider" :style="localPrefs[st.key] ? { background: st.color } : {}"></span>
+              </label>
+            </div>
+
+            <div class="notif-settings-title" style="margin-top: 14px;">📅 提醒提前天数</div>
+            <div class="notif-threshold-row">
+              <span class="notif-threshold-icon">🩺</span>
+              <span class="notif-threshold-label">健康事件提前</span>
+              <input type="number" class="notif-threshold-input" min="1" max="90"
+                :value="localPrefs.healthDaysBefore"
+                @input="onDaysChange('healthDaysBefore', $event.target.value)" />
+              <span class="notif-threshold-unit">天</span>
+            </div>
+            <div class="notif-threshold-row">
+              <span class="notif-threshold-icon">🎂</span>
+              <span class="notif-threshold-label">生日提醒提前</span>
+              <input type="number" class="notif-threshold-input" min="1" max="90"
+                :value="localPrefs.birthdayDaysBefore"
+                @input="onDaysChange('birthdayDaysBefore', $event.target.value)" />
+              <span class="notif-threshold-unit">天</span>
+            </div>
+
+            <button class="notif-settings-save" :disabled="savingPrefs" @click.stop="savePrefs">
+              {{ savingPrefs ? '保存中...' : '✅ 保存设置' }}
+            </button>
+          </div>
+
           <!-- 无通知 -->
-          <div v-if="allNotifications.length === 0 && !isRefreshing" class="notif-empty">
+          <div v-if="!showSettings && allNotifications.length === 0 && !isRefreshing" class="notif-empty">
             <span class="notif-empty-icon">✨</span>
             <span class="notif-empty-text">暂无待处理提醒</span>
             <span class="notif-empty-sub">所有宠物都很健康！</span>
           </div>
 
           <!-- 加载中 -->
-          <div v-if="isRefreshing && allNotifications.length === 0" class="notif-loading">
+          <div v-if="!showSettings && isRefreshing && allNotifications.length === 0" class="notif-loading">
             <div class="notif-loading-dot"></div>
             <span class="notif-loading-text">正在加载...</span>
           </div>
 
           <!-- 紧急 & 今日 -->
-          <div v-if="criticalNotifs.length > 0" class="notif-group">
+          <div v-if="!showSettings && criticalNotifs.length > 0" class="notif-group">
             <div class="notif-group-label" style="color: #EF4444;">
               <span>⚠️</span> 需要处理 ({{ criticalNotifs.length }})
             </div>
@@ -217,7 +305,7 @@ onUnmounted(() => {
           </div>
 
           <!-- 提醒类 -->
-          <div v-if="warningNotifs.length > 0" class="notif-group">
+          <div v-if="!showSettings && warningNotifs.length > 0" class="notif-group">
             <div class="notif-group-label" style="color: #F97316;">
               <span>📋</span> 提醒 ({{ warningNotifs.length }})
             </div>
@@ -250,7 +338,7 @@ onUnmounted(() => {
           </div>
 
           <!-- 信息类 -->
-          <div v-if="infoNotifs.length > 0" class="notif-group">
+          <div v-if="!showSettings && infoNotifs.length > 0" class="notif-group">
             <div class="notif-group-label" style="color: #3B82F6;">
               <span>ℹ️</span> 信息 ({{ infoNotifs.length }})
             </div>
@@ -810,5 +898,250 @@ onUnmounted(() => {
 
 .dark-mode .notif-item-birthday .notif-item-event {
   color: #F9A8D4;
+}
+
+/* Settings Button */
+.notif-settings-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  border: none;
+  background: rgba(255, 155, 168, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: 0;
+}
+
+.notif-settings-btn:hover {
+  background: rgba(255, 155, 168, 0.15);
+  transform: rotate(30deg) scale(1.1);
+}
+
+.notif-settings-btn.active {
+  background: rgba(255, 155, 168, 0.2);
+  transform: rotate(0deg);
+}
+
+/* Settings Panel */
+.notif-settings {
+  padding: 4px 16px 12px;
+  animation: settings-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes settings-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.notif-settings-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9CA3AF;
+  padding: 8px 0 6px;
+}
+
+.dark-mode .notif-settings-title {
+  color: #777;
+}
+
+.notif-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.notif-setting-row:hover {
+  background: rgba(255, 155, 168, 0.06);
+}
+
+.notif-setting-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.notif-setting-label {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2D2D2D;
+}
+
+.dark-mode .notif-setting-label {
+  color: #E8E8E8;
+}
+
+/* Toggle Switch */
+.notif-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.notif-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.notif-toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  background: #D1D5DB;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.notif-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.notif-toggle input:checked + .notif-toggle-slider {
+  background: #FF7A8A;
+}
+
+.notif-toggle input:checked + .notif-toggle-slider::before {
+  transform: translateX(18px);
+}
+
+.dark-mode .notif-toggle-slider {
+  background: #4B4B6B;
+}
+
+.dark-mode .notif-toggle input:checked + .notif-toggle-slider {
+  background: #FF7A8A;
+}
+
+/* Threshold Rows */
+.notif-threshold-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.notif-threshold-row:hover {
+  background: rgba(255, 155, 168, 0.06);
+}
+
+.notif-threshold-icon {
+  font-size: 15px;
+  flex-shrink: 0;
+  width: 30px;
+  text-align: center;
+}
+
+.notif-threshold-label {
+  flex: 1;
+  font-size: 13px;
+  color: #4A4A4A;
+}
+
+.dark-mode .notif-threshold-label {
+  color: #C8C8C8;
+}
+
+.notif-threshold-input {
+  width: 54px;
+  height: 30px;
+  border: 1px solid rgba(255, 155, 168, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 245, 247, 0.5);
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2D2D2D;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.notif-threshold-input:focus {
+  border-color: #FF7A8A;
+  box-shadow: 0 0 0 3px rgba(255, 122, 138, 0.1);
+}
+
+.dark-mode .notif-threshold-input {
+  background: rgba(61, 61, 92, 0.5);
+  border-color: rgba(255, 155, 168, 0.12);
+  color: #E8E8E8;
+}
+
+.notif-threshold-unit {
+  font-size: 12px;
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+/* Save Button */
+.notif-settings-save {
+  width: 100%;
+  margin-top: 14px;
+  padding: 10px 0;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #FF7A8A, #FF9DB5);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.notif-settings-save:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 122, 138, 0.35);
+}
+
+.notif-settings-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.notif-settings-save::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.notif-settings-save:hover::after {
+  left: 100%;
 }
 </style>
