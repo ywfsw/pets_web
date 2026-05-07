@@ -1035,12 +1035,12 @@ onMounted(() => {
   margin: 0;
 }
 
-:root.dark .comparison-hint {
+:global(.dark-mode) .comparison-hint {
   background: rgba(16, 185, 129, 0.08);
   border-color: rgba(16, 185, 129, 0.15);
 }
 
-:root.dark .hint-text {
+:global(.dark-mode) .hint-text {
   color: #9ca3af;
 }
 
@@ -1815,24 +1815,24 @@ onMounted(() => {
   50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
 }
 
-html.dark .month-pill {
+:global(.dark-mode) .month-pill {
   background: rgba(30, 30, 40, 0.5);
   border-color: rgba(255, 255, 255, 0.08);
   color: #9CA3AF;
 }
 
-html.dark .month-pill:hover {
+:global(.dark-mode) .month-pill:hover {
   background: rgba(16, 185, 129, 0.1);
   color: #34D399;
 }
 
-html.dark .export-btn {
+:global(.dark-mode) .export-btn {
   background: rgba(30, 30, 40, 0.5);
   border-color: rgba(16, 185, 129, 0.15);
   color: #34D399;
 }
 
-html.dark .export-btn:hover:not(:disabled) {
+:global(.dark-mode) .export-btn:hover:not(:disabled) {
   background: rgba(16, 185, 129, 0.12);
   border-color: rgba(16, 185, 129, 0.25);
 }

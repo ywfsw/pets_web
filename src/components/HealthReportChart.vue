@@ -557,40 +557,40 @@ const maxEvents = computed(() => {
 }
 
 /* Dark theme */
-html.dark .summary-stat {
+:global(.dark-mode) .summary-stat {
   background: rgba(30, 30, 40, 0.6);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-html.dark .summary-value {
+:global(.dark-mode) .summary-value {
   color: #F3F4F6;
 }
 
-html.dark .chart-wrapper {
+:global(.dark-mode) .chart-wrapper {
   background: rgba(30, 30, 40, 0.4);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-html.dark .month-card {
+:global(.dark-mode) .month-card {
   background: rgba(30, 30, 40, 0.5);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-html.dark .month-label {
+:global(.dark-mode) .month-label {
   color: #F3F4F6;
 }
 
-html.dark .bar-track {
+:global(.dark-mode) .bar-track {
   background: #2A2A3A;
 }
 
-html.dark .tooltip-bg {
+:global(.dark-mode) .tooltip-bg {
   fill: #1E1E28;
   opacity: 0.95;
 }
 
-html.dark .skeleton-stat,
-html.dark .skeleton-chart {
+:global(.dark-mode) .skeleton-stat,
+:global(.dark-mode) .skeleton-chart {
   background: linear-gradient(90deg, #1E1E28 25%, #2A2A3A 50%, #1E1E28 75%);
   background-size: 200% 100%;
 }

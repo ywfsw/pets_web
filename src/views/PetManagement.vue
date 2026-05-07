@@ -5,7 +5,6 @@ import { useAuthStore } from '@/stores/authStore.js';
 import { useDictionaryStore } from '@/stores/dictionaryStore.js';
 import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 import { useMessage } from 'naive-ui';
-import PetLeaderboard from '@/components/PetLeaderboard.vue';
 
 import {
   NButton,
@@ -272,11 +271,6 @@ const handleLike = async (petId) => {
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- 排行榜 -->
-    <div class="section-entrance section-delay-1">
-      <PetLeaderboard />
     </div>
 
     <!-- 事件提醒区域 -->

@@ -860,86 +860,86 @@ watch(currentTab, (newTab) => {
   }
 }
 
-html.dark .hero-inner {
+:global(.dark-mode) .hero-inner {
   background: rgba(30, 30, 40, 0.85);
 }
 
-html.dark .hero-title .hero-title-text {
+:global(.dark-mode) .hero-title .hero-title-text {
   background: linear-gradient(135deg, #FFB8C4 0%, #D4A5FF 50%, #A5B4FC 100%);
   -webkit-background-clip: text;
   background-clip: text;
 }
 
-html.dark .hero-subtitle {
+:global(.dark-mode) .hero-subtitle {
   color: #9CA3AF;
 }
 
-html.dark .hero-stats-bar {
+:global(.dark-mode) .hero-stats-bar {
   background: rgba(30, 30, 40, 0.6);
   border-color: rgba(255, 155, 168, 0.1);
 }
 
-html.dark .hero-stat-value {
+:global(.dark-mode) .hero-stat-value {
   color: #F3F4F6;
 }
 
-html.dark .hero-stat-label {
+:global(.dark-mode) .hero-stat-label {
   color: #9CA3AF;
 }
 
-html.dark .hero-shape {
+:global(.dark-mode) .hero-shape {
   opacity: 0.12;
 }
 
-html.dark .tabs-header {
+:global(.dark-mode) .tabs-header {
   background: #1E1E28;
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-html.dark .tab-pill {
+:global(.dark-mode) .tab-pill {
   color: #9CA3AF;
 }
 
-html.dark .tab-pill:hover {
+:global(.dark-mode) .tab-pill:hover {
   color: #F3F4F6;
   background: rgba(255, 255, 255, 0.04);
 }
 
-html.dark .section-card {
+:global(.dark-mode) .section-card {
   background: #1E1E28;
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-html.dark .section-card:hover {
+:global(.dark-mode) .section-card:hover {
   box-shadow: 0 4px 20px rgba(192, 132, 252, 0.08);
 }
 
-html.dark .section-card-title {
+:global(.dark-mode) .section-card-title {
   color: #F3F4F6;
 }
 
-html.dark .empty-icon {
+:global(.dark-mode) .empty-icon {
   filter: brightness(0.9);
 }
 
-html.dark .empty-title {
+:global(.dark-mode) .empty-title {
   color: #F3F4F6;
 }
 
-html.dark .empty-desc {
+:global(.dark-mode) .empty-desc {
   color: #9CA3AF;
 }
 
-html.dark .custom-empty {
+:global(.dark-mode) .custom-empty {
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-html.dark .skeleton-cell {
+:global(.dark-mode) .skeleton-cell {
   background: linear-gradient(90deg, #1E1E28 25%, #2A2A3A 50%, #1E1E28 75%);
   background-size: 200% 100%;
 }
 
-html.dark .skeleton-row {
+:global(.dark-mode) .skeleton-row {
   border-color: rgba(255, 255, 255, 0.04);
 }
 

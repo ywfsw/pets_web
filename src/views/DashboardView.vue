@@ -6,7 +6,6 @@ import { useCloudinaryImage } from '@/composables/useCloudinaryImage.js';
 import { useCountUp } from '@/composables/useCountUp.js';
 import { fetchDashboardSummary } from '@/api.js';
 import { getEventTypeIcon } from '@/utils/eventTypeIcon.js';
-import PetLeaderboard from '@/components/PetLeaderboard.vue';
 import {
   NCard,
   NIcon,
@@ -508,11 +507,6 @@ const computeAge = (birthday) => {
               <span class="quick-action-label">成长时间线</span>
             </div>
           </div>
-        </div>
-
-        <!-- 萌宠点赞榜 -->
-        <div class="section-entrance" style="--enter-delay: 0.12s">
-          <PetLeaderboard v-if="dashboardData.totalPets > 0" />
         </div>
 
         <!-- 宠物速览 -->
