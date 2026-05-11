@@ -491,11 +491,11 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   overflow: hidden;
 }
 
-:global(.dark-mode) .hero-gradient-frame {
+:root[data-theme="dark"] .hero-gradient-frame {
   box-shadow: 0 8px 32px rgba(16, 185, 129, 0.12);
 }
 
-:global(.dark-mode) .hero-inner {
+:root[data-theme="dark"] .hero-inner {
   background: linear-gradient(135deg, rgba(30, 40, 35, 0.95) 0%, rgba(25, 45, 35, 0.92) 100%);
 }
 
@@ -514,7 +514,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   animation: hero-float 6s ease-in-out infinite;
 }
 
-:global(.dark-mode) .hero-shape {
+:root[data-theme="dark"] .hero-shape {
   opacity: 0.25;
 }
 
@@ -553,7 +553,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   background-clip: text;
 }
 
-:global(.dark-mode) .hero-title {
+:root[data-theme="dark"] .hero-title {
   background: linear-gradient(135deg, #34D399 0%, #6EE7B7 50%, #A7F3D0 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -577,7 +577,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .hero-subtitle {
+:root[data-theme="dark"] .hero-subtitle {
   color: #6EE7B7;
 }
 
@@ -597,7 +597,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   z-index: 1;
 }
 
-:global(.dark-mode) .hero-stats-bar {
+:root[data-theme="dark"] .hero-stats-bar {
   background: rgba(30, 50, 40, 0.5);
   border-color: rgba(16, 185, 129, 0.1);
 }
@@ -619,7 +619,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   line-height: 1;
 }
 
-:global(.dark-mode) .hero-stat-value {
+:root[data-theme="dark"] .hero-stat-value {
   color: #34D399;
 }
 
@@ -627,7 +627,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   color: #059669;
 }
 
-:global(.dark-mode) .hero-stat-value-completed {
+:root[data-theme="dark"] .hero-stat-value-completed {
   color: #6EE7B7;
 }
 
@@ -635,7 +635,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   color: #DC2626;
 }
 
-:global(.dark-mode) .hero-stat-value-overdue {
+:root[data-theme="dark"] .hero-stat-value-overdue {
   color: #FCA5A5;
 }
 
@@ -645,7 +645,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .hero-stat-label {
+:root[data-theme="dark"] .hero-stat-label {
   color: #6EE7B7;
 }
 
@@ -655,7 +655,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   background: rgba(16, 185, 129, 0.15);
 }
 
-:global(.dark-mode) .hero-stat-divider {
+:root[data-theme="dark"] .hero-stat-divider {
   background: rgba(52, 211, 153, 0.15);
 }
 
@@ -720,12 +720,12 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   background: rgba(107, 114, 128, 0.08);
 }
 
-:global(.dark-mode) .selected-pet-hint {
+:root[data-theme="dark"] .selected-pet-hint {
   color: #34D399;
   background: rgba(16, 185, 129, 0.12);
 }
 
-:global(.dark-mode) .all-pets-hint {
+:root[data-theme="dark"] .all-pets-hint {
   color: #9CA3AF;
   background: rgba(156, 163, 175, 0.1);
 }
@@ -760,18 +760,18 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
-:global(.dark-mode) .status-tab {
+:root[data-theme="dark"] .status-tab {
   background: #1E2A24;
   border-color: #2D4A3A;
   color: #88A8A0;
 }
 
-:global(.dark-mode) .status-tab:hover {
+:root[data-theme="dark"] .status-tab:hover {
   border-color: #10B981;
   color: #34D399;
 }
 
-:global(.dark-mode) .status-tab.active {
+:root[data-theme="dark"] .status-tab.active {
   background: linear-gradient(135deg, #059669 0%, #10B981 100%);
   border-color: transparent;
   color: white;
@@ -814,7 +814,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-record {
+:root[data-theme="dark"] .skeleton-record {
   background: #1E2A24;
 }
 
@@ -828,7 +828,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .skeleton-icon-circle {
+:root[data-theme="dark"] .skeleton-icon-circle {
   background: linear-gradient(90deg, #2D4A3A 25%, #3A5A4A 50%, #2D4A3A 75%);
   background-size: 200% 100%;
 }
@@ -848,7 +848,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-line {
+:root[data-theme="dark"] .skeleton-line {
   background: linear-gradient(90deg, #2D4A3A 25%, #3A5A4A 50%, #2D4A3A 75%);
   background-size: 200% 100%;
 }
@@ -875,7 +875,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   border: 2px dashed #D1FAE5;
 }
 
-:global(.dark-mode) .empty-state {
+:root[data-theme="dark"] .empty-state {
   background: #1E2A24;
   border-color: #2D4A3A;
 }
@@ -917,7 +917,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   margin-bottom: 8px;
 }
 
-:global(.dark-mode) .empty-title {
+:root[data-theme="dark"] .empty-title {
   color: #E8E8E8;
 }
 
@@ -927,7 +927,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   margin-bottom: 20px;
 }
 
-:global(.dark-mode) .empty-desc {
+:root[data-theme="dark"] .empty-desc {
   color: #88A8A0;
 }
 
@@ -956,7 +956,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   animation-delay: var(--item-delay, 0s);
 }
 
-:global(.dark-mode) .event-item {
+:root[data-theme="dark"] .event-item {
   background: #1E2A24;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -973,7 +973,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   transform: translateX(3px);
 }
 
-:global(.dark-mode) .event-item:hover {
+:root[data-theme="dark"] .event-item:hover {
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.08);
 }
 
@@ -1024,7 +1024,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   transition: transform 0.25s ease;
 }
 
-:global(.dark-mode) .event-icon-wrap {
+:root[data-theme="dark"] .event-icon-wrap {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.1) 100%);
 }
 
@@ -1054,7 +1054,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   color: #2D2D2D;
 }
 
-:global(.dark-mode) .event-type-name {
+:root[data-theme="dark"] .event-type-name {
   color: #E8E8E8;
 }
 
@@ -1067,7 +1067,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   white-space: nowrap;
 }
 
-:global(.dark-mode) .event-meta {
+:root[data-theme="dark"] .event-meta {
   color: #88A8A0;
 }
 
@@ -1075,7 +1075,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   color: #6B6B6B;
 }
 
-:global(.dark-mode) .event-date {
+:root[data-theme="dark"] .event-date {
   color: #A7F3D0;
 }
 
@@ -1083,7 +1083,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   color: #6B6B6B;
 }
 
-:global(.dark-mode) .event-due {
+:root[data-theme="dark"] .event-due {
   color: #A7F3D0;
 }
 
@@ -1093,7 +1093,7 @@ watch(() => petStore.healthEventFormModal.show, (show) => {
   text-overflow: ellipsis;
 }
 
-:global(.dark-mode) .event-notes {
+:root[data-theme="dark"] .event-notes {
   color: #88A8A0;
 }
 

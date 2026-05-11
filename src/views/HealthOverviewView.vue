@@ -1035,12 +1035,12 @@ onMounted(() => {
   margin: 0;
 }
 
-:global(.dark-mode) .comparison-hint {
+:root[data-theme="dark"] .comparison-hint {
   background: rgba(16, 185, 129, 0.08);
   border-color: rgba(16, 185, 129, 0.15);
 }
 
-:global(.dark-mode) .hint-text {
+:root[data-theme="dark"] .hint-text {
   color: #9ca3af;
 }
 
@@ -1815,24 +1815,24 @@ onMounted(() => {
   50% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
 }
 
-:global(.dark-mode) .month-pill {
+:root[data-theme="dark"] .month-pill {
   background: rgba(30, 30, 40, 0.5);
   border-color: rgba(255, 255, 255, 0.08);
   color: #9CA3AF;
 }
 
-:global(.dark-mode) .month-pill:hover {
+:root[data-theme="dark"] .month-pill:hover {
   background: rgba(16, 185, 129, 0.1);
   color: #34D399;
 }
 
-:global(.dark-mode) .export-btn {
+:root[data-theme="dark"] .export-btn {
   background: rgba(30, 30, 40, 0.5);
   border-color: rgba(16, 185, 129, 0.15);
   color: #34D399;
 }
 
-:global(.dark-mode) .export-btn:hover:not(:disabled) {
+:root[data-theme="dark"] .export-btn:hover:not(:disabled) {
   background: rgba(16, 185, 129, 0.12);
   border-color: rgba(16, 185, 129, 0.25);
 }
@@ -1850,12 +1850,12 @@ onMounted(() => {
 }
 
 /* Dark mode */
-:global(.dark-mode) .hero-card {
+:root[data-theme="dark"] .hero-card {
   border-color: rgba(16, 185, 129, 0.15);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-:global(.dark-mode) .hero-bg {
+:root[data-theme="dark"] .hero-bg {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.08), rgba(59, 130, 246, 0.06));
 }
 
@@ -2153,152 +2153,152 @@ onMounted(() => {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-:global(.dark-mode) .hero-card::before {
+:root[data-theme="dark"] .hero-card::before {
   background: rgba(30, 30, 50, 0.7);
 }
 
-:global(.dark-mode) .pet-info-card,
-:global(.dark-mode) .health-score-card,
-:global(.dark-mode) .stat-item,
-:global(.dark-mode) .weight-section,
-:global(.dark-mode) .sub-section,
-:global(.dark-mode) .upcoming-section,
-:global(.dark-mode) .activity-section,
-:global(.dark-mode) .qa-btn {
+:root[data-theme="dark"] .pet-info-card,
+:root[data-theme="dark"] .health-score-card,
+:root[data-theme="dark"] .stat-item,
+:root[data-theme="dark"] .weight-section,
+:root[data-theme="dark"] .sub-section,
+:root[data-theme="dark"] .upcoming-section,
+:root[data-theme="dark"] .activity-section,
+:root[data-theme="dark"] .qa-btn {
   background: rgba(40, 40, 60, 0.5);
   border-color: rgba(16, 185, 129, 0.1);
 }
 
-:global(.dark-mode) .empty-card {
+:root[data-theme="dark"] .empty-card {
   background: rgba(40, 40, 60, 0.5);
   border-color: rgba(16, 185, 129, 0.15);
 }
 
-:global(.dark-mode) .pet-name {
+:root[data-theme="dark"] .pet-name {
   color: #e5e5e5;
 }
 
-:global(.dark-mode) .stat-val {
+:root[data-theme="dark"] .stat-val {
   color: #e5e5e5;
 }
 
-:global(.dark-mode) .score-value {
+:root[data-theme="dark"] .score-value {
   color: #e5e5e5;
 }
 
-:global(.dark-mode) .section-title {
+:root[data-theme="dark"] .section-title {
   color: #e5e5e5;
 }
 
-:global(.dark-mode) .med-name {
+:root[data-theme="dark"] .med-name {
   color: #e5e5e5;
 }
 
-:global(.dark-mode) .upcoming-label {
+:root[data-theme="dark"] .upcoming-label {
   color: #e5e5e5;
 }
 
-:global(.dark-mode) .score-bg-ring {
+:root[data-theme="dark"] .score-bg-ring {
   stroke: rgba(16, 185, 129, 0.15);
 }
 
-:global(.dark-mode) .med-item {
+:root[data-theme="dark"] .med-item {
   background: rgba(167, 139, 250, 0.08);
 }
 
-:global(.dark-mode) .med-item:hover {
+:root[data-theme="dark"] .med-item:hover {
   background: rgba(167, 139, 250, 0.15);
 }
 
-:global(.dark-mode) .type-bar-track {
+:root[data-theme="dark"] .type-bar-track {
   background: rgba(16, 185, 129, 0.12);
 }
 
-:global(.dark-mode) .upcoming-item {
+:root[data-theme="dark"] .upcoming-item {
   background: rgba(16, 185, 129, 0.05);
 }
 
-:global(.dark-mode) .upcoming-item:hover {
+:root[data-theme="dark"] .upcoming-item:hover {
   background: rgba(16, 185, 129, 0.1);
 }
 
-:global(.dark-mode) .activity-item:hover {
+:root[data-theme="dark"] .activity-item:hover {
   background: rgba(16, 185, 129, 0.08);
 }
 
-:global(.dark-mode) .qa-btn {
+:root[data-theme="dark"] .qa-btn {
   background: rgba(40, 40, 60, 0.45);
 }
 
-:global(.dark-mode) .qa-btn:hover {
+:root[data-theme="dark"] .qa-btn:hover {
   background: rgba(50, 50, 70, 0.7);
   color: #e5e5e5;
 }
 
-:global(.dark-mode) .qa-icon-wrap {
+:root[data-theme="dark"] .qa-icon-wrap {
   background: rgba(16, 185, 129, 0.1);
 }
 
-:global(.dark-mode) .qa-btn:hover .qa-icon-wrap {
+:root[data-theme="dark"] .qa-btn:hover .qa-icon-wrap {
   background: rgba(16, 185, 129, 0.18);
 }
 
-:global(.dark-mode) .comparison-section,
-:global(.dark-mode) .comp-pet-card {
+:root[data-theme="dark"] .comparison-section,
+:root[data-theme="dark"] .comp-pet-card {
   background: rgba(40, 40, 60, 0.5);
   border-color: rgba(16, 185, 129, 0.1);
 }
 
-:global(.dark-mode) .comp-top {
+:root[data-theme="dark"] .comp-top {
   border-color: rgba(16, 185, 129, 0.25);
   background: rgba(16, 185, 129, 0.06);
 }
 
-:global(.dark-mode) .comp-bar-track {
+:root[data-theme="dark"] .comp-bar-track {
   background: rgba(16, 185, 129, 0.1);
 }
 
-:global(.dark-mode) .comp-bar-name {
+:root[data-theme="dark"] .comp-bar-name {
   color: #d1d5db;
 }
 
-:global(.dark-mode) .comp-ring-bg {
+:root[data-theme="dark"] .comp-ring-bg {
   stroke: rgba(16, 185, 129, 0.12);
 }
 
-:global(.dark-mode) .comp-ring-val {
+:root[data-theme="dark"] .comp-ring-val {
   color: #e5e5e5;
 }
 
-:global(.dark-mode) .comp-card-name {
+:root[data-theme="dark"] .comp-card-name {
   color: #e5e5e5;
 }
 
-:global(.dark-mode) .comp-pet-card:hover {
+:root[data-theme="dark"] .comp-pet-card:hover {
   background: rgba(50, 50, 70, 0.6);
   box-shadow: 0 8px 24px rgba(16, 185, 129, 0.08);
 }
 
-:global(.dark-mode) .comp-skel-card {
+:root[data-theme="dark"] .comp-skel-card {
   background: rgba(40, 40, 60, 0.4);
 }
 
-:global(.dark-mode) .comp-bar-avatar-fb,
-:global(.dark-mode) .comp-card-avatar-fb {
+:root[data-theme="dark"] .comp-bar-avatar-fb,
+:root[data-theme="dark"] .comp-card-avatar-fb {
   background: rgba(16, 185, 129, 0.1);
 }
 
-:global(.dark-mode) .skeleton-card,
-:global(.dark-mode) .score-skeleton,
-:global(.dark-mode) .stat-skeleton,
-:global(.dark-mode) .chart-skeleton,
-:global(.dark-mode) .sub-skeleton,
-:global(.dark-mode) .qa-skeleton {
+:root[data-theme="dark"] .skeleton-card,
+:root[data-theme="dark"] .score-skeleton,
+:root[data-theme="dark"] .stat-skeleton,
+:root[data-theme="dark"] .chart-skeleton,
+:root[data-theme="dark"] .sub-skeleton,
+:root[data-theme="dark"] .qa-skeleton {
   background: rgba(40, 40, 60, 0.5);
   border-color: rgba(16, 185, 129, 0.1);
 }
 
-:global(.dark-mode) .skel-shimmer {
+:root[data-theme="dark"] .skel-shimmer {
   background: linear-gradient(90deg,
     rgba(16, 185, 129, 0.04) 25%,
     rgba(16, 185, 129, 0.08) 50%,
@@ -2307,7 +2307,7 @@ onMounted(() => {
   background-size: 200% 100%;
 }
 
-:global(.dark-mode) .quick-actions::before {
+:root[data-theme="dark"] .quick-actions::before {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(6, 182, 212, 0.04));
 }
 

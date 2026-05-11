@@ -52,8 +52,7 @@
 }
 
 /* CSS 变量 - 夜间模式 */
-[data-theme="dark"],
-.dark-mode {
+[data-theme="dark"] {
   /* 主色调 */
   --pet-primary: #FF9BA8;
   --pet-primary-hover: #FFB4C2;
@@ -232,7 +231,7 @@ body.dark-mode .n-layout,
   user-select: none;
 }
 
-.dark-mode .like-button-wrapper {
+[data-theme="dark"] .like-button-wrapper {
   background: linear-gradient(145deg, #3D3D5C 0%, #4D4D6C 100%);
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.2),
@@ -269,7 +268,7 @@ body.dark-mode .n-layout,
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-.dark-mode .like-count {
+[data-theme="dark"] .like-count {
   color: #FFB4C2;
   text-shadow: none;
 }
@@ -392,7 +391,7 @@ body.dark-mode .n-layout,
   border-radius: 50%;
 }
 
-.dark-mode .pet-decoration-1 {
+[data-theme="dark"] .pet-decoration-1 {
   background: radial-gradient(circle, rgba(255, 155, 168, 0.08) 0%, transparent 70%);
 }
 
@@ -405,6 +404,6 @@ body.dark-mode .n-layout,
   border-radius: 50%;
 }
 
-.dark-mode .pet-decoration-2 {
+[data-theme="dark"] .pet-decoration-2 {
   background: radial-gradient(circle, rgba(125, 211, 252, 0.06) 0%, transparent 70%);
 }

@@ -219,7 +219,7 @@ const chartData = computed(() => {
   border: 1px solid rgba(6, 182, 212, 0.15);
 }
 
-:global(.dark-mode) .chart-wrapper {
+:root[data-theme="dark"] .chart-wrapper {
   background: linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(14, 116, 144, 0.1) 100%);
   border-color: rgba(6, 182, 212, 0.12);
 }
@@ -255,7 +255,7 @@ const chartData = computed(() => {
   color: #0891B2;
 }
 
-:global(.dark-mode) .summary-value {
+:root[data-theme="dark"] .summary-value {
   color: #22D3EE;
 }
 
@@ -290,17 +290,17 @@ const chartData = computed(() => {
   font-weight: 600;
 }
 
-:global(.dark-mode) .time-range-btn {
+:root[data-theme="dark"] .time-range-btn {
   border-color: rgba(34, 211, 238, 0.15);
   color: #7DD3FC;
 }
 
-:global(.dark-mode) .time-range-btn:hover {
+:root[data-theme="dark"] .time-range-btn:hover {
   color: #22D3EE;
   border-color: rgba(34, 211, 238, 0.3);
 }
 
-:global(.dark-mode) .time-range-btn.active {
+:root[data-theme="dark"] .time-range-btn.active {
   background: rgba(34, 211, 238, 0.15);
   border-color: #22D3EE;
   color: #22D3EE;
@@ -312,7 +312,7 @@ const chartData = computed(() => {
   color: #334155;
 }
 
-:global(.dark-mode) .chart-svg {
+:root[data-theme="dark"] .chart-svg {
   color: #CBD5E1;
 }
 
@@ -329,7 +329,7 @@ const chartData = computed(() => {
   border: 1px dashed rgba(6, 182, 212, 0.2);
 }
 
-:global(.dark-mode) .chart-empty {
+:root[data-theme="dark"] .chart-empty {
   background: rgba(6, 182, 212, 0.06);
   border-color: rgba(34, 211, 238, 0.15);
   color: #7DD3FC;

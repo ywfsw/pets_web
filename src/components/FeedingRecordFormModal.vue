@@ -185,7 +185,7 @@ const handleClose = () => {
 .form-glass-card::-webkit-scrollbar { width: 4px; }
 .form-glass-card::-webkit-scrollbar-thumb { background: rgba(245, 158, 11, 0.2); border-radius: 4px; }
 
-.dark-mode .form-glass-card,
+[data-theme="dark"] .form-glass-card,
 [data-theme="dark"] .form-glass-card {
   background: rgba(37, 37, 66, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -225,13 +225,13 @@ const handleClose = () => {
   transform: rotate(90deg);
 }
 
-.dark-mode .form-close-btn,
+[data-theme="dark"] .form-close-btn,
 [data-theme="dark"] .form-close-btn {
   background: rgba(255, 255, 255, 0.06);
   color: #8888A0;
 }
 
-.dark-mode .form-close-btn:hover,
+[data-theme="dark"] .form-close-btn:hover,
 [data-theme="dark"] .form-close-btn:hover {
   background: rgba(245, 158, 11, 0.15);
   color: #FBBF24;
@@ -306,7 +306,7 @@ const handleClose = () => {
   font-weight: 500;
 }
 
-.dark-mode .form-subtitle,
+[data-theme="dark"] .form-subtitle,
 [data-theme="dark"] .form-subtitle {
   color: #8888A0;
 }
@@ -339,12 +339,12 @@ const handleClose = () => {
   border-radius: 14px !important;
 }
 
-.dark-mode .form-body :deep(.n-input),
+[data-theme="dark"] .form-body :deep(.n-input),
 [data-theme="dark"] .form-body :deep(.n-input) {
   border-color: #3D3D5C;
 }
 
-.dark-mode .form-body :deep(.n-input:hover),
+[data-theme="dark"] .form-body :deep(.n-input:hover),
 [data-theme="dark"] .form-body :deep(.n-input:hover) {
   box-shadow: 0 2px 12px rgba(245, 158, 11, 0.08);
 }
@@ -380,7 +380,7 @@ const handleClose = () => {
   background: rgba(0, 0, 0, 0.04) !important;
 }
 
-.dark-mode .cancel-btn:hover,
+[data-theme="dark"] .cancel-btn:hover,
 [data-theme="dark"] .cancel-btn:hover {
   background: rgba(255, 255, 255, 0.06) !important;
 }

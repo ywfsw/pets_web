@@ -10,11 +10,11 @@ import {
   NLayoutContent,
   NSwitch,
   NIcon,
-  darkTheme,
   NAvatar,
   NDropdown
 } from 'naive-ui';
 import { Moon, Sunny, PawOutline, Images, Settings, LogOutOutline, HomeOutline, TimeOutline, RestaurantOutline, MedicalOutline, ScaleOutline, TrophyOutline, BrushOutline, MedkitOutline, HeartOutline, PersonCircleOutline, DocumentTextOutline } from '@vicons/ionicons5';
+import { useTheme } from '@/composables/useTheme.js';
 
 // 图标组件映射（用于抽屉菜单渲染）
 const iconComponentMap = {
@@ -60,141 +60,8 @@ import DictItemFormModal from '@/components/DictItemFormModal.vue';
 import GlobalNaiveUIServices from '@/components/GlobalNaiveUIServices.vue';
 import NotificationBell from '@/components/NotificationBell.vue';
 
-// 宠物主题色 - 白天模式
-const lightThemeOverrides = {
-  common: {
-    primaryColor: '#FF9BA8',
-    primaryColorHover: '#FF7A8A',
-    primaryColorPressed: '#FF5A6A',
-    primaryColorSuppl: '#FFBFC5',
-    primaryColorDesc: '#FFB4C2',
-    infoColor: '#7DD3FC',
-    successColor: '#86EFAC',
-    warningColor: '#FCD34D',
-    errorColor: '#FCA5A5',
-    bodyColor: '#FFF9F5',
-    cardColor: '#FFFFFF',
-    modalColor: '#FFFFFF',
-    popoverColor: '#FFFFFF',
-    tableColor: '#FFFFFF',
-    inputColor: '#FFFFFF',
-    actionColor: '#FFF5F7',
-    borderColor: '#F0E6E0',
-    dividerColor: '#F5EDE8',
-    textColorBase: '#4A4A4A',
-    textColor1: '#2D2D2D',
-    textColor2: '#6B6B6B',
-    textColor3: '#9CA3AF',
-    borderRadius: '12px',
-    borderRadiusSmall: '8px',
-    fontFamily: '"Nunito", "PingFang SC", "Microsoft YaHei", sans-serif',
-  },
-  Button: {
-    borderRadiusMedium: '20px',
-    borderRadiusSmall: '12px',
-    borderRadiusLarge: '24px',
-    heightMedium: '40px',
-    fontWeight: '600',
-  },
-  Card: {
-    borderRadius: '20px',
-    paddingMedium: '20px',
-    boxShadow: '0 4px 20px rgba(255, 155, 168, 0.12)',
-  },
-  Input: {
-    borderRadius: '12px',
-    heightMedium: '40px',
-  },
-  DataTable: {
-    borderRadius: '16px',
-  },
-  Tag: {
-    borderRadius: '10px',
-  },
-  Avatar: {
-    borderRadius: '50%',
-  },
-  Menu: {
-    borderRadius: '12px',
-    itemBorderRadius: '10px',
-  },
-};
-
-// 宠物主题色 - 夜间模式
-const darkThemeOverrides = {
-  common: {
-    primaryColor: '#FF9BA8',
-    primaryColorHover: '#FFB4C2',
-    primaryColorPressed: '#FF7A8A',
-    primaryColorSuppl: '#FFBFC5',
-    primaryColorDesc: '#FFB4C2',
-    infoColor: '#7DD3FC',
-    successColor: '#86EFAC',
-    warningColor: '#FCD34D',
-    errorColor: '#FCA5A5',
-    bodyColor: '#1A1A2E',
-    cardColor: '#252542',
-    modalColor: '#252542',
-    popoverColor: '#252542',
-    tableColor: '#252542',
-    inputColor: '#1F1F3A',
-    actionColor: '#252542',
-    borderColor: '#3D3D5C',
-    dividerColor: '#3D3D5C',
-    textColorBase: '#E8E8E8',
-    textColor1: '#FFFFFF',
-    textColor2: '#B8B8CC',
-    textColor3: '#8888A0',
-    borderRadius: '12px',
-    borderRadiusSmall: '8px',
-    fontFamily: '"Nunito", "PingFang SC", "Microsoft YaHei", sans-serif',
-  },
-  Button: {
-    borderRadiusMedium: '20px',
-    borderRadiusSmall: '12px',
-    borderRadiusLarge: '24px',
-    heightMedium: '40px',
-    fontWeight: '600',
-  },
-  Card: {
-    borderRadius: '20px',
-    paddingMedium: '20px',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-  },
-  Input: {
-    borderRadius: '12px',
-    heightMedium: '40px',
-  },
-  DataTable: {
-    borderRadius: '16px',
-  },
-  Tag: {
-    borderRadius: '10px',
-  },
-  Avatar: {
-    borderRadius: '50%',
-  },
-  Menu: {
-    borderRadius: '12px',
-    itemBorderRadius: '10px',
-  },
-};
-
-// 主题状态
-const isDarkTheme = ref(false);
-const theme = computed(() => (isDarkTheme.value ? darkTheme : null));
-const themeOverrides = computed(() => isDarkTheme.value ? darkThemeOverrides : lightThemeOverrides);
-
-// 监听主题变化，动态设置 data-theme 属性
-watch(isDarkTheme, (dark) => {
-  if (dark) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-    document.body.classList.add('dark-mode');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-    document.body.classList.remove('dark-mode');
-  }
-}, { immediate: true });
+// 主题管理（composable 单例，含 localStorage 持久化 + OS 偏好检测）
+const { isDark, theme, themeOverrides, toggle } = useTheme();
 
 // 菜单选项 - 根据角色动态生成
 const menuOptions = computed(() => {
@@ -455,7 +322,7 @@ onMounted(async () => {
         <n-notification-provider>
           <n-dialog-provider>
             <GlobalNaiveUIServices />
-            <n-layout style="min-height: 100vh;" class="pet-layout" :class="{ 'dark-mode': isDarkTheme }">
+            <n-layout style="min-height: 100vh;" class="pet-layout" :class="{ 'dark-mode': isDark }">
               <!-- 毛玻璃浮动导航栏 -->
               <header class="glass-nav">
                 <div class="glass-nav-inner">
@@ -517,9 +384,9 @@ onMounted(async () => {
                     </n-button>
 
                     <!-- 主题切换 -->
-                    <button class="nav-theme-toggle" @click="isDarkTheme = !isDarkTheme">
+                    <button class="nav-theme-toggle" @click="toggle">
                       <transition name="theme-icon" mode="out-in">
-                        <n-icon v-if="isDarkTheme" :component="Moon" size="18" key="moon" />
+                        <n-icon v-if="isDark" :component="Moon" size="18" key="moon" />
                         <n-icon v-else :component="Sunny" size="18" key="sun" />
                       </transition>
                     </button>
@@ -670,10 +537,10 @@ onMounted(async () => {
                 <div class="glass-drawer-footer">
                   <div class="glass-drawer-footer-row">
                     <span class="glass-drawer-footer-label">
-                      <n-icon :component="isDarkTheme ? Moon : Sunny" size="16" />
+                      <n-icon :component="isDark ? Moon : Sunny" size="16" />
                       深色模式
                     </span>
-                    <n-switch v-model:value="isDarkTheme" size="small">
+                    <n-switch v-model:value="isDark" size="small">
                       <template #checked>
                         <n-icon :component="Moon" size="12" />
                       </template>
@@ -741,7 +608,7 @@ onMounted(async () => {
   }
 }
 
-.dark-mode .glass-nav {
+[data-theme="dark"] .glass-nav {
   background: rgba(26, 26, 46, 0.78);
   border-bottom-color: rgba(255, 155, 168, 0.1);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -802,7 +669,7 @@ onMounted(async () => {
   border: 1px solid rgba(255, 155, 168, 0.1);
 }
 
-.dark-mode .nav-pills {
+[data-theme="dark"] .nav-pills {
   background: rgba(61, 61, 92, 0.4);
   border-color: rgba(255, 155, 168, 0.08);
 }
@@ -837,16 +704,16 @@ onMounted(async () => {
   font-weight: 600;
 }
 
-.dark-mode .nav-pill {
+[data-theme="dark"] .nav-pill {
   color: #B8B8CC;
 }
 
-.dark-mode .nav-pill:hover {
+[data-theme="dark"] .nav-pill:hover {
   color: #FF9BA8;
   background: rgba(255, 155, 168, 0.08);
 }
 
-.dark-mode .nav-pill.active {
+[data-theme="dark"] .nav-pill.active {
   color: #fff;
   box-shadow: 0 2px 12px rgba(255, 122, 138, 0.25);
 }
@@ -878,12 +745,12 @@ onMounted(async () => {
   transform: translateY(-1px);
 }
 
-.dark-mode .nav-user-trigger {
+[data-theme="dark"] .nav-user-trigger {
   background: rgba(61, 61, 92, 0.5);
   border-color: rgba(255, 155, 168, 0.08);
 }
 
-.dark-mode .nav-user-trigger:hover {
+[data-theme="dark"] .nav-user-trigger:hover {
   background: rgba(255, 155, 168, 0.1);
   border-color: rgba(255, 155, 168, 0.18);
 }
@@ -900,7 +767,7 @@ onMounted(async () => {
   color: #4A4A4A;
 }
 
-.dark-mode .nav-username {
+[data-theme="dark"] .nav-username {
   color: #E8E8E8;
 }
 
@@ -955,13 +822,13 @@ onMounted(async () => {
   transform: rotate(15deg);
 }
 
-.dark-mode .nav-theme-toggle {
+[data-theme="dark"] .nav-theme-toggle {
   background: rgba(61, 61, 92, 0.4);
   border-color: rgba(255, 155, 168, 0.08);
   color: #FFB4C2;
 }
 
-.dark-mode .nav-theme-toggle:hover {
+[data-theme="dark"] .nav-theme-toggle:hover {
   background: rgba(255, 155, 168, 0.1);
   border-color: rgba(255, 155, 168, 0.2);
 }
@@ -1002,12 +869,12 @@ onMounted(async () => {
   border-color: rgba(255, 155, 168, 0.3);
 }
 
-.dark-mode .nav-hamburger {
+[data-theme="dark"] .nav-hamburger {
   background: rgba(61, 61, 92, 0.4);
   border-color: rgba(255, 155, 168, 0.08);
 }
 
-.dark-mode .nav-hamburger:hover {
+[data-theme="dark"] .nav-hamburger:hover {
   background: rgba(255, 155, 168, 0.1);
 }
 
@@ -1037,7 +904,7 @@ onMounted(async () => {
   box-shadow: 0 -4px 24px rgba(255, 155, 168, 0.06);
 }
 
-.dark-mode .glass-footer {
+[data-theme="dark"] .glass-footer {
   background: rgba(30, 30, 52, 0.75);
   border-top-color: rgba(255, 155, 168, 0.08);
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
@@ -1091,7 +958,7 @@ onMounted(async () => {
   border: 1px solid rgba(255, 155, 168, 0.08);
 }
 
-.dark-mode .footer-stats {
+[data-theme="dark"] .footer-stats {
   background: rgba(255, 155, 168, 0.04);
   border-color: rgba(255, 155, 168, 0.06);
 }
@@ -1113,7 +980,7 @@ onMounted(async () => {
   font-variant-numeric: tabular-nums;
 }
 
-.dark-mode .footer-stat-num {
+[data-theme="dark"] .footer-stat-num {
   color: #FFBFC5;
 }
 
@@ -1122,7 +989,7 @@ onMounted(async () => {
   font-size: 12px;
 }
 
-.dark-mode .footer-stat-label {
+[data-theme="dark"] .footer-stat-label {
   color: #8888A0;
 }
 
@@ -1139,7 +1006,7 @@ onMounted(async () => {
   color: #B8B8C8;
 }
 
-.dark-mode .footer-copy {
+[data-theme="dark"] .footer-copy {
   color: #8888A0;
 }
 
@@ -1169,7 +1036,7 @@ onMounted(async () => {
   animation: footer-shape-float 6s ease-in-out infinite;
 }
 
-.dark-mode .footer-shape {
+[data-theme="dark"] .footer-shape {
   opacity: 0.04;
 }
 
@@ -1311,7 +1178,7 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-.dark-mode .glass-drawer {
+[data-theme="dark"] .glass-drawer {
   background: rgba(26, 26, 46, 0.92);
   border-left-color: rgba(255, 155, 168, 0.08);
   box-shadow: -8px 0 40px rgba(0, 0, 0, 0.35);
@@ -1365,7 +1232,7 @@ onMounted(async () => {
   border-bottom: 1px solid rgba(255, 155, 168, 0.12);
 }
 
-.dark-mode .glass-drawer-header {
+[data-theme="dark"] .glass-drawer-header {
   border-bottom-color: rgba(255, 155, 168, 0.08);
 }
 
@@ -1403,7 +1270,7 @@ onMounted(async () => {
   transform: rotate(90deg);
 }
 
-.dark-mode .drawer-close-btn {
+[data-theme="dark"] .drawer-close-btn {
   background: rgba(61, 61, 92, 0.4);
   border-color: rgba(255, 155, 168, 0.08);
 }
@@ -1418,7 +1285,7 @@ onMounted(async () => {
   border-bottom: 1px solid rgba(255, 155, 168, 0.12);
 }
 
-.dark-mode .glass-drawer-user {
+[data-theme="dark"] .glass-drawer-user {
   border-bottom-color: rgba(255, 155, 168, 0.08);
 }
 
@@ -1440,7 +1307,7 @@ onMounted(async () => {
   color: #2D2D2D;
 }
 
-.dark-mode .glass-drawer-username {
+[data-theme="dark"] .glass-drawer-username {
   color: #E8E8E8;
 }
 
@@ -1518,16 +1385,16 @@ onMounted(async () => {
   padding-left: 13px;
 }
 
-.dark-mode .glass-drawer-item {
+[data-theme="dark"] .glass-drawer-item {
   color: #B8B8CC;
 }
 
-.dark-mode .glass-drawer-item:hover {
+[data-theme="dark"] .glass-drawer-item:hover {
   background: rgba(255, 155, 168, 0.06);
   color: #FF9BA8;
 }
 
-.dark-mode .glass-drawer-item.active {
+[data-theme="dark"] .glass-drawer-item.active {
   background: linear-gradient(135deg, rgba(255, 155, 168, 0.08) 0%, rgba(255, 122, 138, 0.05) 100%);
   color: #FF9BA8;
   border-left-color: #FF9BA8;
@@ -1564,7 +1431,7 @@ onMounted(async () => {
   border-top: 1px solid rgba(255, 155, 168, 0.12);
 }
 
-.dark-mode .glass-drawer-footer {
+[data-theme="dark"] .glass-drawer-footer {
   border-top-color: rgba(255, 155, 168, 0.08);
 }
 
@@ -1585,7 +1452,7 @@ onMounted(async () => {
   color: #6B6B6B;
 }
 
-.dark-mode .glass-drawer-footer-label {
+[data-theme="dark"] .glass-drawer-footer-label {
   color: #B8B8CC;
 }
 
@@ -1684,13 +1551,13 @@ onMounted(async () => {
 }
 
 /* 暗色主题 */
-.dark-mode .scroll-to-top-btn {
+[data-theme="dark"] .scroll-to-top-btn {
   background: rgba(37, 37, 66, 0.75);
   border-color: rgba(255, 155, 168, 0.15);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 155, 168, 0.08) inset;
 }
 
-.dark-mode .scroll-to-top-btn:hover {
+[data-theme="dark"] .scroll-to-top-btn:hover {
   background: rgba(37, 37, 66, 0.92);
   border-color: rgba(255, 155, 168, 0.3);
   box-shadow: 0 8px 30px rgba(255, 155, 168, 0.15), 0 0 0 1px rgba(255, 155, 168, 0.12) inset;

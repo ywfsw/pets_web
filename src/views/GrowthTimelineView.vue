@@ -517,7 +517,7 @@ const closePhotoLightbox = () => {
   overflow: hidden;
 }
 
-:global(.dark-mode) .hero-inner {
+:root[data-theme="dark"] .hero-inner {
   background: rgba(30, 27, 50, 0.85);
 }
 
@@ -563,7 +563,7 @@ const closePhotoLightbox = () => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .hero-subtitle {
+:root[data-theme="dark"] .hero-subtitle {
   color: #A9A0C0;
 }
 
@@ -582,7 +582,7 @@ const closePhotoLightbox = () => {
   border: 1px solid rgba(255, 155, 168, 0.15);
 }
 
-:global(.dark-mode) .hero-stats-bar {
+:root[data-theme="dark"] .hero-stats-bar {
   background: rgba(40, 36, 60, 0.55);
   border-color: rgba(192, 132, 252, 0.15);
 }
@@ -606,7 +606,7 @@ const closePhotoLightbox = () => {
   color: #FF9BA8;
 }
 
-:global(.dark-mode) .hero-stat-value {
+:root[data-theme="dark"] .hero-stat-value {
   color: #FFB4C2;
 }
 
@@ -616,7 +616,7 @@ const closePhotoLightbox = () => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .hero-stat-label {
+:root[data-theme="dark"] .hero-stat-label {
   color: #8B7E9B;
 }
 
@@ -667,7 +667,7 @@ const closePhotoLightbox = () => {
   margin-bottom: 8px;
 }
 
-:global(.dark-mode) .empty-choose-title {
+:root[data-theme="dark"] .empty-choose-title {
   color: #E8E8E8;
 }
 
@@ -676,7 +676,7 @@ const closePhotoLightbox = () => {
   color: #9CA3AF;
 }
 
-:global(.dark-mode) .empty-choose-desc {
+:root[data-theme="dark"] .empty-choose-desc {
   color: #8888A0;
 }
 
@@ -695,7 +695,7 @@ const closePhotoLightbox = () => {
   margin-bottom: 24px;
 }
 
-:global(.dark-mode) .skeleton-pet-card {
+:root[data-theme="dark"] .skeleton-pet-card {
   background: rgba(192, 132, 252, 0.08);
 }
 
@@ -708,7 +708,7 @@ const closePhotoLightbox = () => {
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-circle {
+:root[data-theme="dark"] .skeleton-circle {
   background: linear-gradient(90deg, rgba(192, 132, 252, 0.15) 25%, rgba(192, 132, 252, 0.06) 50%, rgba(192, 132, 252, 0.15) 75%);
   background-size: 200% 100%;
 }
@@ -728,7 +728,7 @@ const closePhotoLightbox = () => {
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-line {
+:root[data-theme="dark"] .skeleton-line {
   background: linear-gradient(90deg, rgba(192, 132, 252, 0.15) 25%, rgba(192, 132, 252, 0.06) 50%, rgba(192, 132, 252, 0.15) 75%);
   background-size: 200% 100%;
 }
@@ -757,7 +757,7 @@ const closePhotoLightbox = () => {
   border-radius: 1px;
 }
 
-:global(.dark-mode) .skeleton-timeline::before {
+:root[data-theme="dark"] .skeleton-timeline::before {
   background: rgba(192, 132, 252, 0.12);
 }
 
@@ -783,7 +783,7 @@ const closePhotoLightbox = () => {
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-dot {
+:root[data-theme="dark"] .skeleton-dot {
   background: linear-gradient(90deg, rgba(192, 132, 252, 0.15) 25%, rgba(192, 132, 252, 0.06) 50%, rgba(192, 132, 252, 0.15) 75%);
   background-size: 200% 100%;
 }
@@ -797,7 +797,7 @@ const closePhotoLightbox = () => {
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-card {
+:root[data-theme="dark"] .skeleton-card {
   background: linear-gradient(90deg, rgba(192, 132, 252, 0.12) 25%, rgba(192, 132, 252, 0.04) 50%, rgba(192, 132, 252, 0.12) 75%);
   background-size: 200% 100%;
 }
@@ -821,7 +821,7 @@ const closePhotoLightbox = () => {
   border-radius: 18px;
 }
 
-:global(.dark-mode) .pet-glass-inner {
+:root[data-theme="dark"] .pet-glass-inner {
   background: rgba(30, 27, 50, 0.8);
 }
 
@@ -839,7 +839,7 @@ const closePhotoLightbox = () => {
   gap: 8px;
 }
 
-:global(.dark-mode) .pet-glass-name {
+:root[data-theme="dark"] .pet-glass-name {
   color: #FFFFFF;
 }
 
@@ -853,7 +853,7 @@ const closePhotoLightbox = () => {
   gap: 0;
 }
 
-:global(.dark-mode) .pet-glass-meta {
+:root[data-theme="dark"] .pet-glass-meta {
   color: #A9A0C0;
 }
 
@@ -904,19 +904,19 @@ const closePhotoLightbox = () => {
   font-weight: 600;
 }
 
-:global(.dark-mode) .filter-pill {
+:root[data-theme="dark"] .filter-pill {
   border-color: rgba(192, 132, 252, 0.2);
   background: rgba(192, 132, 252, 0.06);
   color: #A9A0C0;
 }
 
-:global(.dark-mode) .filter-pill:hover {
+:root[data-theme="dark"] .filter-pill:hover {
   background: rgba(192, 132, 252, 0.14);
   border-color: rgba(192, 132, 252, 0.4);
   color: #D8B4FE;
 }
 
-:global(.dark-mode) .filter-pill.active {
+:root[data-theme="dark"] .filter-pill.active {
   background: linear-gradient(135deg, #C084FC 0%, #A78BFA 100%);
   box-shadow: 0 2px 10px rgba(192, 132, 252, 0.35);
 }
@@ -940,7 +940,7 @@ const closePhotoLightbox = () => {
   border-radius: 10px;
 }
 
-:global(.dark-mode) .month-badge {
+:root[data-theme="dark"] .month-badge {
   color: #FFB4C2;
   background: rgba(255, 155, 168, 0.12);
 }
@@ -1009,7 +1009,7 @@ const closePhotoLightbox = () => {
   border: 2px solid var(--dot-color, #FF9BA8);
 }
 
-:global(.dark-mode) .timeline-dot {
+:root[data-theme="dark"] .timeline-dot {
   background: #2A2A45;
 }
 
@@ -1036,7 +1036,7 @@ const closePhotoLightbox = () => {
   min-height: 16px;
 }
 
-:global(.dark-mode) .timeline-connector {
+:root[data-theme="dark"] .timeline-connector {
   background: linear-gradient(to bottom, rgba(192, 132, 252, 0.2), rgba(192, 132, 252, 0.05));
 }
 
@@ -1072,12 +1072,12 @@ const closePhotoLightbox = () => {
   border-color: rgba(192, 132, 252, 0.2);
 }
 
-:global(.dark-mode) .timeline-body {
+:root[data-theme="dark"] .timeline-body {
   background: #2A2A45;
   border-color: rgba(255, 255, 255, 0.04);
 }
 
-:global(.dark-mode) .timeline-body:hover {
+:root[data-theme="dark"] .timeline-body:hover {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   border-color: rgba(192, 132, 252, 0.15);
 }
@@ -1101,7 +1101,7 @@ const closePhotoLightbox = () => {
   color: #2D2D2D;
 }
 
-:global(.dark-mode) .timeline-item-title {
+:root[data-theme="dark"] .timeline-item-title {
   color: #E8E8E8;
 }
 
@@ -1117,7 +1117,7 @@ const closePhotoLightbox = () => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .timeline-item-date {
+:root[data-theme="dark"] .timeline-item-date {
   color: #8B7E9B;
 }
 
@@ -1131,7 +1131,7 @@ const closePhotoLightbox = () => {
   white-space: nowrap;
 }
 
-:global(.dark-mode) .timeline-item-subtitle {
+:root[data-theme="dark"] .timeline-item-subtitle {
   color: #B8B8CC;
 }
 
@@ -1146,7 +1146,7 @@ const closePhotoLightbox = () => {
   color: #9333EA;
 }
 
-:global(.dark-mode) .timeline-row-photo .timeline-item-title {
+:root[data-theme="dark"] .timeline-row-photo .timeline-item-title {
   color: #D8B4FE;
 }
 
@@ -1154,7 +1154,7 @@ const closePhotoLightbox = () => {
   color: #D97706;
 }
 
-:global(.dark-mode) .timeline-row-feeding .timeline-item-title {
+:root[data-theme="dark"] .timeline-row-feeding .timeline-item-title {
   color: #FBBF24;
 }
 

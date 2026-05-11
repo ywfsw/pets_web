@@ -186,7 +186,7 @@ const chartData = computed(() => {
   border: 1px solid rgba(16, 185, 129, 0.15);
 }
 
-:global(.dark-mode) .chart-wrapper {
+:root[data-theme="dark"] .chart-wrapper {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.1) 100%);
   border-color: rgba(52, 211, 153, 0.12);
 }
@@ -222,7 +222,7 @@ const chartData = computed(() => {
   color: #059669;
 }
 
-:global(.dark-mode) .summary-value {
+:root[data-theme="dark"] .summary-value {
   color: #34D399;
 }
 
@@ -232,7 +232,7 @@ const chartData = computed(() => {
   color: #334155;
 }
 
-:global(.dark-mode) .chart-svg {
+:root[data-theme="dark"] .chart-svg {
   color: #CBD5E1;
 }
 
@@ -249,7 +249,7 @@ const chartData = computed(() => {
   border: 1px dashed rgba(16, 185, 129, 0.2);
 }
 
-:global(.dark-mode) .chart-empty {
+:root[data-theme="dark"] .chart-empty {
   background: rgba(16, 185, 129, 0.06);
   border-color: rgba(52, 211, 153, 0.15);
   color: #6EE7B7;

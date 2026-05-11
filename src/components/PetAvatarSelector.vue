@@ -208,51 +208,51 @@ function handleSelect(id) {
 }
 
 /* Dark theme */
-:global(.dark-mode) .avatar-card {
+:root[data-theme="dark"] .avatar-card {
   background: rgba(30, 30, 50, 0.6);
   border-color: rgba(16, 185, 129, 0.15);
 }
 
-:global(.dark-mode) .avatar-card:hover {
+:root[data-theme="dark"] .avatar-card:hover {
   border-color: rgba(16, 185, 129, 0.4);
   box-shadow: 0 8px 24px rgba(16, 185, 129, 0.12);
 }
 
-:global(.dark-mode) .avatar-card.active {
+:root[data-theme="dark"] .avatar-card.active {
   background: rgba(16, 185, 129, 0.12);
   border-color: rgba(16, 185, 129, 0.5);
   box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15), inset 0 0 0 1px rgba(16, 185, 129, 0.12);
 }
 
-:global(.dark-mode) .avatar-ring {
+:root[data-theme="dark"] .avatar-ring {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.1));
   border-color: rgba(16, 185, 129, 0.25);
 }
 
-:global(.dark-mode) .avatar-card.active .avatar-ring {
+:root[data-theme="dark"] .avatar-card.active .avatar-ring {
   border-color: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15), 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
-:global(.dark-mode) .avatar-name {
+:root[data-theme="dark"] .avatar-name {
   color: #e5e7eb;
 }
 
-:global(.dark-mode) .avatar-card.active .avatar-name {
+:root[data-theme="dark"] .avatar-card.active .avatar-name {
   color: #34d399;
 }
 
-:global(.dark-mode) .avatar-species {
+:root[data-theme="dark"] .avatar-species {
   background: rgba(16, 185, 129, 0.1);
   color: #9ca3af;
 }
 
-:global(.dark-mode) .avatar-card.active .avatar-species {
+:root[data-theme="dark"] .avatar-card.active .avatar-species {
   background: rgba(16, 185, 129, 0.18);
   color: #34d399;
 }
 
-:global(.dark-mode) .avatar-scroll {
+:root[data-theme="dark"] .avatar-scroll {
   scrollbar-color: rgba(16, 185, 129, 0.2) transparent;
 }
 

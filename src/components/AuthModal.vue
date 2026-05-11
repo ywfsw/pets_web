@@ -244,7 +244,7 @@ watch(() => props.show, (isShown) => {
   animation: auth-card-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dark-mode .auth-glass-card,
+:root[data-theme="dark"] .auth-glass-card,
 [data-theme="dark"] .auth-glass-card {
   background: rgba(37, 37, 66, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -290,13 +290,13 @@ watch(() => props.show, (isShown) => {
   transform: rotate(90deg);
 }
 
-.dark-mode .auth-close-btn,
+:root[data-theme="dark"] .auth-close-btn,
 [data-theme="dark"] .auth-close-btn {
   background: rgba(255, 255, 255, 0.06);
   color: #8888A0;
 }
 
-.dark-mode .auth-close-btn:hover,
+:root[data-theme="dark"] .auth-close-btn:hover,
 [data-theme="dark"] .auth-close-btn:hover {
   background: rgba(255, 155, 168, 0.15);
   color: #FFB4C2;
@@ -420,7 +420,7 @@ watch(() => props.show, (isShown) => {
   letter-spacing: -0.02em;
 }
 
-.dark-mode .auth-title,
+:root[data-theme="dark"] .auth-title,
 [data-theme="dark"] .auth-title {
   background: linear-gradient(135deg, #FFB4C2 0%, #FF9BA8 50%, #FF7A8A 100%);
   -webkit-background-clip: text;
@@ -433,7 +433,7 @@ watch(() => props.show, (isShown) => {
   font-weight: 500;
 }
 
-.dark-mode .auth-subtitle,
+:root[data-theme="dark"] .auth-subtitle,
 [data-theme="dark"] .auth-subtitle {
   color: #8888A0;
 }
@@ -466,17 +466,17 @@ watch(() => props.show, (isShown) => {
   margin-right: 4px;
 }
 
-.dark-mode .auth-form :deep(.n-input),
+:root[data-theme="dark"] .auth-form :deep(.n-input),
 [data-theme="dark"] .auth-form :deep(.n-input) {
   border-color: #3D3D5C;
 }
 
-.dark-mode .auth-form :deep(.n-input:hover),
+:root[data-theme="dark"] .auth-form :deep(.n-input:hover),
 [data-theme="dark"] .auth-form :deep(.n-input:hover) {
   box-shadow: 0 2px 12px rgba(255, 155, 168, 0.08);
 }
 
-.dark-mode .auth-form :deep(.n-input__prefix),
+:root[data-theme="dark"] .auth-form :deep(.n-input__prefix),
 [data-theme="dark"] .auth-form :deep(.n-input__prefix) {
   color: #8888A0;
 }
@@ -554,7 +554,7 @@ watch(() => props.show, (isShown) => {
   background: linear-gradient(90deg, transparent, rgba(255, 155, 168, 0.2), transparent);
 }
 
-.dark-mode .auth-divider-line,
+:root[data-theme="dark"] .auth-divider-line,
 [data-theme="dark"] .auth-divider-line {
   background: linear-gradient(90deg, transparent, rgba(255, 155, 168, 0.15), transparent);
 }
@@ -565,7 +565,7 @@ watch(() => props.show, (isShown) => {
   font-weight: 500;
 }
 
-.dark-mode .auth-divider-text,
+:root[data-theme="dark"] .auth-divider-text,
 [data-theme="dark"] .auth-divider-text {
   color: #8888A0;
 }

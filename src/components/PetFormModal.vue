@@ -293,7 +293,7 @@ const handleClose = () => {
   border-radius: 4px;
 }
 
-.dark-mode .form-glass-card,
+[data-theme="dark"] .form-glass-card,
 [data-theme="dark"] .form-glass-card {
   background: rgba(37, 37, 66, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -333,13 +333,13 @@ const handleClose = () => {
   transform: rotate(90deg);
 }
 
-.dark-mode .form-close-btn,
+[data-theme="dark"] .form-close-btn,
 [data-theme="dark"] .form-close-btn {
   background: rgba(255, 255, 255, 0.06);
   color: #8888A0;
 }
 
-.dark-mode .form-close-btn:hover,
+[data-theme="dark"] .form-close-btn:hover,
 [data-theme="dark"] .form-close-btn:hover {
   background: rgba(255, 155, 168, 0.15);
   color: #FFB4C2;
@@ -402,7 +402,7 @@ const handleClose = () => {
   letter-spacing: -0.02em;
 }
 
-.dark-mode .form-title,
+[data-theme="dark"] .form-title,
 [data-theme="dark"] .form-title {
   background: linear-gradient(135deg, #FFB4C2 0%, #FF9BA8 50%, #FF7A8A 100%);
   -webkit-background-clip: text;
@@ -415,7 +415,7 @@ const handleClose = () => {
   font-weight: 500;
 }
 
-.dark-mode .form-subtitle,
+[data-theme="dark"] .form-subtitle,
 [data-theme="dark"] .form-subtitle {
   color: #8888A0;
 }
@@ -481,17 +481,17 @@ const handleClose = () => {
   border-radius: 14px !important;
 }
 
-.dark-mode .form-body :deep(.n-input),
+[data-theme="dark"] .form-body :deep(.n-input),
 [data-theme="dark"] .form-body :deep(.n-input) {
   border-color: #3D3D5C;
 }
 
-.dark-mode .form-body :deep(.n-input:hover),
+[data-theme="dark"] .form-body :deep(.n-input:hover),
 [data-theme="dark"] .form-body :deep(.n-input:hover) {
   box-shadow: 0 2px 12px rgba(255, 155, 168, 0.08);
 }
 
-.dark-mode .form-body :deep(.n-input__prefix),
+[data-theme="dark"] .form-body :deep(.n-input__prefix),
 [data-theme="dark"] .form-body :deep(.n-input__prefix) {
   color: #8888A0;
 }
@@ -586,7 +586,7 @@ const handleClose = () => {
   background: rgba(0, 0, 0, 0.04) !important;
 }
 
-.dark-mode .cancel-btn:hover,
+[data-theme="dark"] .cancel-btn:hover,
 [data-theme="dark"] .cancel-btn:hover {
   background: rgba(255, 255, 255, 0.06) !important;
 }

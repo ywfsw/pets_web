@@ -313,7 +313,7 @@ const chartData = computed(() => {
   border: 1px solid #FDE68A;
 }
 
-:global(.dark-mode) .chart-wrapper {
+:root[data-theme="dark"] .chart-wrapper {
   background: linear-gradient(135deg, #292524 0%, #1C1917 100%);
   border-color: #44403C;
 }
@@ -348,7 +348,7 @@ const chartData = computed(() => {
   color: #334155;
 }
 
-:global(.dark-mode) .summary-value {
+:root[data-theme="dark"] .summary-value {
   color: #E2E8F0;
 }
 
@@ -411,17 +411,17 @@ const chartData = computed(() => {
   font-weight: 600;
 }
 
-:global(.dark-mode) .time-range-btn {
+:root[data-theme="dark"] .time-range-btn {
   border-color: #44403C;
   color: #A8A29E;
 }
 
-:global(.dark-mode) .time-range-btn:hover {
+:root[data-theme="dark"] .time-range-btn:hover {
   color: #D6D3D1;
   border-color: #57534E;
 }
 
-:global(.dark-mode) .time-range-btn.active {
+:root[data-theme="dark"] .time-range-btn.active {
   background: rgba(251, 146, 60, 0.2);
   border-color: #FB923C;
   color: #FB923C;
@@ -433,7 +433,7 @@ const chartData = computed(() => {
   color: #334155;
 }
 
-:global(.dark-mode) .trend-svg {
+:root[data-theme="dark"] .trend-svg {
   color: #CBD5E1;
 }
 
@@ -470,7 +470,7 @@ const chartData = computed(() => {
   backdrop-filter: blur(8px);
 }
 
-:global(.dark-mode) .custom-date-range {
+:root[data-theme="dark"] .custom-date-range {
   background: rgba(251, 146, 60, 0.05);
   border-color: rgba(251, 146, 60, 0.1);
 }
@@ -511,13 +511,13 @@ const chartData = computed(() => {
   border-color: rgba(251, 146, 60, 0.4);
 }
 
-:global(.dark-mode) .custom-date-input {
+:root[data-theme="dark"] .custom-date-input {
   background: rgba(41, 37, 36, 0.8);
   color: #E2E8F0;
   border-color: rgba(251, 146, 60, 0.15);
 }
 
-:global(.dark-mode) .custom-date-input:focus {
+:root[data-theme="dark"] .custom-date-input:focus {
   background: rgba(41, 37, 36, 0.95);
   border-color: #FB923C;
   box-shadow: 0 0 0 3px rgba(251, 146, 60, 0.1);
@@ -529,7 +529,7 @@ const chartData = computed(() => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .custom-range-sep {
+:root[data-theme="dark"] .custom-range-sep {
   color: #64748B;
 }
 

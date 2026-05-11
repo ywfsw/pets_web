@@ -244,7 +244,7 @@ const remainingPets = (pets) => {
   background: linear-gradient(135deg, #FFD700 0%, #FF9BA8 35%, #C084FC 70%, #7DD3FC 100%);
   opacity: 0.95;
 }
-:global(.dark-mode) .lb-hero-bg {
+:root[data-theme="dark"] .lb-hero-bg {
   background: linear-gradient(135deg, #B8860B 0%, #CC3355 35%, #7B2FBE 70%, #2980B9 100%);
 }
 
@@ -405,7 +405,7 @@ const remainingPets = (pets) => {
   text-align: center;
   margin-bottom: 2px;
 }
-:global(.dark-mode) .podium-name { color: #FFFFFF; }
+:root[data-theme="dark"] .podium-name { color: #FFFFFF; }
 
 .podium-species {
   font-size: 12px;
@@ -489,7 +489,7 @@ const remainingPets = (pets) => {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--pet-border, #F0E6E0), transparent);
 }
-:global(.dark-mode) .list-title-line {
+:root[data-theme="dark"] .list-title-line {
   background: linear-gradient(90deg, transparent, #3D3D5C, transparent);
 }
 .list-title-text {
@@ -525,11 +525,11 @@ const remainingPets = (pets) => {
   box-shadow: 0 6px 20px rgba(255, 155, 168, 0.12);
 }
 
-:global(.dark-mode) .lb-list-item {
+:root[data-theme="dark"] .lb-list-item {
   background: #252542;
   border-color: #3D3D5C;
 }
-:global(.dark-mode) .lb-list-item:hover {
+:root[data-theme="dark"] .lb-list-item:hover {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -545,7 +545,7 @@ const remainingPets = (pets) => {
   flex-shrink: 0;
   border: 2px solid var(--pet-border, #F0E6E0);
 }
-:global(.dark-mode) .lb-list-avatar {
+:root[data-theme="dark"] .lb-list-avatar {
   border-color: #3D3D5C;
 }
 
@@ -561,7 +561,7 @@ const remainingPets = (pets) => {
   font-weight: 600;
   color: var(--pet-text-primary, #2D2D2D);
 }
-:global(.dark-mode) .lb-list-name { color: #E8E8E8; }
+:root[data-theme="dark"] .lb-list-name { color: #E8E8E8; }
 .lb-list-species {
   font-size: 12px;
   color: var(--pet-text-tertiary, #9CA3AF);
@@ -641,7 +641,7 @@ const remainingPets = (pets) => {
   color: var(--pet-text-primary, #2D2D2D);
   margin: 0 0 8px;
 }
-:global(.dark-mode) .lb-empty-title { color: #E8E8E8; }
+:root[data-theme="dark"] .lb-empty-title { color: #E8E8E8; }
 .lb-empty-desc {
   font-size: 14px;
   color: var(--pet-text-tertiary, #9CA3AF);

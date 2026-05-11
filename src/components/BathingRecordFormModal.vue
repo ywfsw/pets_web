@@ -172,7 +172,7 @@ const handleClose = () => {
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-:global(.dark-mode) .form-glass-card {
+:root[data-theme="dark"] .form-glass-card {
   background: rgba(35, 30, 50, 0.95);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
@@ -182,7 +182,7 @@ const handleClose = () => {
   box-shadow: 0 20px 60px rgba(6, 182, 212, 0.15), 0 0 0 1px rgba(6, 182, 212, 0.2);
 }
 
-:global(.dark-mode) .form-glass-card--bathing {
+:root[data-theme="dark"] .form-glass-card--bathing {
   box-shadow: 0 20px 60px rgba(6, 182, 212, 0.2), 0 0 0 1px rgba(6, 182, 212, 0.15);
 }
 
@@ -207,7 +207,7 @@ const handleClose = () => {
   75% { transform: translateY(-5px) rotate(2deg); }
 }
 
-:global(.dark-mode) .form-decor { opacity: 0.2; }
+:root[data-theme="dark"] .form-decor { opacity: 0.2; }
 
 /* Close button */
 .form-close-btn {
@@ -234,12 +234,12 @@ const handleClose = () => {
   transform: rotate(90deg);
 }
 
-:global(.dark-mode) .form-close-btn {
+:root[data-theme="dark"] .form-close-btn {
   background: rgba(255, 255, 255, 0.08);
   color: #8888A0;
 }
 
-:global(.dark-mode) .form-close-btn:hover {
+:root[data-theme="dark"] .form-close-btn:hover {
   background: rgba(6, 182, 212, 0.2);
   color: #22D3EE;
 }
@@ -282,7 +282,7 @@ const handleClose = () => {
   background-clip: text;
 }
 
-:global(.dark-mode) .form-title {
+:root[data-theme="dark"] .form-title {
   background: linear-gradient(135deg, #22D3EE 0%, #67E8F9 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -295,7 +295,7 @@ const handleClose = () => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .form-subtitle {
+:root[data-theme="dark"] .form-subtitle {
   color: #8888A0;
 }
 

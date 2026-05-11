@@ -762,7 +762,7 @@ const computeAge = (birthday) => {
   user-select: none;
 }
 
-:global(.dark-mode) .welcome-shape {
+:root[data-theme="dark"] .welcome-shape {
   opacity: 0.18;
 }
 
@@ -789,7 +789,7 @@ const computeAge = (birthday) => {
   animation: welcome-card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-:global(.dark-mode) .welcome-card {
+:root[data-theme="dark"] .welcome-card {
   background: rgba(30, 30, 56, 0.82);
   border-color: rgba(192, 132, 252, 0.2);
   box-shadow: 0 8px 40px rgba(192, 132, 252, 0.08), 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -808,7 +808,7 @@ const computeAge = (birthday) => {
   animation: welcome-paw-pulse 3s ease-in-out infinite, welcome-card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
 }
 
-:global(.dark-mode) .welcome-icon-wrap {
+:root[data-theme="dark"] .welcome-icon-wrap {
   background: linear-gradient(135deg, #FF7A8A 0%, #A78BFA 100%);
   box-shadow: 0 4px 20px rgba(192, 132, 252, 0.2);
 }
@@ -831,7 +831,7 @@ const computeAge = (birthday) => {
   letter-spacing: -0.01em;
 }
 
-:global(.dark-mode) .welcome-title {
+:root[data-theme="dark"] .welcome-title {
   background: linear-gradient(135deg, #FF9BA8 0%, #D8B4FE 50%, #93C5FD 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -845,7 +845,7 @@ const computeAge = (birthday) => {
   max-width: 380px;
 }
 
-:global(.dark-mode) .welcome-desc {
+:root[data-theme="dark"] .welcome-desc {
   color: #9CA3AF;
 }
 
@@ -889,11 +889,11 @@ const computeAge = (birthday) => {
   transform: translateY(-1px) scale(1.01);
 }
 
-:global(.dark-mode) .welcome-cta {
+:root[data-theme="dark"] .welcome-cta {
   box-shadow: 0 4px 20px rgba(192, 132, 252, 0.3);
 }
 
-:global(.dark-mode) .welcome-cta:hover {
+:root[data-theme="dark"] .welcome-cta:hover {
   box-shadow: 0 8px 30px rgba(192, 132, 252, 0.45);
 }
 
@@ -928,12 +928,12 @@ const computeAge = (birthday) => {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
-:global(.dark-mode) .welcome-tip-item {
+:root[data-theme="dark"] .welcome-tip-item {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-:global(.dark-mode) .welcome-tip-item:hover {
+:root[data-theme="dark"] .welcome-tip-item:hover {
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
@@ -950,7 +950,7 @@ const computeAge = (birthday) => {
   white-space: nowrap;
 }
 
-:global(.dark-mode) .welcome-tip-item span:last-child {
+:root[data-theme="dark"] .welcome-tip-item span:last-child {
   color: #9CA3AF;
 }
 
@@ -965,7 +965,7 @@ const computeAge = (birthday) => {
   animation: welcome-card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
 }
 
-:global(.dark-mode) .welcome-hint {
+:root[data-theme="dark"] .welcome-hint {
   color: #6B7280;
 }
 
@@ -985,7 +985,7 @@ const computeAge = (birthday) => {
   50% { box-shadow: 0 4px 30px rgba(255, 122, 138, 0.4), 0 0 60px rgba(255, 122, 138, 0.15); }
 }
 
-:global(.dark-mode) .welcome-icon-wrap {
+:root[data-theme="dark"] .welcome-icon-wrap {
   animation-name: welcome-paw-pulse-dark, welcome-card-in;
 }
 
@@ -1083,7 +1083,7 @@ const computeAge = (birthday) => {
   animation: hero-entrance 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-:global(.dark-mode) .dashboard-hero {
+:root[data-theme="dark"] .dashboard-hero {
   background: linear-gradient(135deg, #FF7A8A 0%, #C084FC 50%, #7DD3FC 100%);
 }
 
@@ -1104,7 +1104,7 @@ const computeAge = (birthday) => {
   user-select: none;
 }
 
-:global(.dark-mode) .hero-shape {
+:root[data-theme="dark"] .hero-shape {
   opacity: 0.2;
 }
 
@@ -1125,7 +1125,7 @@ const computeAge = (birthday) => {
   padding: 40px 36px 32px;
 }
 
-:global(.dark-mode) .hero-glass-card {
+:root[data-theme="dark"] .hero-glass-card {
   background: rgba(30, 30, 56, 0.88);
 }
 
@@ -1153,7 +1153,7 @@ const computeAge = (birthday) => {
   letter-spacing: 0.02em;
 }
 
-:global(.dark-mode) .hero-greeting {
+:root[data-theme="dark"] .hero-greeting {
   color: #8888A0;
 }
 
@@ -1169,7 +1169,7 @@ const computeAge = (birthday) => {
   line-height: 1.2;
 }
 
-:global(.dark-mode) .hero-title {
+:root[data-theme="dark"] .hero-title {
   background: linear-gradient(135deg, #FFB4C2 0%, #D8B4FE 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1183,7 +1183,7 @@ const computeAge = (birthday) => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .hero-subtitle {
+:root[data-theme="dark"] .hero-subtitle {
   color: #8888A0;
 }
 
@@ -1199,7 +1199,7 @@ const computeAge = (birthday) => {
   animation: strip-fade-in 0.6s 0.4s ease both;
 }
 
-:global(.dark-mode) .hero-stats-strip {
+:root[data-theme="dark"] .hero-stats-strip {
   background: rgba(255, 155, 168, 0.06);
 }
 
@@ -1220,7 +1220,7 @@ const computeAge = (birthday) => {
   text-align: right;
 }
 
-:global(.dark-mode) .hero-stat-num {
+:root[data-theme="dark"] .hero-stat-num {
   color: #F0F0F0;
 }
 
@@ -1230,7 +1230,7 @@ const computeAge = (birthday) => {
   color: #9CA3AF;
 }
 
-:global(.dark-mode) .hero-stat-lbl {
+:root[data-theme="dark"] .hero-stat-lbl {
   color: #8888A0;
 }
 
@@ -1245,7 +1245,7 @@ const computeAge = (birthday) => {
   color: #D97706;
 }
 
-:global(.dark-mode) .hero-stat-pending .hero-stat-num {
+:root[data-theme="dark"] .hero-stat-pending .hero-stat-num {
   color: #FCD34D;
 }
 
@@ -1427,36 +1427,36 @@ const computeAge = (birthday) => {
 }
 .stat-medication .stat-glow { box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
 
-:global(.dark-mode) .stat-pets {
+:root[data-theme="dark"] .stat-pets {
   background: rgba(61, 32, 37, 0.55);
   border-color: rgba(120, 60, 70, 0.4);
 }
-:global(.dark-mode) .stat-events {
+:root[data-theme="dark"] .stat-events {
   background: rgba(61, 53, 32, 0.55);
   border-color: rgba(120, 100, 50, 0.4);
 }
-:global(.dark-mode) .stat-photos {
+:root[data-theme="dark"] .stat-photos {
   background: rgba(45, 32, 64, 0.55);
   border-color: rgba(100, 70, 140, 0.4);
 }
-:global(.dark-mode) .stat-weight {
+:root[data-theme="dark"] .stat-weight {
   background: rgba(30, 42, 58, 0.55);
   border-color: rgba(56, 100, 140, 0.4);
 }
-:global(.dark-mode) .stat-health {
+:root[data-theme="dark"] .stat-health {
   background: rgba(58, 29, 46, 0.55);
   border-color: rgba(120, 50, 90, 0.4);
 }
-:global(.dark-mode) .stat-medication {
+:root[data-theme="dark"] .stat-medication {
   background: rgba(45, 32, 64, 0.55);
   border-color: rgba(100, 70, 140, 0.4);
 }
-:global(.dark-mode) .stat-pets .stat-glow { box-shadow: 0 8px 32px rgba(255, 100, 120, 0.15); }
-:global(.dark-mode) .stat-events .stat-glow { box-shadow: 0 8px 32px rgba(251, 191, 36, 0.12); }
-:global(.dark-mode) .stat-photos .stat-glow { box-shadow: 0 8px 32px rgba(167, 139, 250, 0.12); }
-:global(.dark-mode) .stat-weight .stat-glow { box-shadow: 0 8px 32px rgba(56, 189, 248, 0.12); }
-:global(.dark-mode) .stat-health .stat-glow { box-shadow: 0 8px 32px rgba(244, 114, 182, 0.12); }
-:global(.dark-mode) .stat-medication .stat-glow { box-shadow: 0 8px 32px rgba(139, 92, 246, 0.12); }
+:root[data-theme="dark"] .stat-pets .stat-glow { box-shadow: 0 8px 32px rgba(255, 100, 120, 0.15); }
+:root[data-theme="dark"] .stat-events .stat-glow { box-shadow: 0 8px 32px rgba(251, 191, 36, 0.12); }
+:root[data-theme="dark"] .stat-photos .stat-glow { box-shadow: 0 8px 32px rgba(167, 139, 250, 0.12); }
+:root[data-theme="dark"] .stat-weight .stat-glow { box-shadow: 0 8px 32px rgba(56, 189, 248, 0.12); }
+:root[data-theme="dark"] .stat-health .stat-glow { box-shadow: 0 8px 32px rgba(244, 114, 182, 0.12); }
+:root[data-theme="dark"] .stat-medication .stat-glow { box-shadow: 0 8px 32px rgba(139, 92, 246, 0.12); }
 
 .stat-icon-wrap {
   margin-bottom: 10px;
@@ -1493,7 +1493,7 @@ const computeAge = (birthday) => {
   text-align: center;
 }
 
-:global(.dark-mode) .stat-value {
+:root[data-theme="dark"] .stat-value {
   background: linear-gradient(135deg, #E8E8E8 0%, #B8B8CC 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1507,7 +1507,7 @@ const computeAge = (birthday) => {
   letter-spacing: 0.3px;
 }
 
-:global(.dark-mode) .stat-label {
+:root[data-theme="dark"] .stat-label {
   color: #A0A0B8;
 }
 
@@ -1564,18 +1564,18 @@ const computeAge = (birthday) => {
   box-shadow: 0 2px 10px rgba(244, 114, 182, 0.3);
 }
 
-:global(.dark-mode) .pet-sort-pill {
+:root[data-theme="dark"] .pet-sort-pill {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.1);
   color: #A0A0B8;
 }
 
-:global(.dark-mode) .pet-sort-pill:hover {
+:root[data-theme="dark"] .pet-sort-pill:hover {
   background: rgba(255, 255, 255, 0.12);
   color: #D1D5DB;
 }
 
-:global(.dark-mode) .pet-sort-pill.active {
+:root[data-theme="dark"] .pet-sort-pill.active {
   background: linear-gradient(135deg, #F472B6 0%, #FB923C 100%);
   color: #fff;
   border-color: transparent;
@@ -1639,12 +1639,12 @@ const computeAge = (birthday) => {
   background: rgba(255, 255, 255, 0.6);
 }
 
-:global(.dark-mode) .pet-overview-card {
+:root[data-theme="dark"] .pet-overview-card {
   background: rgba(35, 35, 65, 0.55);
   border-color: rgba(80, 80, 120, 0.35);
 }
 
-:global(.dark-mode) .pet-overview-card:hover {
+:root[data-theme="dark"] .pet-overview-card:hover {
   background: rgba(45, 45, 80, 0.65);
   border-color: rgba(120, 100, 180, 0.45);
   box-shadow: 0 10px 32px rgba(120, 100, 200, 0.15);
@@ -1673,11 +1673,11 @@ const computeAge = (birthday) => {
   border: 2px solid #FFE4E9;
 }
 
-:global(.dark-mode) .pet-overview-avatar {
+:root[data-theme="dark"] .pet-overview-avatar {
   background: linear-gradient(135deg, #3D2025 0%, #4D2030 100%);
 }
 
-:global(.dark-mode) .pet-overview-avatar-img {
+:root[data-theme="dark"] .pet-overview-avatar-img {
   border-color: #3D3D5C;
 }
 
@@ -1692,7 +1692,7 @@ const computeAge = (birthday) => {
   display: block;
 }
 
-:global(.dark-mode) .pet-overview-name {
+:root[data-theme="dark"] .pet-overview-name {
   color: #E8E8E8;
 }
 
@@ -1703,7 +1703,7 @@ const computeAge = (birthday) => {
   margin-top: 2px;
 }
 
-:global(.dark-mode) .pet-overview-breed {
+:root[data-theme="dark"] .pet-overview-breed {
   color: #8888A0;
 }
 
@@ -1721,7 +1721,7 @@ const computeAge = (birthday) => {
   color: #6B6B6B;
 }
 
-:global(.dark-mode) .pet-meta-item {
+:root[data-theme="dark"] .pet-meta-item {
   color: #B8B8CC;
 }
 
@@ -1734,7 +1734,7 @@ const computeAge = (birthday) => {
   font-weight: 600;
 }
 
-:global(.dark-mode) .pet-meta-pending {
+:root[data-theme="dark"] .pet-meta-pending {
   color: #FCD34D;
 }
 
@@ -1743,7 +1743,7 @@ const computeAge = (birthday) => {
   font-weight: 600;
 }
 
-:global(.dark-mode) .pet-meta-likes {
+:root[data-theme="dark"] .pet-meta-likes {
   color: #FB7185;
 }
 
@@ -1763,7 +1763,7 @@ const computeAge = (birthday) => {
   color: #FF9BA8;
 }
 
-:global(.dark-mode) .pet-overview-arrow {
+:root[data-theme="dark"] .pet-overview-arrow {
   color: #555;
 }
 
@@ -1806,8 +1806,8 @@ const computeAge = (birthday) => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
-:global(.dark-mode) .events-glass-container,
-:global(.dark-mode) .activities-glass-container {
+:root[data-theme="dark"] .events-glass-container,
+:root[data-theme="dark"] .activities-glass-container {
   background: rgba(26, 26, 50, 0.72);
   border-color: rgba(60, 60, 90, 0.5);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -1840,12 +1840,12 @@ const computeAge = (birthday) => {
   background: rgba(255, 255, 255, 0.9);
 }
 
-:global(.dark-mode) .event-item {
+:root[data-theme="dark"] .event-item {
   background: rgba(30, 30, 56, 0.6);
   border-color: rgba(60, 60, 90, 0.3);
 }
 
-:global(.dark-mode) .event-item:hover {
+:root[data-theme="dark"] .event-item:hover {
   background: rgba(30, 30, 56, 0.85);
   border-color: rgba(90, 90, 120, 0.5);
 }
@@ -1925,7 +1925,7 @@ const computeAge = (birthday) => {
   font-size: 15px;
 }
 
-:global(.dark-mode) .event-pet-name {
+:root[data-theme="dark"] .event-pet-name {
   color: #E8E8E8;
 }
 
@@ -1945,7 +1945,7 @@ const computeAge = (birthday) => {
   flex: 1;
 }
 
-:global(.dark-mode) .event-notes {
+:root[data-theme="dark"] .event-notes {
   color: #B8B8CC;
 }
 
@@ -1955,7 +1955,7 @@ const computeAge = (birthday) => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .event-date {
+:root[data-theme="dark"] .event-date {
   color: #8888A0;
 }
 
@@ -1988,17 +1988,17 @@ const computeAge = (birthday) => {
   color: #DC2626;
 }
 
-:global(.dark-mode) .tag-success {
+:root[data-theme="dark"] .tag-success {
   background: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
   color: #6EE7B7;
 }
 
-:global(.dark-mode) .tag-warning {
+:root[data-theme="dark"] .tag-warning {
   background: linear-gradient(135deg, #78350F 0%, #92400E 100%);
   color: #FCD34D;
 }
 
-:global(.dark-mode) .tag-error {
+:root[data-theme="dark"] .tag-error {
   background: linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%);
   color: #FCA5A5;
 }
@@ -2015,7 +2015,7 @@ const computeAge = (birthday) => {
   color: #FF9BA8;
 }
 
-:global(.dark-mode) .event-arrow {
+:root[data-theme="dark"] .event-arrow {
   color: #555;
 }
 
@@ -2050,7 +2050,7 @@ const computeAge = (birthday) => {
   cursor: not-allowed;
 }
 
-:global(.dark-mode) .event-complete-btn {
+:root[data-theme="dark"] .event-complete-btn {
   background: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
   color: #6EE7B7;
 }
@@ -2071,7 +2071,7 @@ const computeAge = (birthday) => {
   border-radius: 14px;
 }
 
-:global(.dark-mode) .event-skeleton-item {
+:root[data-theme="dark"] .event-skeleton-item {
   background: rgba(30, 30, 56, 0.4);
 }
 
@@ -2085,7 +2085,7 @@ const computeAge = (birthday) => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .skeleton-days-badge {
+:root[data-theme="dark"] .skeleton-days-badge {
   background: linear-gradient(90deg, #2a2a4a 25%, #353560 50%, #2a2a4a 75%);
   background-size: 200% 100%;
 }
@@ -2105,7 +2105,7 @@ const computeAge = (birthday) => {
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-line {
+:root[data-theme="dark"] .skeleton-line {
   background: linear-gradient(90deg, #2a2a4a 25%, #353560 50%, #2a2a4a 75%);
   background-size: 200% 100%;
 }
@@ -2140,7 +2140,7 @@ const computeAge = (birthday) => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .empty-text {
+:root[data-theme="dark"] .empty-text {
   color: #8888A0;
 }
 
@@ -2186,7 +2186,7 @@ const computeAge = (birthday) => {
   background: rgba(255, 155, 168, 0.06);
 }
 
-:global(.dark-mode) .activity-item:hover {
+:root[data-theme="dark"] .activity-item:hover {
   background: rgba(192, 132, 252, 0.06);
 }
 
@@ -2229,7 +2229,7 @@ const computeAge = (birthday) => {
   color: #2D2D2D;
 }
 
-:global(.dark-mode) .activity-pet-name {
+:root[data-theme="dark"] .activity-pet-name {
   color: #E8E8E8;
 }
 
@@ -2239,7 +2239,7 @@ const computeAge = (birthday) => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .activity-date {
+:root[data-theme="dark"] .activity-date {
   color: #8888A0;
 }
 
@@ -2252,7 +2252,7 @@ const computeAge = (birthday) => {
   white-space: nowrap;
 }
 
-:global(.dark-mode) .activity-title {
+:root[data-theme="dark"] .activity-title {
   color: #B8B8CC;
 }
 
@@ -2267,7 +2267,7 @@ const computeAge = (birthday) => {
   margin-left: 4px;
 }
 
-:global(.dark-mode) .section-subtitle {
+:root[data-theme="dark"] .section-subtitle {
   color: #8888A0;
 }
 
@@ -2300,7 +2300,7 @@ const computeAge = (birthday) => {
   color: #2D2D2D;
 }
 
-:global(.dark-mode) .feeding-stat-name {
+:root[data-theme="dark"] .feeding-stat-name {
   color: #E8E8E8;
 }
 
@@ -2310,7 +2310,7 @@ const computeAge = (birthday) => {
   font-weight: 600;
 }
 
-:global(.dark-mode) .feeding-stat-count {
+:root[data-theme="dark"] .feeding-stat-count {
   color: #B8B8CC;
 }
 
@@ -2320,7 +2320,7 @@ const computeAge = (birthday) => {
   font-size: 12px;
 }
 
-:global(.dark-mode) .feeding-stat-avg {
+:root[data-theme="dark"] .feeding-stat-avg {
   color: #8888A0;
 }
 
@@ -2331,7 +2331,7 @@ const computeAge = (birthday) => {
   overflow: hidden;
 }
 
-:global(.dark-mode) .feeding-stat-bar-bg {
+:root[data-theme="dark"] .feeding-stat-bar-bg {
   background: #3D3D5C;
 }
 
@@ -2343,7 +2343,7 @@ const computeAge = (birthday) => {
   min-width: 8px;
 }
 
-:global(.dark-mode) .feeding-stat-bar {
+:root[data-theme="dark"] .feeding-stat-bar {
   background: linear-gradient(90deg, #D97706 0%, #B45309 100%);
 }
 
@@ -2396,12 +2396,12 @@ const computeAge = (birthday) => {
   background: rgba(255, 255, 255, 0.65);
 }
 
-:global(.dark-mode) .quick-action-card {
+:root[data-theme="dark"] .quick-action-card {
   background: rgba(35, 35, 65, 0.55);
   border-color: rgba(80, 80, 120, 0.35);
 }
 
-:global(.dark-mode) .quick-action-card:hover {
+:root[data-theme="dark"] .quick-action-card:hover {
   background: rgba(45, 45, 80, 0.65);
   border-color: rgba(120, 100, 180, 0.45);
   box-shadow: 0 12px 36px rgba(120, 100, 200, 0.15);
@@ -2471,37 +2471,37 @@ const computeAge = (birthday) => {
   box-shadow: 0 4px 16px rgba(139, 92, 246, 0.15);
 }
 
-:global(.dark-mode) .add-pet-icon {
+:root[data-theme="dark"] .add-pet-icon {
   background: linear-gradient(135deg, rgba(61, 32, 37, 0.8), rgba(77, 32, 48, 0.8));
   box-shadow: 0 4px 16px rgba(255, 100, 120, 0.1);
 }
 
-:global(.dark-mode) .add-weight-icon {
+:root[data-theme="dark"] .add-weight-icon {
   background: linear-gradient(135deg, rgba(30, 42, 58, 0.8), rgba(30, 58, 74, 0.8));
   box-shadow: 0 4px 16px rgba(56, 189, 248, 0.1);
 }
 
-:global(.dark-mode) .add-health-icon {
+:root[data-theme="dark"] .add-health-icon {
   background: linear-gradient(135deg, rgba(58, 29, 46, 0.8), rgba(74, 29, 62, 0.8));
   box-shadow: 0 4px 16px rgba(244, 114, 182, 0.1);
 }
 
-:global(.dark-mode) .add-feeding-icon {
+:root[data-theme="dark"] .add-feeding-icon {
   background: linear-gradient(135deg, rgba(58, 53, 32, 0.8), rgba(74, 64, 32, 0.8));
   box-shadow: 0 4px 16px rgba(250, 204, 21, 0.1);
 }
 
-:global(.dark-mode) .album-icon {
+:root[data-theme="dark"] .album-icon {
   background: linear-gradient(135deg, rgba(45, 32, 64, 0.8), rgba(61, 32, 80, 0.8));
   box-shadow: 0 4px 16px rgba(167, 139, 250, 0.1);
 }
 
-:global(.dark-mode) .timeline-icon {
+:root[data-theme="dark"] .timeline-icon {
   background: linear-gradient(135deg, rgba(26, 58, 42, 0.8), rgba(42, 74, 58, 0.8));
   box-shadow: 0 4px 16px rgba(52, 211, 153, 0.1);
 }
 
-:global(.dark-mode) .medication-icon {
+:root[data-theme="dark"] .medication-icon {
   background: linear-gradient(135deg, rgba(45, 32, 64, 0.8), rgba(61, 32, 80, 0.8));
   box-shadow: 0 4px 16px rgba(139, 92, 246, 0.1);
 }
@@ -2513,7 +2513,7 @@ const computeAge = (birthday) => {
   letter-spacing: 0.3px;
 }
 
-:global(.dark-mode) .quick-action-label {
+:root[data-theme="dark"] .quick-action-label {
   color: #E8E8E8;
 }
 
@@ -2594,7 +2594,7 @@ const computeAge = (birthday) => {
   animation: dash-shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .dash-skel-pill {
+:root[data-theme="dark"] .dash-skel-pill {
   background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
   background-size: 200% 100%;
 }
@@ -2628,7 +2628,7 @@ const computeAge = (birthday) => {
   animation: dash-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both, dash-shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .dash-skel-stat-card {
+:root[data-theme="dark"] .dash-skel-stat-card {
   background: rgba(40, 40, 60, 0.5);
   border-color: rgba(255, 255, 255, 0.06);
 }
@@ -2642,7 +2642,7 @@ const computeAge = (birthday) => {
   animation: dash-shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .dash-skel-stat-icon {
+:root[data-theme="dark"] .dash-skel-stat-icon {
   background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
   background-size: 200% 100%;
 }
@@ -2657,7 +2657,7 @@ const computeAge = (birthday) => {
   animation: dash-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-:global(.dark-mode) .dash-skel-section {
+:root[data-theme="dark"] .dash-skel-section {
   background: rgba(40, 40, 60, 0.5);
   border-color: rgba(255, 255, 255, 0.06);
 }
@@ -2685,7 +2685,7 @@ const computeAge = (birthday) => {
   animation: dash-card-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-:global(.dark-mode) .dash-skel-qa-card {
+:root[data-theme="dark"] .dash-skel-qa-card {
   background: rgba(50, 50, 70, 0.3);
 }
 
@@ -2698,7 +2698,7 @@ const computeAge = (birthday) => {
   animation: dash-shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .dash-skel-qa-icon {
+:root[data-theme="dark"] .dash-skel-qa-icon {
   background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
   background-size: 200% 100%;
 }
@@ -2720,7 +2720,7 @@ const computeAge = (birthday) => {
   animation: dash-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-:global(.dark-mode) .dash-skel-pet-card {
+:root[data-theme="dark"] .dash-skel-pet-card {
   background: rgba(50, 50, 70, 0.3);
 }
 
@@ -2741,7 +2741,7 @@ const computeAge = (birthday) => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .dash-skel-avatar {
+:root[data-theme="dark"] .dash-skel-avatar {
   background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
   background-size: 200% 100%;
 }
@@ -2760,7 +2760,7 @@ const computeAge = (birthday) => {
   border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-:global(.dark-mode) .dash-skel-pet-meta {
+:root[data-theme="dark"] .dash-skel-pet-meta {
   border-top-color: rgba(255, 255, 255, 0.04);
 }
 
@@ -2787,7 +2787,7 @@ const computeAge = (birthday) => {
   animation: dash-card-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-:global(.dark-mode) .dash-skel-event-item {
+:root[data-theme="dark"] .dash-skel-event-item {
   background: rgba(255, 255, 255, 0.02);
 }
 
@@ -2801,7 +2801,7 @@ const computeAge = (birthday) => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .dash-skel-event-badge {
+:root[data-theme="dark"] .dash-skel-event-badge {
   background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
   background-size: 200% 100%;
 }
@@ -2823,7 +2823,7 @@ const computeAge = (birthday) => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .dash-skel-dot {
+:root[data-theme="dark"] .dash-skel-dot {
   background: linear-gradient(90deg, #2a2a3e 25%, #35354d 50%, #2a2a3e 75%);
   background-size: 200% 100%;
 }

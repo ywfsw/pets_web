@@ -1152,7 +1152,7 @@ const timelineItems = computed(() => {
   padding: 20px;
 }
 
-:global(.dark-mode) .detail-overlay {
+:root[data-theme="dark"] .detail-overlay {
   background: rgba(0, 0, 0, 0.6);
 }
 
@@ -1178,7 +1178,7 @@ const timelineItems = computed(() => {
   user-select: none;
 }
 
-:global(.dark-mode) .detail-float-shape {
+:root[data-theme="dark"] .detail-float-shape {
   opacity: 0.3;
 }
 
@@ -1210,7 +1210,7 @@ const timelineItems = computed(() => {
   animation: detailCardIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-:global(.dark-mode) .detail-glass-card {
+:root[data-theme="dark"] .detail-glass-card {
   background: rgba(35, 35, 60, 0.92);
   border-color: rgba(255, 155, 168, 0.2);
   box-shadow:
@@ -1255,12 +1255,12 @@ const timelineItems = computed(() => {
   transform: rotate(90deg);
 }
 
-:global(.dark-mode) .detail-close-btn {
+:root[data-theme="dark"] .detail-close-btn {
   color: #888;
   background: rgba(255, 255, 255, 0.08);
 }
 
-:global(.dark-mode) .detail-close-btn:hover {
+:root[data-theme="dark"] .detail-close-btn:hover {
   background: rgba(255, 155, 168, 0.2);
   color: #FF9BA8;
 }
@@ -1318,7 +1318,7 @@ const timelineItems = computed(() => {
   filter: blur(8px);
 }
 
-:global(.dark-mode) .detail-avatar-glow {
+:root[data-theme="dark"] .detail-avatar-glow {
   opacity: 0.35;
 }
 
@@ -1334,7 +1334,7 @@ const timelineItems = computed(() => {
   box-shadow: 0 4px 20px rgba(255, 155, 168, 0.3);
 }
 
-:global(.dark-mode) .detail-avatar-img {
+:root[data-theme="dark"] .detail-avatar-img {
   border-color: #2D2D50;
   box-shadow: 0 4px 20px rgba(255, 155, 168, 0.2);
 }
@@ -1375,7 +1375,7 @@ const timelineItems = computed(() => {
   color: #E8637A;
 }
 
-:global(.dark-mode) .detail-tag-species {
+:root[data-theme="dark"] .detail-tag-species {
   background: rgba(255, 155, 168, 0.15);
   color: #FFB4C2;
 }
@@ -1385,7 +1385,7 @@ const timelineItems = computed(() => {
   color: #9333EA;
 }
 
-:global(.dark-mode) .detail-tag-breed {
+:root[data-theme="dark"] .detail-tag-breed {
   background: rgba(192, 132, 252, 0.15);
   color: #D8B4FE;
 }
@@ -1395,7 +1395,7 @@ const timelineItems = computed(() => {
   color: #3B82F6;
 }
 
-:global(.dark-mode) .detail-tag-male {
+:root[data-theme="dark"] .detail-tag-male {
   background: rgba(96, 165, 250, 0.15);
   color: #93C5FD;
 }
@@ -1405,7 +1405,7 @@ const timelineItems = computed(() => {
   color: #EC4899;
 }
 
-:global(.dark-mode) .detail-tag-female {
+:root[data-theme="dark"] .detail-tag-female {
   background: rgba(244, 114, 182, 0.15);
   color: #F9A8D4;
 }
@@ -1420,7 +1420,7 @@ const timelineItems = computed(() => {
   margin-bottom: 16px;
 }
 
-:global(.dark-mode) .detail-info-card {
+:root[data-theme="dark"] .detail-info-card {
   background: rgba(45, 45, 72, 0.5);
   border-color: rgba(255, 155, 168, 0.12);
 }
@@ -1441,7 +1441,7 @@ const timelineItems = computed(() => {
   transition: background 0.2s;
 }
 
-:global(.dark-mode) .detail-info-item {
+:root[data-theme="dark"] .detail-info-item {
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -1462,7 +1462,7 @@ const timelineItems = computed(() => {
   color: var(--pet-text, #2D2D2D);
 }
 
-:global(.dark-mode) .detail-info-value {
+:root[data-theme="dark"] .detail-info-value {
   color: #E8E8E8;
 }
 
@@ -1481,7 +1481,7 @@ const timelineItems = computed(() => {
   margin-left: auto;
 }
 
-:global(.dark-mode) .detail-age-badge {
+:root[data-theme="dark"] .detail-age-badge {
   background: rgba(134, 239, 172, 0.12);
   color: #86EFAC;
 }
@@ -1508,7 +1508,7 @@ const timelineItems = computed(() => {
   color: #6B7280;
 }
 
-:global(.dark-mode) .detail-notes-text {
+:root[data-theme="dark"] .detail-notes-text {
   color: #9CA3AF;
 }
 
@@ -1527,7 +1527,7 @@ const timelineItems = computed(() => {
   animation: statsBarIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
 }
 
-:global(.dark-mode) .detail-stats-bar {
+:root[data-theme="dark"] .detail-stats-bar {
   background: linear-gradient(135deg, rgba(50, 40, 70, 0.6), rgba(35, 35, 60, 0.5));
   border-color: rgba(255, 155, 168, 0.12);
 }
@@ -1560,7 +1560,7 @@ const timelineItems = computed(() => {
   transform: translateY(-2px);
 }
 
-:global(.dark-mode) .detail-stat-item:hover {
+:root[data-theme="dark"] .detail-stat-item:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -1594,7 +1594,7 @@ const timelineItems = computed(() => {
   white-space: nowrap;
 }
 
-:global(.dark-mode) .detail-stat-label {
+:root[data-theme="dark"] .detail-stat-label {
   color: #8888A0;
 }
 
@@ -1616,7 +1616,7 @@ const timelineItems = computed(() => {
   border-color: rgba(255, 155, 168, 0.3);
 }
 
-:global(.dark-mode) .detail-collapse :deep(.n-collapse-item) {
+:root[data-theme="dark"] .detail-collapse :deep(.n-collapse-item) {
   background: rgba(42, 42, 69, 0.5);
   border-color: rgba(255, 155, 168, 0.1);
 }
@@ -1640,7 +1640,7 @@ const timelineItems = computed(() => {
   color: var(--pet-text, #2D2D2D);
 }
 
-:global(.dark-mode) .collapse-header-title {
+:root[data-theme="dark"] .collapse-header-title {
   color: #E8E8E8;
 }
 
@@ -1674,7 +1674,7 @@ const timelineItems = computed(() => {
   color: #9CA3AF;
 }
 
-:global(.dark-mode) .detail-empty-text {
+:root[data-theme="dark"] .detail-empty-text {
   color: #6B7280;
 }
 
@@ -1773,7 +1773,7 @@ const timelineItems = computed(() => {
   backdrop-filter: blur(10px);
 }
 
-:global(.dark-mode) .detail-footer {
+:root[data-theme="dark"] .detail-footer {
   background: rgba(30, 30, 50, 0.6);
   border-top-color: rgba(255, 155, 168, 0.1);
 }
@@ -1813,7 +1813,7 @@ const timelineItems = computed(() => {
   transform: translateY(-1px);
 }
 
-:global(.dark-mode) .detail-edit-btn {
+:root[data-theme="dark"] .detail-edit-btn {
   background: linear-gradient(135deg, #FF7A8F 0%, #FF5577 100%) !important;
 }
 
@@ -1851,7 +1851,7 @@ const timelineItems = computed(() => {
   border-radius: 10px;
 }
 
-:global(.dark-mode) .timeline-month-label {
+:root[data-theme="dark"] .timeline-month-label {
   color: #FFB4C2;
   background: rgba(255, 155, 168, 0.15);
 }
@@ -1901,7 +1901,7 @@ const timelineItems = computed(() => {
   display: none;
 }
 
-:global(.dark-mode) .timeline-line {
+:root[data-theme="dark"] .timeline-line {
   background: #3D3D5C;
 }
 
@@ -1924,7 +1924,7 @@ const timelineItems = computed(() => {
   color: var(--pet-text, #2D2D2D);
 }
 
-:global(.dark-mode) .timeline-title {
+:root[data-theme="dark"] .timeline-title {
   color: #E8E8E8;
 }
 
@@ -1934,7 +1934,7 @@ const timelineItems = computed(() => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .timeline-date {
+:root[data-theme="dark"] .timeline-date {
   color: #8888A0;
 }
 
@@ -1948,7 +1948,7 @@ const timelineItems = computed(() => {
   white-space: nowrap;
 }
 
-:global(.dark-mode) .timeline-subtitle {
+:root[data-theme="dark"] .timeline-subtitle {
   color: #B8B8CC;
 }
 
@@ -1964,7 +1964,7 @@ const timelineItems = computed(() => {
   color: #9333EA;
 }
 
-:global(.dark-mode) .timeline-photo-item .timeline-title {
+:root[data-theme="dark"] .timeline-photo-item .timeline-title {
   color: #D8B4FE;
 }
 
@@ -1972,7 +1972,7 @@ const timelineItems = computed(() => {
   color: #D97706;
 }
 
-:global(.dark-mode) .timeline-feeding-item .timeline-title {
+:root[data-theme="dark"] .timeline-feeding-item .timeline-title {
   color: #FBBF24;
 }
 
@@ -1980,7 +1980,7 @@ const timelineItems = computed(() => {
   color: #7C3AED;
 }
 
-:global(.dark-mode) .timeline-medication-item .timeline-title {
+:root[data-theme="dark"] .timeline-medication-item .timeline-title {
   color: #A78BFA;
 }
 

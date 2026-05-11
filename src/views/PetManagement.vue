@@ -1380,196 +1380,196 @@ const handleLike = async (petId) => {
 }
 
 /* ===== 暗色主题 ===== */
-:global(.dark-mode) .hero-border {
+:root[data-theme="dark"] .hero-border {
   background: linear-gradient(135deg, #8B3A5E 0%, #6B3A7A 50%, #4A3A8A 100%);
   box-shadow: 0 8px 32px rgba(139, 58, 94, 0.3);
 }
 
-:global(.dark-mode) .hero-inner {
+:root[data-theme="dark"] .hero-inner {
   background: rgba(20, 16, 36, 0.92);
 }
 
-:global(.dark-mode) .hero-subtitle {
+:root[data-theme="dark"] .hero-subtitle {
   color: #9B8BB0;
 }
 
-:global(.dark-mode) .hero-stats-bar {
+:root[data-theme="dark"] .hero-stats-bar {
   background: rgba(139, 58, 94, 0.12);
   border-color: rgba(139, 58, 94, 0.25);
 }
 
-:global(.dark-mode) .hero-stat-value {
+:root[data-theme="dark"] .hero-stat-value {
   color: #F9A8D4;
 }
 
-:global(.dark-mode) .hero-stat-label {
+:root[data-theme="dark"] .hero-stat-label {
   color: #8B7B9B;
 }
 
-:global(.dark-mode) .hero-stat-divider {
+:root[data-theme="dark"] .hero-stat-divider {
   background: rgba(139, 58, 94, 0.3);
 }
 
-:global(.dark-mode) .event-section {
+:root[data-theme="dark"] .event-section {
   background: var(--pet-bg-secondary, #1F1F3A);
   border-color: var(--pet-border, #3D3D5C);
 }
 
-:global(.dark-mode) .section-title {
+:root[data-theme="dark"] .section-title {
   color: #E8E8E8;
 }
 
-:global(.dark-mode) .section-badge {
+:root[data-theme="dark"] .section-badge {
   background: linear-gradient(135deg, #8B3A5E 0%, #A855A0 100%);
 }
 
-:global(.dark-mode) .event-skeleton-item {
+:root[data-theme="dark"] .event-skeleton-item {
   background: #2A2A4A;
 }
 
-:global(.dark-mode) .skeleton-badge,
-:global(.dark-mode) .skeleton-line,
-:global(.dark-mode) .skeleton-avatar,
-:global(.dark-mode) .skeleton-tag {
+:root[data-theme="dark"] .skeleton-badge,
+:root[data-theme="dark"] .skeleton-line,
+:root[data-theme="dark"] .skeleton-avatar,
+:root[data-theme="dark"] .skeleton-tag {
   background: linear-gradient(90deg, #2A2A4A 25%, #3A3A5A 50%, #2A2A4A 75%);
   background-size: 200% 100%;
 }
 
-:global(.dark-mode) .event-item {
+:root[data-theme="dark"] .event-item {
   background: var(--pet-bg-secondary, #1F1F3A);
 }
 
-:global(.dark-mode) .event-item:hover {
+:root[data-theme="dark"] .event-item:hover {
   border-color: #3D3D5C;
 }
 
-:global(.dark-mode) .event-pet-name {
+:root[data-theme="dark"] .event-pet-name {
   color: #E8E8E8;
 }
 
-:global(.dark-mode) .event-notes {
+:root[data-theme="dark"] .event-notes {
   color: #B8B8CC;
 }
 
-:global(.dark-mode) .event-date {
+:root[data-theme="dark"] .event-date {
   color: #8888A0;
 }
 
-:global(.dark-mode) .event-arrow {
+:root[data-theme="dark"] .event-arrow {
   color: #555;
 }
 
-:global(.dark-mode) .event-overdue {
+:root[data-theme="dark"] .event-overdue {
   border-left-color: #EF4444;
 }
 
-:global(.dark-mode) .event-overdue:hover {
+:root[data-theme="dark"] .event-overdue:hover {
   box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
   border-color: #EF4444;
 }
 
-:global(.dark-mode) .event-complete-btn {
+:root[data-theme="dark"] .event-complete-btn {
   color: #86EFAC !important;
 }
 
-:global(.dark-mode) .custom-empty {
+:root[data-theme="dark"] .custom-empty {
   border-color: rgba(139, 58, 94, 0.25);
   background: rgba(139, 58, 94, 0.05);
 }
 
-:global(.dark-mode) .empty-text {
+:root[data-theme="dark"] .empty-text {
   color: #8B7B9B;
 }
 
-:global(.dark-mode) .toolbar-section {
+:root[data-theme="dark"] .toolbar-section {
   background: var(--pet-bg-secondary, #1F1F3A);
   border-color: var(--pet-border, #3D3D5C);
 }
 
-:global(.dark-mode) .pet-skeleton-card {
+:root[data-theme="dark"] .pet-skeleton-card {
   background: #2A2A4A;
 }
 
-:global(.dark-mode) .pet-card {
+:root[data-theme="dark"] .pet-card {
   background: var(--pet-bg-secondary, #1F1F3A);
   border-color: var(--pet-border, #3D3D5C);
 }
 
-:global(.dark-mode) .pet-card:hover {
+:root[data-theme="dark"] .pet-card:hover {
   box-shadow: 0 8px 30px rgba(139, 58, 94, 0.15);
   border-color: #A855A0;
 }
 
-:global(.dark-mode) .pet-card-name {
+:root[data-theme="dark"] .pet-card-name {
   color: #E8E8E8;
 }
 
-:global(.dark-mode) .pet-card-like {
+:root[data-theme="dark"] .pet-card-like {
   background: var(--pet-bg-secondary, #2A2A4A);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-:global(.dark-mode) .pet-card-breed {
+:root[data-theme="dark"] .pet-card-breed {
   color: #8888A0;
 }
 
-:global(.dark-mode) .pet-card-birthday {
+:root[data-theme="dark"] .pet-card-birthday {
   color: #7777A0;
 }
 
-:global(.dark-mode) .pet-quick-actions {
+:root[data-theme="dark"] .pet-quick-actions {
   border-top-color: rgba(61, 61, 92, 0.6);
 }
 
-:global(.dark-mode) .quick-action-btn {
+:root[data-theme="dark"] .quick-action-btn {
   background: rgba(139, 58, 94, 0.12);
   color: #B0B0C8;
 }
 
-:global(.dark-mode) .quick-action-btn.weight-btn:hover {
+:root[data-theme="dark"] .quick-action-btn.weight-btn:hover {
   background: rgba(14, 165, 233, 0.18);
   color: #38BDF8;
   box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
 }
 
-:global(.dark-mode) .quick-action-btn.feeding-btn:hover {
+:root[data-theme="dark"] .quick-action-btn.feeding-btn:hover {
   background: rgba(217, 119, 6, 0.18);
   color: #FBBF24;
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
 }
 
-:global(.dark-mode) .quick-action-btn.health-btn:hover {
+:root[data-theme="dark"] .quick-action-btn.health-btn:hover {
   background: rgba(5, 150, 105, 0.18);
   color: #34D399;
   box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
 }
 
-:global(.dark-mode) .species-tag {
+:root[data-theme="dark"] .species-tag {
   background: rgba(99, 102, 241, 0.15);
   color: #A5B4FC;
 }
 
-:global(.dark-mode) .age-tag {
+:root[data-theme="dark"] .age-tag {
   background: rgba(16, 185, 129, 0.15);
   color: #6EE7B7;
 }
 
-:global(.dark-mode) .sort-filter-tag {
+:root[data-theme="dark"] .sort-filter-tag {
   background: rgba(165, 180, 252, 0.1) !important;
   border-color: rgba(165, 180, 252, 0.25) !important;
   color: #A5B4FC !important;
 }
 
-:global(.dark-mode) .pet-grid-total {
+:root[data-theme="dark"] .pet-grid-total {
   color: #7777A0;
 }
 
-:global(.dark-mode) .add-pet-btn {
+:root[data-theme="dark"] .add-pet-btn {
   background: linear-gradient(135deg, #8B3A5E 0%, #A855A0 100%) !important;
   box-shadow: 0 4px 15px rgba(139, 58, 94, 0.3) !important;
 }
 
-:global(.dark-mode) .add-pet-btn:hover {
+:root[data-theme="dark"] .add-pet-btn:hover {
   box-shadow: 0 6px 20px rgba(139, 58, 94, 0.45) !important;
 }
 

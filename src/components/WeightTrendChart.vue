@@ -376,7 +376,7 @@ const chartData = computed(() => {
   border: 1px solid #E0F2FE;
 }
 
-:global(.dark-mode) .chart-wrapper {
+:root[data-theme="dark"] .chart-wrapper {
   background: linear-gradient(135deg, #1E293B 0%, #1E1B4B 100%);
   border-color: #334155;
 }
@@ -404,7 +404,7 @@ const chartData = computed(() => {
   color: #334155;
 }
 
-:global(.dark-mode) .summary-value {
+:root[data-theme="dark"] .summary-value {
   color: #E2E8F0;
 }
 
@@ -426,7 +426,7 @@ const chartData = computed(() => {
   color: #334155;
 }
 
-:global(.dark-mode) .trend-svg {
+:root[data-theme="dark"] .trend-svg {
   color: #CBD5E1;
 }
 
@@ -460,7 +460,7 @@ const chartData = computed(() => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .chart-range-selector {
+:root[data-theme="dark"] .chart-range-selector {
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -488,15 +488,15 @@ const chartData = computed(() => {
   font-weight: 600;
 }
 
-:global(.dark-mode) .range-btn {
+:root[data-theme="dark"] .range-btn {
   color: #94A3B8;
 }
 
-:global(.dark-mode) .range-btn:hover {
+:root[data-theme="dark"] .range-btn:hover {
   color: #E2E8F0;
 }
 
-:global(.dark-mode) .range-btn.active {
+:root[data-theme="dark"] .range-btn.active {
   background: #334155;
   color: #E2E8F0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -514,7 +514,7 @@ const chartData = computed(() => {
   backdrop-filter: blur(8px);
 }
 
-:global(.dark-mode) .custom-date-range {
+:root[data-theme="dark"] .custom-date-range {
   background: rgba(125, 211, 252, 0.05);
   border-color: rgba(125, 211, 252, 0.1);
 }
@@ -555,13 +555,13 @@ const chartData = computed(() => {
   border-color: rgba(125, 211, 252, 0.4);
 }
 
-:global(.dark-mode) .custom-date-input {
+:root[data-theme="dark"] .custom-date-input {
   background: rgba(30, 41, 59, 0.8);
   color: #E2E8F0;
   border-color: rgba(125, 211, 252, 0.15);
 }
 
-:global(.dark-mode) .custom-date-input:focus {
+:root[data-theme="dark"] .custom-date-input:focus {
   background: rgba(30, 41, 59, 0.95);
   border-color: #7DD3FC;
   box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.1);
@@ -573,7 +573,7 @@ const chartData = computed(() => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .custom-range-sep {
+:root[data-theme="dark"] .custom-range-sep {
   color: #64748B;
 }
 

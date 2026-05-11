@@ -416,13 +416,13 @@ onUnmounted(() => {
   border-color: rgba(255, 155, 168, 0.35);
 }
 
-.dark-mode .notif-bell-btn {
+[data-theme="dark"] .notif-bell-btn {
   background: rgba(61, 61, 92, 0.5);
   border-color: rgba(255, 155, 168, 0.08);
 }
 
-.dark-mode .notif-bell-btn:hover,
-.dark-mode .notif-bell-btn.is-open {
+[data-theme="dark"] .notif-bell-btn:hover,
+[data-theme="dark"] .notif-bell-btn.is-open {
   background: rgba(255, 155, 168, 0.12);
   border-color: rgba(255, 155, 168, 0.2);
 }
@@ -508,7 +508,7 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
-.dark-mode .notif-panel {
+[data-theme="dark"] .notif-panel {
   background: rgba(35, 35, 56, 0.92);
   border-color: rgba(255, 155, 168, 0.1);
   box-shadow:
@@ -543,7 +543,7 @@ onUnmounted(() => {
   border-bottom: 1px solid rgba(255, 155, 168, 0.1);
 }
 
-.dark-mode .notif-panel-header {
+[data-theme="dark"] .notif-panel-header {
   border-bottom-color: rgba(255, 155, 168, 0.06);
 }
 
@@ -553,7 +553,7 @@ onUnmounted(() => {
   color: #2D2D2D;
 }
 
-.dark-mode .notif-panel-title {
+[data-theme="dark"] .notif-panel-title {
   color: #F0F0F0;
 }
 
@@ -565,7 +565,7 @@ onUnmounted(() => {
   background: rgba(255, 155, 168, 0.08);
 }
 
-.dark-mode .notif-panel-count {
+[data-theme="dark"] .notif-panel-count {
   background: rgba(255, 155, 168, 0.06);
   color: #888;
 }
@@ -623,7 +623,7 @@ onUnmounted(() => {
   letter-spacing: 0.5px;
 }
 
-.dark-mode .notif-group-label {
+[data-theme="dark"] .notif-group-label {
   opacity: 0.85;
 }
 
@@ -658,7 +658,7 @@ onUnmounted(() => {
   background: rgba(255, 155, 168, 0.1) !important;
 }
 
-.dark-mode .notif-item:hover {
+[data-theme="dark"] .notif-item:hover {
   background: rgba(255, 155, 168, 0.08) !important;
 }
 
@@ -690,7 +690,7 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
-.dark-mode .notif-item-pet {
+[data-theme="dark"] .notif-item-pet {
   color: #777;
 }
 
@@ -703,7 +703,7 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
-.dark-mode .notif-item-event {
+[data-theme="dark"] .notif-item-event {
   color: #E8E8E8;
 }
 
@@ -715,7 +715,7 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
-.dark-mode .notif-item-detail {
+[data-theme="dark"] .notif-item-detail {
   color: #777;
 }
 
@@ -753,7 +753,7 @@ onUnmounted(() => {
   color: #4A4A4A;
 }
 
-.dark-mode .notif-empty-text {
+[data-theme="dark"] .notif-empty-text {
   color: #D4D4D4;
 }
 
@@ -799,7 +799,7 @@ onUnmounted(() => {
   gap: 8px;
 }
 
-.dark-mode .notif-panel-footer {
+[data-theme="dark"] .notif-panel-footer {
   border-top-color: rgba(255, 155, 168, 0.06);
 }
 
@@ -892,11 +892,11 @@ onUnmounted(() => {
   color: #DB2777;
 }
 
-.dark-mode .notif-item-birthday {
+[data-theme="dark"] .notif-item-birthday {
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(244, 114, 182, 0.06)) !important;
 }
 
-.dark-mode .notif-item-birthday .notif-item-event {
+[data-theme="dark"] .notif-item-birthday .notif-item-event {
   color: #F9A8D4;
 }
 
@@ -946,7 +946,7 @@ onUnmounted(() => {
   padding: 8px 0 6px;
 }
 
-.dark-mode .notif-settings-title {
+[data-theme="dark"] .notif-settings-title {
   color: #777;
 }
 
@@ -981,7 +981,7 @@ onUnmounted(() => {
   color: #2D2D2D;
 }
 
-.dark-mode .notif-setting-label {
+[data-theme="dark"] .notif-setting-label {
   color: #E8E8E8;
 }
 
@@ -1033,11 +1033,11 @@ onUnmounted(() => {
   transform: translateX(18px);
 }
 
-.dark-mode .notif-toggle-slider {
+[data-theme="dark"] .notif-toggle-slider {
   background: #4B4B6B;
 }
 
-.dark-mode .notif-toggle input:checked + .notif-toggle-slider {
+[data-theme="dark"] .notif-toggle input:checked + .notif-toggle-slider {
   background: #FF7A8A;
 }
 
@@ -1068,7 +1068,7 @@ onUnmounted(() => {
   color: #4A4A4A;
 }
 
-.dark-mode .notif-threshold-label {
+[data-theme="dark"] .notif-threshold-label {
   color: #C8C8C8;
 }
 
@@ -1091,7 +1091,7 @@ onUnmounted(() => {
   box-shadow: 0 0 0 3px rgba(255, 122, 138, 0.1);
 }
 
-.dark-mode .notif-threshold-input {
+[data-theme="dark"] .notif-threshold-input {
   background: rgba(61, 61, 92, 0.5);
   border-color: rgba(255, 155, 168, 0.12);
   color: #E8E8E8;

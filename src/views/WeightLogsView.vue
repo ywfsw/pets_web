@@ -345,11 +345,11 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   overflow: hidden;
 }
 
-:global(.dark-mode) .hero-gradient-frame {
+:root[data-theme="dark"] .hero-gradient-frame {
   box-shadow: 0 8px 32px rgba(14, 165, 233, 0.12);
 }
 
-:global(.dark-mode) .hero-inner {
+:root[data-theme="dark"] .hero-inner {
   background: linear-gradient(135deg, rgba(20, 30, 40, 0.95) 0%, rgba(25, 35, 50, 0.92) 100%);
 }
 
@@ -368,7 +368,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   animation: hero-float 6s ease-in-out infinite;
 }
 
-:global(.dark-mode) .hero-shape {
+:root[data-theme="dark"] .hero-shape {
   opacity: 0.25;
 }
 
@@ -407,7 +407,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   background-clip: text;
 }
 
-:global(.dark-mode) .hero-title {
+:root[data-theme="dark"] .hero-title {
   background: linear-gradient(135deg, #38BDF8 0%, #67E8F9 50%, #A5F3FC 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -431,7 +431,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .hero-subtitle {
+:root[data-theme="dark"] .hero-subtitle {
   color: #67E8F9;
 }
 
@@ -451,7 +451,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   z-index: 1;
 }
 
-:global(.dark-mode) .hero-stats-bar {
+:root[data-theme="dark"] .hero-stats-bar {
   background: rgba(20, 35, 50, 0.5);
   border-color: rgba(14, 165, 233, 0.1);
 }
@@ -478,7 +478,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   font-weight: 600;
 }
 
-:global(.dark-mode) .hero-stat-value {
+:root[data-theme="dark"] .hero-stat-value {
   color: #38BDF8;
 }
 
@@ -486,7 +486,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   color: #059669;
 }
 
-:global(.dark-mode) .hero-stat-value-min {
+:root[data-theme="dark"] .hero-stat-value-min {
   color: #34D399;
 }
 
@@ -494,7 +494,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   color: #DC2626;
 }
 
-:global(.dark-mode) .hero-stat-value-max {
+:root[data-theme="dark"] .hero-stat-value-max {
   color: #FCA5A5;
 }
 
@@ -504,7 +504,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .hero-stat-label {
+:root[data-theme="dark"] .hero-stat-label {
   color: #67E8F9;
 }
 
@@ -514,7 +514,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   background: rgba(14, 165, 233, 0.15);
 }
 
-:global(.dark-mode) .hero-stat-divider {
+:root[data-theme="dark"] .hero-stat-divider {
   background: rgba(56, 189, 248, 0.15);
 }
 
@@ -579,12 +579,12 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   background: rgba(107, 114, 128, 0.08);
 }
 
-:global(.dark-mode) .selected-pet-hint {
+:root[data-theme="dark"] .selected-pet-hint {
   color: #7DD3FC;
   background: rgba(14, 165, 233, 0.12);
 }
 
-:global(.dark-mode) .all-pets-hint {
+:root[data-theme="dark"] .all-pets-hint {
   color: #9CA3AF;
   background: rgba(156, 163, 175, 0.1);
 }
@@ -626,7 +626,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-record {
+:root[data-theme="dark"] .skeleton-record {
   background: #1A2535;
 }
 
@@ -640,7 +640,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .skeleton-icon-circle {
+:root[data-theme="dark"] .skeleton-icon-circle {
   background: linear-gradient(90deg, #1A3045 25%, #253D55 50%, #1A3045 75%);
   background-size: 200% 100%;
 }
@@ -660,7 +660,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-line {
+:root[data-theme="dark"] .skeleton-line {
   background: linear-gradient(90deg, #1A3045 25%, #253D55 50%, #1A3045 75%);
   background-size: 200% 100%;
 }
@@ -687,7 +687,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   border: 2px dashed #BAE6FD;
 }
 
-:global(.dark-mode) .empty-state {
+:root[data-theme="dark"] .empty-state {
   background: #1A2535;
   border-color: #1E3A5F;
 }
@@ -729,7 +729,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   margin-bottom: 8px;
 }
 
-:global(.dark-mode) .empty-title {
+:root[data-theme="dark"] .empty-title {
   color: #E8E8E8;
 }
 
@@ -739,7 +739,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   margin-bottom: 20px;
 }
 
-:global(.dark-mode) .empty-desc {
+:root[data-theme="dark"] .empty-desc {
   color: #88A8A0;
 }
 
@@ -768,7 +768,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   animation-delay: var(--item-delay, 0s);
 }
 
-:global(.dark-mode) .record-item {
+:root[data-theme="dark"] .record-item {
   background: #1A2535;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -785,7 +785,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   transform: translateX(3px);
 }
 
-:global(.dark-mode) .record-item:hover {
+:root[data-theme="dark"] .record-item:hover {
   box-shadow: 0 6px 20px rgba(14, 165, 233, 0.08);
 }
 
@@ -824,7 +824,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   transition: transform 0.25s ease;
 }
 
-:global(.dark-mode) .record-icon-wrap {
+:root[data-theme="dark"] .record-icon-wrap {
   background: linear-gradient(135deg, rgba(14, 165, 233, 0.15) 0%, rgba(103, 232, 249, 0.1) 100%);
 }
 
@@ -854,7 +854,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   color: #2D2D2D;
 }
 
-:global(.dark-mode) .record-weight {
+:root[data-theme="dark"] .record-weight {
   color: #E8E8E8;
 }
 
@@ -870,7 +870,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   border-radius: 12px;
 }
 
-:global(.dark-mode) .record-pet-badge {
+:root[data-theme="dark"] .record-pet-badge {
   color: #67E8F9;
   background: rgba(103, 232, 249, 0.1);
 }
@@ -881,7 +881,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   margin-top: 4px;
 }
 
-:global(.dark-mode) .record-meta {
+:root[data-theme="dark"] .record-meta {
   color: #88A8A0;
 }
 
@@ -889,7 +889,7 @@ watch(() => petStore.weightLogFormModal.show, (show) => {
   color: #6B6B6B;
 }
 
-:global(.dark-mode) .record-date {
+:root[data-theme="dark"] .record-date {
   color: #7DD3FC;
 }
 

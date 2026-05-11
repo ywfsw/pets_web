@@ -402,11 +402,11 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   overflow: hidden;
 }
 
-:global(.dark-mode) .hero-gradient-frame {
+:root[data-theme="dark"] .hero-gradient-frame {
   box-shadow: 0 8px 32px rgba(139, 92, 246, 0.12);
 }
 
-:global(.dark-mode) .hero-inner {
+:root[data-theme="dark"] .hero-inner {
   background: linear-gradient(135deg, rgba(30, 25, 45, 0.95) 0%, rgba(35, 30, 50, 0.92) 100%);
 }
 
@@ -425,7 +425,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   animation: hero-float 6s ease-in-out infinite;
 }
 
-:global(.dark-mode) .hero-shape {
+:root[data-theme="dark"] .hero-shape {
   opacity: 0.25;
 }
 
@@ -464,7 +464,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   background-clip: text;
 }
 
-:global(.dark-mode) .hero-title {
+:root[data-theme="dark"] .hero-title {
   background: linear-gradient(135deg, #A78BFA 0%, #C4B5FD 50%, #DDD6FE 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -488,7 +488,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .hero-subtitle {
+:root[data-theme="dark"] .hero-subtitle {
   color: #C4B5FD;
 }
 
@@ -508,7 +508,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   z-index: 1;
 }
 
-:global(.dark-mode) .hero-stats-bar {
+:root[data-theme="dark"] .hero-stats-bar {
   background: rgba(30, 25, 45, 0.5);
   border-color: rgba(139, 92, 246, 0.1);
 }
@@ -543,7 +543,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   white-space: nowrap;
 }
 
-:global(.dark-mode) .hero-stat-value {
+:root[data-theme="dark"] .hero-stat-value {
   color: #A78BFA;
 }
 
@@ -553,7 +553,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .hero-stat-label {
+:root[data-theme="dark"] .hero-stat-label {
   color: #C4B5FD;
 }
 
@@ -563,7 +563,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   background: rgba(139, 92, 246, 0.15);
 }
 
-:global(.dark-mode) .hero-stat-divider {
+:root[data-theme="dark"] .hero-stat-divider {
   background: rgba(167, 139, 250, 0.15);
 }
 
@@ -616,12 +616,12 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   background: rgba(107, 114, 128, 0.08);
 }
 
-:global(.dark-mode) .selected-pet-hint {
+:root[data-theme="dark"] .selected-pet-hint {
   color: #A78BFA;
   background: rgba(124, 58, 237, 0.12);
 }
 
-:global(.dark-mode) .all-pets-hint {
+:root[data-theme="dark"] .all-pets-hint {
   color: #9CA3AF;
   background: rgba(156, 163, 175, 0.1);
 }
@@ -657,7 +657,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-record {
+:root[data-theme="dark"] .skeleton-record {
   background: #2A2A45;
 }
 
@@ -671,7 +671,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   flex-shrink: 0;
 }
 
-:global(.dark-mode) .skeleton-icon-circle {
+:root[data-theme="dark"] .skeleton-icon-circle {
   background: linear-gradient(90deg, #3D3D5C 25%, #4A4A6A 50%, #3D3D5C 75%);
   background-size: 200% 100%;
 }
@@ -691,7 +691,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
-:global(.dark-mode) .skeleton-line {
+:root[data-theme="dark"] .skeleton-line {
   background: linear-gradient(90deg, #3D3D5C 25%, #4A4A6A 50%, #3D3D5C 75%);
   background-size: 200% 100%;
 }
@@ -718,7 +718,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   border: 2px dashed var(--pet-border, #E8DCF0);
 }
 
-:global(.dark-mode) .empty-state {
+:root[data-theme="dark"] .empty-state {
   background: #2A2A45;
   border-color: #3D3D5C;
 }
@@ -760,7 +760,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   margin-bottom: 8px;
 }
 
-:global(.dark-mode) .empty-title {
+:root[data-theme="dark"] .empty-title {
   color: #E8E8E8;
 }
 
@@ -770,7 +770,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   margin-bottom: 20px;
 }
 
-:global(.dark-mode) .empty-desc {
+:root[data-theme="dark"] .empty-desc {
   color: #8888A0;
 }
 
@@ -799,7 +799,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   animation-delay: var(--item-delay, 0s);
 }
 
-:global(.dark-mode) .record-item {
+:root[data-theme="dark"] .record-item {
   background: #2A2A45;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
@@ -816,7 +816,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   transform: translateX(3px);
 }
 
-:global(.dark-mode) .record-item:hover {
+:root[data-theme="dark"] .record-item:hover {
   box-shadow: 0 6px 20px rgba(139, 92, 246, 0.08);
 }
 
@@ -863,7 +863,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   transition: transform 0.25s ease;
 }
 
-:global(.dark-mode) .record-icon-wrap {
+:root[data-theme="dark"] .record-icon-wrap {
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%);
 }
 
@@ -893,7 +893,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   color: #2D2D2D;
 }
 
-:global(.dark-mode) .record-name {
+:root[data-theme="dark"] .record-name {
   color: #E8E8E8;
 }
 
@@ -904,7 +904,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   font-weight: 600;
 }
 
-:global(.dark-mode) .status-active {
+:root[data-theme="dark"] .status-active {
   background: rgba(34, 197, 94, 0.15) !important;
   color: #4ADE80 !important;
 }
@@ -915,7 +915,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   border: 1px solid rgba(156, 163, 175, 0.2) !important;
 }
 
-:global(.dark-mode) .status-completed {
+:root[data-theme="dark"] .status-completed {
   background: rgba(156, 163, 175, 0.1) !important;
   color: #9CA3AF !important;
 }
@@ -941,7 +941,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   font-weight: 500;
 }
 
-:global(.dark-mode) .record-type-chip {
+:root[data-theme="dark"] .record-type-chip {
   color: #A78BFA;
   background: rgba(139, 92, 246, 0.12);
 }
@@ -952,8 +952,8 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   color: #6B7280;
 }
 
-:global(.dark-mode) .record-dosage,
-:global(.dark-mode) .record-freq {
+:root[data-theme="dark"] .record-dosage,
+:root[data-theme="dark"] .record-freq {
   color: #9CA3AF;
 }
 
@@ -963,7 +963,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   margin-top: 4px;
 }
 
-:global(.dark-mode) .record-date-row {
+:root[data-theme="dark"] .record-date-row {
   color: #9CA3AF;
 }
 
@@ -971,7 +971,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   color: #6B5B95;
 }
 
-:global(.dark-mode) .record-date {
+:root[data-theme="dark"] .record-date {
   color: #C4B5FD;
 }
 
@@ -989,7 +989,7 @@ watch(() => petStore.medicationRecordFormModal.show, (show) => {
   white-space: nowrap;
 }
 
-:global(.dark-mode) .record-notes {
+:root[data-theme="dark"] .record-notes {
   color: #8888A0;
 }
 

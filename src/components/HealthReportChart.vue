@@ -557,40 +557,40 @@ const maxEvents = computed(() => {
 }
 
 /* Dark theme */
-:global(.dark-mode) .summary-stat {
+:root[data-theme="dark"] .summary-stat {
   background: rgba(30, 30, 40, 0.6);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-:global(.dark-mode) .summary-value {
+:root[data-theme="dark"] .summary-value {
   color: #F3F4F6;
 }
 
-:global(.dark-mode) .chart-wrapper {
+:root[data-theme="dark"] .chart-wrapper {
   background: rgba(30, 30, 40, 0.4);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-:global(.dark-mode) .month-card {
+:root[data-theme="dark"] .month-card {
   background: rgba(30, 30, 40, 0.5);
   border-color: rgba(255, 255, 255, 0.06);
 }
 
-:global(.dark-mode) .month-label {
+:root[data-theme="dark"] .month-label {
   color: #F3F4F6;
 }
 
-:global(.dark-mode) .bar-track {
+:root[data-theme="dark"] .bar-track {
   background: #2A2A3A;
 }
 
-:global(.dark-mode) .tooltip-bg {
+:root[data-theme="dark"] .tooltip-bg {
   fill: #1E1E28;
   opacity: 0.95;
 }
 
-:global(.dark-mode) .skeleton-stat,
-:global(.dark-mode) .skeleton-chart {
+:root[data-theme="dark"] .skeleton-stat,
+:root[data-theme="dark"] .skeleton-chart {
   background: linear-gradient(90deg, #1E1E28 25%, #2A2A3A 50%, #1E1E28 75%);
   background-size: 200% 100%;
 }
