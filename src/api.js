@@ -9,7 +9,9 @@ const isLocal = (hostname === 'localhost' || hostname === '127.0.0.1' || hostnam
 
 let API_BASE_URL;
 
-if (isLocal) {
+if (import.meta.env.MODE === 'cloudflare') {
+  API_BASE_URL = '/';
+} else if (isLocal) {
   // 假设 Spring Boot 运行在 8080
   API_BASE_URL = 'http://localhost:8080';
 } else {
